@@ -13,10 +13,10 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copia apenas os arquivos necessários para instalação de dependências
-COPY pendências.txt .
+COPY requeriments.txt .
 
 # Instala dependências do Python
-RUN pip install --user --no-cache-dir -r pendências.txt
+RUN pip install --user --no-cache-dir -r requeriments.txt
 
 # --- Fase final (imagem reduzida) ---
 FROM python:3.9-slim
