@@ -1,0 +1,2906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>InspekApp - Configurações do Sistema</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/icons/favicon.ico') }}" type="image/x-icon">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Corte de imagens -->   
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        :root {
+            /* Cores principais */
+            --primary-color: #4a6bff;
+            --primary-dark: #3a56d4;
+            --primary-light: #6b84ff;
+            --secondary-color: #ff6b6b;
+            --secondary-dark: #e05555;
+            --accent-color: #00c8a0;
+            
+            /* Tons de cinza e fundo */
+            --dark-bg: #1a1a2e;
+            --darker-bg: #16213e;
+            --card-bg: #242445;
+            --card-hover: #2d2d5a;
+            --border-color: rgba(255, 255, 255, 0.1);
+            
+            /* Texto */
+            --text-light: #ffffff;
+            --text-muted: #b8b8b8;
+            --text-dark: #333333;
+            
+            /* Status */
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #17a2b8;
+            
+            /* Espaçamento e bordas */
+            --border-radius: 10px;
+            --border-radius-sm: 6px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --box-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --transition-fast: all 0.15s ease;
+        }
+    
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', 'Roboto', sans-serif;
+        }
+    
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 8rem;
+            padding-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Barra de navegação superior */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            flex-direction: row-reverse;
+        }
+    
+        .top-bar .nav-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+    
+        .nav-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            font-size: 0.9rem;
+        }
+    
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    
+        .nav-button i {
+            font-size: 1rem;
+        }
+    
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+    
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            transition: var(--transition);
+        }
+    
+        .user-profile:hover .user-avatar {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+    
+        .user-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* Cabeçalho da página */
+        .page-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 1.5rem;
+        }
+    
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Abas de navegação */
+        .tabs-container {
+            width: 100%;
+            max-width: 1200px;
+            overflow-x: auto;
+            padding: 0 1.5rem;
+            margin-bottom: 1.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) transparent;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .tabs-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+    
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            min-width: fit-content;
+            gap: 0.2rem;
+        }
+    
+        .tab {
+            padding: 0.7rem 1.3rem;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            position: relative;
+        }
+    
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--text-light);
+            background: rgba(74, 107, 255, 0.1);
+        }
+    
+        .tab:hover:not(.active) {
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.05);
+        }
+    
+        .tab-badge {
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+        .menu-category-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.5rem 0;
+        }
+
+        .menu-category-title .category-checkbox {
+            margin-right: 0.5rem;
+        }
+
+        .menu-item {
+            padding-left: 1.5rem;
+        }
+
+        /* Estilo para checkbox indeterminado */
+        input[type="checkbox"]:indeterminate {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        /* Container principal */
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 1.5rem;
+        }
+
+        /* Cards de configuração */
+        .config-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.8rem;
+            box-shadow: var(--box-shadow-sm);
+            width: 100%;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.4s ease-out;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .config-card:hover {
+            box-shadow: var(--box-shadow);
+            transform: translateY(-2px);
+        }
+    
+        .config-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 600;
+        }
+    
+        .section-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+    
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+    
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+    
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+    
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B8B8B8'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
+    
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+    
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+    
+        .form-check-label {
+            color: var(--text-light);
+            font-weight: 400;
+            font-size: 0.95rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .form-check-input:checked ~ .form-check-label {
+            font-weight: 500;
+        }
+    
+        .input-group {
+            display: flex;
+            align-items: stretch;
+        }
+    
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+    
+        .input-group-append {
+            display: flex;
+        }
+    
+        .input-group-text {
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            border-top-right-radius: var(--border-radius-sm);
+            border-bottom-right-radius: var(--border-radius-sm);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Lista de extensões permitidas */
+        .extensions-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+    
+        .extensions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+    
+        .extension-tag {
+            background: rgba(74, 107, 255, 0.15);
+            padding: 0.5rem 0.9rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            border: 1px solid rgba(74, 107, 255, 0.3);
+        }
+
+        .extension-tag:hover {
+            background: rgba(74, 107, 255, 0.25);
+        }
+    
+        .extension-tag button {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            transition: var(--transition-fast);
+            opacity: 0.7;
+        }
+
+        .extension-tag button:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    
+        .add-extension {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+    
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+        }
+    
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 107, 255, 0.4);
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+        }
+    
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            backdrop-filter: blur(5px);
+        }
+    
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+    
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+    
+        .btn-danger:hover {
+            background: #e04141;
+            transform: translateY(-2px);
+        }
+    
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+        }
+    
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+    
+        .btn-sm {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon {
+            padding: 0.6rem;
+            width: 36px;
+            height: 36px;
+            justify-content: center;
+        }
+
+        /* Mensagens do sistema */
+        .message {
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeIn 0.3s ease-out;
+            border-left: 4px solid;
+        }
+    
+        .message i {
+            font-size: 1.2rem;
+        }
+    
+        .message.success {
+            background-color: rgba(75, 181, 67, 0.15);
+            color: var(--success-color);
+            border-left-color: var(--success-color);
+        }
+    
+        .message.danger {
+            background-color: rgba(255, 82, 82, 0.15);
+            color: var(--danger-color);
+            border-left-color: var(--danger-color);
+        }
+    
+        .message.warning {
+            background-color: rgba(255, 165, 0, 0.15);
+            color: var(--warning-color);
+            border-left-color: var(--warning-color);
+        }
+    
+        .message.info {
+            background-color: rgba(23, 162, 184, 0.15);
+            color: var(--info-color);
+            border-left-color: var(--info-color);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 1.5rem;
+        }
+    
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    
+        /* Modals */
+        /* Modal Moderno */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1200;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--darker-bg);
+            margin: 5vh auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            animation: slideDown 0.4s;
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(255, 101, 132, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+        }
+
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .user-details strong {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+    
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+    
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+    
+        .modal-close:hover {
+            color: var(--secondary-color);
+            background: rgba(255, 107, 107, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            z-index: 1;
+        }
+    
+        .close:hover {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        /* Seção de permissões */
+        .permissions-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 1.5rem;
+        }
+        
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+    
+        .permission-level {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .permission-level:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+    
+        .permission-level h3 {
+            margin-top: 0;
+            margin-bottom: 1.2rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+    
+        .permission-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Categorias de menu */
+        .menu-category {
+            margin-bottom: 1.2rem;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+    
+        .menu-category-title {
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--primary-color);
+            font-size: 1rem;
+            cursor: pointer;
+            user-select: none;
+        }
+    
+        .menu-category-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-left: 0.5rem;
+        }
+    
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 0;
+            position: relative;
+        }
+    
+        .menu-item-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+    
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            padding: 0.4rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+        }
+    
+        .action-btn:hover {
+            color: var(--primary-color);
+            background: rgba(74, 107, 255, 0.1);
+        }
+
+        .action-btn i {
+            pointer-events: none;
+        }
+        
+        /* Submenus */
+        .submenu {
+            display: none;
+            margin-top: 0.5rem;
+            padding-left: 1.2rem;
+            border-left: 2px dashed rgba(74, 107, 255, 0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .submenu .menu-item {
+            padding: 0.4rem 0;
+        }
+        
+        /* Ações específicas */
+        .action-options {
+            display: none;
+            margin-top: 0.5rem;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .action-options.active {
+            display: block;
+        }
+        
+        .action-option {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal de usuário */
+        #user-modal .modal-content {
+            max-width: 500px;
+            text-align: center;
+        }
+    
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+    
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+    
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(74, 107, 255, 0.3);
+        }
+    
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            box-shadow: var(--box-shadow-sm);
+        }
+    
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+        }
+    
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+    
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            align-items: center;
+        }
+    
+        .user-details strong {
+            color: var(--primary-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+    
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+    
+        .badge-primary {
+            background: rgba(74, 107, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Lista de backups */
+        .backup-list {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+    
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 0.8rem;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .backup-item:hover {
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+    
+        .backup-info {
+            flex: 1;
+        }
+    
+        .backup-name {
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+    
+        .backup-details {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            margin-left: 0.3rem;
+        }
+    
+        .tooltip-icon {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    
+        .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: var(--darker-bg);
+            color: var(--text-light);
+            text-align: left;
+            border-radius: var(--border-radius-sm);
+            padding: 0.8rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            font-weight: normal;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+            line-height: 1.5;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--darker-bg) transparent transparent transparent;
+        }
+    
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Conteúdo das abas */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+    
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .permissions-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .top-bar {
+                padding: 0.7rem 1rem;
+                height: 60px;
+            }
+
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .config-card {
+                padding: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .permissions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs-container {
+                padding: 0 1rem;
+            }
+
+            .tab {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegação superior -->
+    <header class="top-bar"> 
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i> <span>Voltar</span>
+            </button>
+            <button class="nav-button" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </button>
+        </div>
+        
+        <div class="user-profile" onclick="toggleModal('user-modal')">
+            <img class="user-avatar" id="user-profile-pic" 
+                src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                alt="Foto de Perfil">
+            <span class="user-name" id="userName">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+        </div>
+    </header>
+
+    <!-- Cabeçalho da página -->
+    <div class="page-header">
+        <h1 class="page-title">Configurações do Sistema</h1>
+        <p class="page-subtitle">Gerencie todas as configurações e preferências do sistema InspekApp</p>
+    </div>
+
+    <!-- Mensagens do sistema -->
+    <div id="message-container" class="message" style="display: none;">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span id="message-text">Carregando configurações...</span>
+    </div>
+
+    <!-- Abas de navegação -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <div class="tab active" data-tab="permissions-settings">
+                <i class="fas fa-user-shield"></i> Permissões
+                <span class="tab-badge" id="permissions-settings-badge"></span>
+            </div>
+            <div class="tab" data-tab="file-settings">
+                <i class="fas fa-file-alt"></i> Arquivos
+                <span class="tab-badge" id="file-settings-badge"></span>
+            </div>
+            <div class="tab" data-tab="general-settings">
+                <i class="fas fa-hashtag"></i> Prefixos
+                <span class="tab-badge" id="general-settings-badge"></span>
+            </div>            
+            <div class="tab" data-tab="system-settings">
+                <i class="fas fa-cog"></i> Sistema
+                <span class="tab-badge" id="system-settings-badge"></span>
+            </div>
+            <div class="tab" data-tab="folder-settings">
+                <i class="fas fa-folder"></i> Diretórios
+                <span class="tab-badge" id="folder-settings-badge"></span>
+            </div>
+            <div class="tab" data-tab="backup-settings">
+                <i class="fas fa-database"></i> Backups
+                <span class="tab-badge" id="backup-settings-badge"></span>
+            </div>
+            <div class="tab" data-tab="auth-settings">
+                <i class="fas fa-lock"></i> Autenticação
+                <span class="tab-badge" id="auth-settings-badge"></span>
+            </div>        
+        </div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="main-container">
+        
+        <!-- Configurações de Permissões -->
+        <div id="permissions-settings" class="tab-content active">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-user-lock"></i> Gerenciamento de Permissões
+                        </h2>
+                        <p class="section-description">Defina quais menus e funcionalidades cada nível de acesso pode visualizar e utilizar no sistema.</p>
+                    </div>
+                </div>
+                
+                <div class="permissions-grid">
+                    <!-- Administrador -->
+                    <div class="permission-level">
+                        <h3><i class="fas fa-user-crown"></i> Administrador</h3>
+                        <div class="permission-items">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="admin-all" checked disabled>
+                                <label class="form-check-label" for="admin-all">Acesso completo a todos os menus e funcionalidades</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Operador -->
+                    <div class="permission-level">
+                        <h3><i class="fas fa-user-gear"></i> Operador</h3>
+                        <div class="permission-items" id="operator-permissions">
+
+                        </div>
+                    </div>
+                    
+                    <!-- Somente Leitura -->
+                    <div class="permission-level">
+                        <h3><i class="fas fa-user-eye"></i> Somente Leitura</h3>
+                        <div class="permission-items" id="readonly-permissions">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações de Arquivos -->
+        <div id="file-settings" class="tab-content">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-file-upload"></i> Configurações de Upload
+                        </h2>
+                        <p class="section-description">Configure os parâmetros para upload de arquivos no sistema, incluindo tamanhos máximos e tipos permitidos.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="max-content-length">
+                        Tamanho máximo de upload (MB)
+                        <span class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Tamanho máximo total permitido para upload de arquivos em uma única requisição. Valores muito altos podem afetar a performance.</span>
+                        </span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="max-content-length" 
+                            min="1" max="100" placeholder="Ex: 20">
+                        <span class="input-group-text">MB</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="max-file-size">
+                        Tamanho máximo por arquivo (MB)
+                        <span class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Tamanho máximo permitido para cada arquivo individual. Deve ser menor ou igual ao tamanho máximo total.</span>
+                        </span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="max-file-size" 
+                            min="1" max="100" placeholder="Ex: 10">
+                        <span class="input-group-text">MB</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Extensões permitidas
+                        <span class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Tipos de arquivo que podem ser enviados para o sistema. Adicione extensões começando com ponto (ex: .pdf, .jpg)</span>
+                        </span>
+                    </label>
+                    <div class="extensions-container">
+                        <div class="extensions-list" id="allowed-extensions-list">
+                            <!-- Extensões serão adicionadas dinamicamente via JS -->
+                        </div>
+                        <div class="add-extension">
+                            <input type="text" class="form-control" id="new-extension" 
+                                placeholder="Adicionar extensão (ex: .pdf)">
+                            <button class="btn btn-secondary btn-sm" id="add-extension-btn">
+                                <i class="fas fa-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-file-pdf"></i> Configurações de Relatórios PDF
+                        </h2>
+                        <p class="section-description">Configure os caminhos e nomes para geração de relatórios PDF e tempo limite de conversão.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pdf-timeout">
+                        Tempo limite de conversão (segundos)
+                        <span class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Tempo máximo para tentar converter um PDF antes de cancelar. Aumente este valor para documentos muito grandes.</span>
+                        </span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="pdf-timeout" 
+                            min="10" max="600" placeholder="Ex: 60">
+                        <span class="input-group-text">segundos</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="max-retries">
+                        Tentativas máximas
+                        <span class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Número de vezes que o sistema tentará processar um arquivo antes de falhar. Recomendado entre 1 e 3.</span>
+                        </span>
+                    </label>
+                    <input type="number" class="form-control" id="max-retries" 
+                        min="1" max="5" placeholder="Ex: 3">
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdo da nova aba -->
+        <div id="general-settings" class="tab-content">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-hashtag"></i> Prefixos do Sistema
+                        </h2>
+                        <p class="section-description">Configure os prefixos usados para identificação de itens no sistema.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="inspection-prefix">
+                        Prefixo para Números de Inspeção
+                        <span class="tooltip">
+                            <i class="fas fa-info-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Define o prefixo usado ao gerar novos números de inspeção (ex: INS- para INS-00001)</span>
+                        </span>
+                    </label>
+                    <input type="text" class="form-control" id="inspection-prefix" 
+                        maxlength="10" placeholder="Ex: INS-">
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações do Sistema -->
+        <div id="system-settings" class="tab-content">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-server"></i> Configurações do Servidor
+                        </h2>
+                        <p class="section-description">Parâmetros de conexão e operação do servidor. Altere com cuidado.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="server-ip">Endereço IP do Servidor</label>
+                    <input type="text" class="form-control" id="server-ip" placeholder="Ex: 127.0.0.1">
+                </div>
+
+                <div class="form-group">
+                    <label for="server-port">Porta</label>
+                    <input type="number" class="form-control" id="server-port" 
+                        min="1024" max="65535" placeholder="Ex: 5000">
+                </div>
+
+                <div class="form-group">
+                    <label for="server-protocol">Protocolo</label>
+                    <select class="form-control" id="server-protocol">
+                        <option value="http">HTTP</option>
+                        <option value="https">HTTPS</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações de Diretórios -->
+        <div id="folder-settings" class="tab-content">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-folder-open"></i> Diretórios do Sistema
+                        </h2>
+                        <p class="section-description">Configurações de pastas e armazenamento para diferentes tipos de arquivos.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="upload-folder">Diretório de upload de inspeções</label>
+                    <input type="text" class="form-control" id="upload-folder" placeholder="Ex: static/uploads/inspecoes">
+                </div>
+
+                <div class="form-group">
+                    <label for="perfil-folder">Diretório de fotos de perfil</label>
+                    <input type="text" class="form-control" id="perfil-folder" placeholder="Ex: static/uploads/perfis">
+                </div>
+                
+                <div class="form-group">
+                    <label for="pdf-template-path">Caminho do Modelo Word</label>
+                    <input type="text" class="form-control" id="pdf-template-path" 
+                        placeholder="Ex: static/modelos/Checklist_Modelo.docx">
+                </div>
+        
+                <div class="form-group">
+                    <label for="pdf-output-folder">Diretório de Saída</label>
+                    <input type="text" class="form-control" id="pdf-output-folder" 
+                        placeholder="Ex: static/modelos/inspecoes_geradas">
+                </div>
+        
+                <div class="form-group">
+                    <label for="pdf-filename-prefix">Prefixo do Nome do Arquivo</label>
+                    <input type="text" class="form-control" id="pdf-filename-prefix" 
+                        placeholder="Ex: Checklist_Inspecao_">
+                </div>
+                
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="auto-create-folders">
+                    <label class="form-check-label" for="auto-create-folders">
+                        Criar diretórios automaticamente se não existirem
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações de Backup -->
+        <div id="backup-settings" class="tab-content">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fas fa-database"></i> Gerenciamento de Backups
+                        </h2>
+                        <p class="section-description">Crie e restaure backups das configurações do sistema para segurança.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button id="create-backup-btn" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Criar Backup Agora
+                    </button>
+                    <button id="refresh-backups-btn" class="btn btn-secondary" style="margin-left: 1rem;">
+                        <i class="fas fa-sync-alt"></i> Atualizar Lista
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <h3>Backups Disponíveis</h3>
+                    <div id="backups-list-container" style="margin-top: 1rem;">
+                        <!-- Backups serão carregados aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações de Autenticação -->
+        <div id="auth-settings" class="tab-content">
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fab fa-microsoft"></i> Azure AD OAuth
+                        </h2>
+                        <p class="section-description">Configurações de autenticação com Azure Active Directory para login único.</p>
+                    </div>
+                </div>
+                
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="oauth-azure-enabled">
+                    <label class="form-check-label" for="oauth-azure-enabled">
+                        Habilitar autenticação via Azure AD
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="oauth-azure-client-id">Client ID</label>
+                    <input type="text" class="form-control" id="oauth-azure-client-id" placeholder="Seu Client ID do Azure AD">
+                </div>
+                
+                <div class="form-group">
+                    <label for="oauth-azure-client-secret">Client Secret</label>
+                    <input type="password" class="form-control" id="oauth-azure-client-secret" placeholder="Seu Client Secret do Azure AD">
+                </div>
+                
+                <div class="form-group">
+                    <label for="oauth-azure-tenant-id">Tenant ID</label>
+                    <input type="text" class="form-control" id="oauth-azure-tenant-id" placeholder="Seu Tenant ID do Azure AD">
+                </div>
+                
+                <div class="form-group">
+                    <label for="oauth-azure-scopes">Scopes</label>
+                    <input type="text" class="form-control" id="oauth-azure-scopes" 
+                        value="openid email profile">
+                </div>
+
+                <button id="test-oauth-btn" class="btn btn-info">
+                    <i class="fas fa-plug"></i> Testar Conexão
+                </button>
+            </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="config-card">
+            <div class="form-buttons">
+                <button id="save-settings" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Todas as Configurações
+                </button>
+                
+                <button id="reset-defaults" class="btn btn-secondary" style="margin-left: 1rem;">
+                    <i class="fas fa-undo"></i> Restaurar Padrões
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Backup -->
+    <div class="modal-overlay" id="backup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-database"></i> Gerenciar Backups
+                </h3>
+                <button class="modal-close" id="close-backup-modal">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <button id="create-backup-modal-btn" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Criar Novo Backup
+                </button>
+            </div>
+            
+            <h4>Backups Disponíveis</h4>
+            <ul class="backup-list" id="backup-list">
+                <!-- Backups serão carregados aqui -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal de Usuário -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleModal('user-modal')" aria-label="Fechar modal">&times;</button>
+            <h2 id="modal-title">Perfil do Usuário</h2>
+            <div class="profile-pic-container">
+                <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <button id="change-profile-pic" class="btn btn-secondary">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i> Alterar Foto
+                </button>
+            </div>
+            <div class="user-details">
+                <p><strong><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                <p><strong><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                <p><strong><i class="fas fa-id-card" style="margin-right: 0.5rem;"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                <p><strong><i class="fas fa-building" style="margin-right: 0.5rem;"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                <p><strong><i class="fas fa-user-tag" style="margin-right: 0.5rem;"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                <p><strong><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary">{{ current_user.nivel_acesso }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="crop-modal" style="display: none;">
+        <div id="crop-container">
+            <img id="crop-image" />
+        </div>
+    </div>
+
+    <script>
+        // Estado global da aplicação
+        const appState = {
+            config: null,
+            metadata: null,
+            modifiedSettings: new Set(),
+            backups: [],
+            debounceTimers: {},
+            currentActionsMenu: null,
+            currentPermissionLevel: null
+        };
+
+        // Definição de menus organizados por categorias
+        const SYSTEM_MENUS = {
+            inspecoes: {
+                name: 'Inspeções',
+                icon: 'fas fa-clipboard-check',
+                items: [
+                    { id: 'inspecao', name: 'Nova Inspeção', description: 'Iniciar uma nova inspeção' },
+                    { id: 'inspecoes_cadastrados', name: 'Histórico de Inspeções', description: 'Consultar inspeções anteriores' },
+                    { id: 'pendencias_inspecoes', name: 'Minhas Inspeções', description: 'Ver inspeções realizadas pelo usuário' },
+                    { id: 'mapas_inspecoes', name: 'Mapa de Inspeções', description: 'Ver o mapa inspeções do sistema' },                    
+                    { id: 'excluir_inspecao', name: 'Excluir', description: 'Remover uma inspeção existente' },
+                    { id: 'imprimir_inspecao', name: 'Imprimir', description: 'Gerar versão impressa da inspeção' },
+                    { id: 'alterar_status_inspecao', name: 'Alterar Status', description: 'Atualizar o status da inspeção' },
+                    { id: 'ver_anexos', name: 'Anexos', description: 'Visualizar arquivos anexados à inspeção' }
+                ]
+            },
+            equipamentos: {
+                name: 'Equipamentos',
+                icon: 'fas fa-tools',
+                items: [
+                    { id: 'novo_equipamento', name: 'Cadastrar', description: 'Novo equipamento' },
+                    { id: 'equipamentos_cadastrados', name: 'Lista', description: 'Equipamentos cadastrados' },
+                    { id: 'gerar_codigo', name: 'Gerar Código', description: 'Gerar códigos de identificação' },
+                    { id: 'alterar_status_equipamento', name: 'Alterar Status', description: 'Atualizar status do equipamento' },
+                    { id: 'editar_equipamento', name: 'Editar', description: 'Alterar informações de um equipamento' },
+                    { id: 'excluir_equipamento', name: 'Excluir', description: 'Remover equipamento do sistema' }
+                ]
+            },
+            usuarios: {
+                name: 'Usuários',
+                icon: 'fas fa-users',
+                items: [
+                    { id: 'novo_usuario', name: 'Cadastrar', description: 'Novo usuário no sistema' },
+                    { id: 'usuarios_cadastrados', name: 'Lista', description: 'Usuários cadastrados (restrito)' },
+                    { id: 'editar_usuario', name: 'Editar', description: 'Editar dados de usuário' },
+                    { id: 'excluir_usuario', name: 'Excluir', description: 'Remover usuário' },
+                    { id: 'bloquear_usuario', name: 'Bloquear', description: 'Restringir acesso de usuário' },
+                    { id: 'desbloquear_usuario', name: 'Desbloquear', description: 'Restaurar acesso de usuário' }
+                ]
+            },
+            setores: {
+                name: 'Setores',
+                icon: 'fas fa-building',
+                items: [
+                    { id: 'novo_setor', name: 'Cadastrar', description: 'Novo setor' },
+                    { id: 'setores_cadastrados', name: 'Lista', description: 'Setores cadastrados' },
+                    { id: 'editar_setor', name: 'Editar', description: 'Editar informações do setor' },
+                    { id: 'excluir_setor', name: 'Excluir', description: 'Remover setor do sistema' }
+                ]
+            },
+            tipo_equipamento: {
+                name: 'Tipo de Equipamentos',
+                icon: 'fas fa-building',
+                items: [
+                    { id: 'novo_tipo_equipamento', name: 'Cadastrar', description: 'Novo Tipo de Equipamento' },
+                    { id: 'tipos_equipamentos_cadastrados', name: 'Lista', description: 'Tipo de Equipamentos cadastrados' },
+                    { id: 'editar_tipo_equipamento', name: 'Editar', description: 'Editar Tipo de Equipamentos' },
+                    { id: 'gerenciar_tipos_equipamentos', name: 'Desativar', description: 'Desativar Tipo de Equipamento' }
+                ]
+            },           
+            relatorios: {
+                name: 'Relatórios',
+                icon: 'fas fa-chart-bar',
+                items: [
+                    { id: 'relatorio_equipamentos', name: 'Equipamentos', description: 'Gerar relatórios de equipamentos' },
+                    { id: 'relatorio_inspecoes', name: 'Inspeções', description: 'Gerar relatórios de inspeções' }
+                ]
+            },
+            notificacoes: {
+                name: 'Notificações',
+                icon: 'fas fa-bell',
+                items: [
+                    { id: 'notificacoes', name: 'Inspeções', description: 'Alertas de inspeções pendentes' },
+                    { id: 'notificacoes_equipamentos', name: 'Equipamentos', description: 'Alertas de manutenção de equipamentos' }
+                ]
+            },
+            opcoes: {
+                name: 'Opções',
+                icon: 'fas fa-cog',
+                items: [
+                    { id: 'configuracoes', name: 'Sistema', description: 'Configurações gerais' },
+                    { id: 'logs_auditoria', name: 'Auditoria', description: 'Histórico de ações e alterações' },
+                    { id: 'visualizar_dashboards', name: 'Dashboards', description: 'Métricas e indicadores visuais' },
+                    { id: 'alterar_senha', name: 'Alteração de Senha', description: 'Permite que o usuário altere sua senha.' }            
+                ]
+            }
+        };
+
+        // Funções utilitárias
+        function showMessage(text, type = 'success', duration = 5000) {
+            const messageContainer = document.getElementById('message-container');
+            const messageText = document.getElementById('message-text');
+            
+            messageContainer.style.display = 'flex';
+            messageContainer.className = `message ${type}`;
+            messageText.textContent = text;
+            
+            // Adicionar ícone apropriado
+            const icon = messageContainer.querySelector('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 
+                            type === 'warning' ? 'fas fa-exclamation-triangle' : 
+                            type === 'danger' ? 'fas fa-times-circle' : 
+                            type === 'info' ? 'fas fa-info-circle' : 'fas fa-circle-notch fa-spin';
+            
+            // Esconder após o tempo especificado
+            if (duration > 0) {
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, duration);
+            }
+        }
+
+        async function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)',
+                backdrop: 'rgba(0,0,0,0.7)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                backdrop: 'rgba(0,0,0,0.7)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal.hidden) {
+                abrirModal(modalId);
+            } else {
+                fecharModal(modalId);
+            }
+        }
+
+        function toggleSubmenu(categoryId) {
+            const submenu = document.getElementById(`${categoryId}-submenu`);
+            const icon = document.querySelector(`[onclick="toggleSubmenu('${categoryId}')"] .toggle-icon`);
+            
+            if (submenu.style.display === 'block') {
+                submenu.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                submenu.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Funções de renderização
+        function renderBackups() {
+            const container = document.getElementById('backups-list-container');
+            const modalList = document.getElementById('backup-list');
+            
+            if (appState.backups.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">Nenhum backup disponível</p>';
+                modalList.innerHTML = '<li style="color: var(--text-muted); font-style: italic; padding: 1rem;">Nenhum backup disponível</li>';
+                return;
+            }
+            
+            // Renderizar na página principal
+            container.innerHTML = '';
+            appState.backups.forEach(backup => {
+                const backupElement = document.createElement('div');
+                backupElement.className = 'backup-item';
+                backupElement.innerHTML = `
+                    <div class="backup-info">
+                        <div class="backup-name">${backup.name}</div>
+                        <div class="backup-details">
+                            ${formatBytes(backup.size)} • ${formatDate(backup.modified)}
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-info restore-backup-btn" data-path="${backup.path}">
+                        <i class="fas fa-undo"></i> Restaurar
+                    </button>
+                `;
+                container.appendChild(backupElement);
+            });
+            
+            // Renderizar no modal
+            modalList.innerHTML = '';
+            appState.backups.forEach(backup => {
+                const backupElement = document.createElement('li');
+                backupElement.className = 'backup-item';
+                backupElement.innerHTML = `
+                    <div class="backup-info">
+                        <div class="backup-name">${backup.name}</div>
+                        <div class="backup-details">
+                            ${formatBytes(backup.size)} • ${formatDate(backup.modified)}
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-info restore-backup-btn" data-path="${backup.path}">
+                        <i class="fas fa-undo"></i> Restaurar
+                    </button>
+                `;
+                modalList.appendChild(backupElement);
+            });
+            
+            // Adicionar event listeners aos botões de restaurar
+            document.querySelectorAll('.restore-backup-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const backupPath = btn.getAttribute('data-path');
+                    await restoreBackup(backupPath);
+                    toggleModal('backup-modal');
+                });
+            });
+        }
+
+        function renderAllowedExtensions() {
+            const container = document.getElementById('allowed-extensions-list');
+            container.innerHTML = '';
+            
+            if (!appState.config?.ALLOWED_EXTENSIONS?.length) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">Nenhuma extensão definida</p>';
+                return;
+            }
+            
+            appState.config.ALLOWED_EXTENSIONS.forEach(ext => {
+                const tag = document.createElement('div');
+                tag.className = 'extension-tag';
+                tag.innerHTML = `
+                    ${ext}
+                    <button type="button" class="remove-extension" data-ext="${ext}" title="Remover extensão">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(tag);
+            });
+            
+            // Adicionar event listeners para os botões de remover
+            document.querySelectorAll('.remove-extension').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const extToRemove = this.getAttribute('data-ext');
+                    const newExtensions = appState.config.ALLOWED_EXTENSIONS.filter(ext => ext !== extToRemove);
+                    updateConfigValue('ALLOWED_EXTENSIONS', newExtensions);
+                    renderAllowedExtensions();
+                });
+            });
+        }
+
+        function renderPermissions(permissionsConfig) {
+            const operatorContainer = document.getElementById('operator-permissions');
+            const readonlyContainer = document.getElementById('readonly-permissions');
+            
+            // Limpar containers
+            operatorContainer.innerHTML = '';
+            readonlyContainer.innerHTML = '';
+
+            // Adicionar cada categoria de menu
+            Object.entries(SYSTEM_MENUS).forEach(([categoryId, category]) => {
+                // Container do operador
+                const operatorCategory = createPermissionCategory(category, permissionsConfig?.OPERATOR_PERMISSIONS, 'operator');
+                operatorContainer.appendChild(operatorCategory);
+                
+                // Container de somente leitura (apenas algumas categorias)
+                if (['inspecoes', 'equipamentos', 'relatorios'].includes(categoryId)) {
+                    const readonlyCategory = createPermissionCategory(category, permissionsConfig?.READONLY_PERMISSIONS, 'readonly');
+                    readonlyContainer.appendChild(readonlyCategory);
+                }
+            });
+        }
+
+        function createPermissionCategory(category, permissions, prefix) {
+            const categoryElement = document.createElement('div');
+            categoryElement.className = 'menu-category';
+            
+            const categoryTitle = document.createElement('div');
+            categoryTitle.className = 'menu-category-title';
+            categoryTitle.setAttribute('onclick', `toggleSubmenu('${prefix}-${category.name.toLowerCase()}')`);
+            
+            // Verificar se todos os itens da categoria estão marcados
+            const allItemsChecked = category.items.every(item => 
+                permissions?.includes(item.id) ?? (prefix === 'operator')
+            );
+            
+            categoryTitle.innerHTML = `
+                <input type="checkbox" class="form-check-input category-checkbox" 
+                    id="${prefix}-${category.name.toLowerCase()}-main" 
+                    data-category="${category.name.toLowerCase()}"
+                    data-permission-type="${prefix === 'operator' ? 'OPERATOR_PERMISSIONS' : 'READONLY_PERMISSIONS'}"
+                    ${allItemsChecked ? 'checked' : ''}>
+                <i class="${category.icon}"></i> ${category.name}
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            `;
+            
+            const categoryItems = document.createElement('div');
+            categoryItems.className = 'menu-category-items';
+            categoryItems.id = `${prefix}-${category.name.toLowerCase()}-items`;
+            
+            // Adicionar itens do menu
+            category.items.forEach(item => {
+                const isChecked = permissions?.includes(item.id) ?? (prefix === 'operator');
+                
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                
+                menuItem.innerHTML = `
+                    <input type="checkbox" class="form-check-input item-checkbox" id="${prefix}-${item.id}" 
+                        data-menu="${item.id}" 
+                        data-category="${category.name.toLowerCase()}"
+                        data-permission-type="${prefix === 'operator' ? 'OPERATOR_PERMISSIONS' : 'READONLY_PERMISSIONS'}"
+                        ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="${prefix}-${item.id}" title="${item.description}">
+                        ${item.name}
+                    </label>
+                    <div class="menu-item-actions">
+                        <button class="action-btn" title="Configurar ações" data-menu="${item.id}">
+                        </button>
+                    </div>
+                `;
+                
+                // Adicionar event listener para o checkbox
+                const checkbox = menuItem.querySelector('input');
+                checkbox.addEventListener('change', function() {
+                    updatePermissionConfig(this);
+                    updateCategoryCheckbox(this.getAttribute('data-category'), this.getAttribute('data-permission-type'));
+                });
+                
+                // Adicionar event listener para o botão de ações
+                const actionsBtn = menuItem.querySelector('.action-btn');
+                actionsBtn.addEventListener('click', function() {
+                    openActionsModal(item.id, item.name, prefix === 'operator' ? 'OPERATOR_PERMISSIONS' : 'READONLY_PERMISSIONS');
+                });
+                
+                categoryItems.appendChild(menuItem);
+            });
+            
+            // Adicionar event listener para o checkbox da categoria
+            const categoryCheckbox = categoryTitle.querySelector('.category-checkbox');
+            categoryCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                const category = this.getAttribute('data-category');
+                const permissionType = this.getAttribute('data-permission-type');
+                
+                // Marcar/desmarcar todos os itens da categoria
+                document.querySelectorAll(`.item-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`)
+                    .forEach(checkbox => {
+                        checkbox.checked = isChecked;
+                        updatePermissionConfig(checkbox);
+                    });
+            });
+            
+            categoryElement.appendChild(categoryTitle);
+            categoryElement.appendChild(categoryItems);
+            
+            return categoryElement;
+        }
+
+        function updateCategoryCheckbox(category, permissionType) {
+            const categoryCheckbox = document.querySelector(`.category-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`);
+            if (!categoryCheckbox) return;
+            
+            // Verificar se todos os itens da categoria estão marcados
+            const allChecked = Array.from(document.querySelectorAll(`.item-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`))
+                .every(checkbox => checkbox.checked);
+            
+            // Verificar se algum item da categoria está marcado (para estado indeterminado)
+            const someChecked = Array.from(document.querySelectorAll(`.item-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`))
+                .some(checkbox => checkbox.checked);
+            
+            // Atualizar o checkbox da categoria
+            categoryCheckbox.checked = allChecked;
+            categoryCheckbox.indeterminate = someChecked && !allChecked;
+        }
+
+        function openActionsModal(menuId, menuName, permissionType) {
+            appState.currentActionsMenu = menuId;
+            appState.currentPermissionLevel = permissionType;
+            
+            // Atualizar título do modal
+            document.getElementById('actions-menu-title').textContent = `Ações: ${menuName}`;
+            
+            // Verificar ações atuais
+            const actionsConfig = appState.config?.PERMISSIONS?.ACTIONS || {};
+            const currentActions = actionsConfig[menuId]?.[permissionType] || ['view'];
+            
+        }
+
+        function updateTabBadges() {
+            const tabs = {
+                'file-settings': ['MAX_CONTENT_LENGTH', 'MAX_FILE_SIZE', 'PDF_CONVERSION_TIMEOUT', 
+                                'MAX_RETRIES', 'ALLOWED_EXTENSIONS', 'PDF_TEMPLATE_PATH', 
+                                'PDF_OUTPUT_FOLDER', 'PDF_FILENAME_PREFIX'],
+                'permissions-settings': ['PERMISSIONS'],   
+                'general-settings': ['INSPECTION_PREFIX'],                             
+                'system-settings': ['SERVER_IP', 'SERVER_PORT', 'SERVER_PROTOCOL'],
+                'folder-settings': ['UPLOAD_FOLDER', 'PERFIL_FOLDER', 'AUTO_CREATE_FOLDERS'],
+                'auth-settings': ['OAUTH_PROVIDERS'],
+                'backup-settings': [] // Não tem configurações editáveis
+            };
+            
+            for (const [tabId, settings] of Object.entries(tabs)) {
+                const badge = document.getElementById(`${tabId}-badge`);
+                if (badge) {
+                    const modifiedCount = settings.filter(s => appState.modifiedSettings.has(s)).length;
+                    badge.textContent = modifiedCount > 0 ? modifiedCount : '';
+                    badge.style.display = modifiedCount > 0 ? 'flex' : 'none';
+                }
+            }
+        }
+
+        function updateConfigValue(key, value) {
+            if (!appState.config) return;
+            
+            // Atualizar valor no estado
+            appState.config[key] = value;
+            
+            // Marcar como modificado
+            appState.modifiedSettings.add(key);
+            updateTabBadges();
+        }
+
+        function updatePermissionConfig(checkbox) {
+            const menuId = checkbox.getAttribute('data-menu');
+            const permissionType = checkbox.getAttribute('data-permission-type');
+            const isChecked = checkbox.checked;
+            
+            // Garantir que temos o objeto de configuração
+            if (!appState.config.PERMISSIONS) {
+                appState.config.PERMISSIONS = {
+                    OPERATOR_PERMISSIONS: [],
+                    READONLY_PERMISSIONS: [],
+                    ACTIONS: {}
+                };
+            }
+            
+            // Atualizar o array de permissões
+            let permissionsArray = appState.config.PERMISSIONS[permissionType];
+            
+            if (isChecked) {
+                if (!permissionsArray.includes(menuId)) {
+                    permissionsArray.push(menuId);
+                }
+            } else {
+                appState.config.PERMISSIONS[permissionType] = permissionsArray.filter(id => id !== menuId);
+            }
+            
+            // Marcar como modificado
+            appState.modifiedSettings.add('PERMISSIONS');
+            updateTabBadges();
+        }
+
+        function saveActionsConfig() {
+            if (!appState.currentActionsMenu || !appState.currentPermissionLevel) return;
+            
+            // Coletar ações selecionadas
+            const actions = [];
+            if (document.getElementById('action-view').checked) actions.push('view');
+            if (document.getElementById('action-edit').checked) actions.push('edit');
+            if (document.getElementById('action-delete').checked) actions.push('delete');
+            if (document.getElementById('action-export').checked) actions.push('export');
+            if (document.getElementById('action-print').checked) actions.push('print');
+            
+            // Garantir que temos o objeto de configuração
+            if (!appState.config.PERMISSIONS) {
+                appState.config.PERMISSIONS = {
+                    OPERATOR_PERMISSIONS: [],
+                    READONLY_PERMISSIONS: [],
+                    ACTIONS: {}
+                };
+            }
+            
+            if (!appState.config.PERMISSIONS.ACTIONS) {
+                appState.config.PERMISSIONS.ACTIONS = {};
+            }
+            
+            if (!appState.config.PERMISSIONS.ACTIONS[appState.currentActionsMenu]) {
+                appState.config.PERMISSIONS.ACTIONS[appState.currentActionsMenu] = {};
+            }
+            
+            // Atualizar ações
+            appState.config.PERMISSIONS.ACTIONS[appState.currentActionsMenu][appState.currentPermissionLevel] = actions;
+            
+            // Marcar como modificado
+            appState.modifiedSettings.add('PERMISSIONS');
+            updateTabBadges();
+
+        }
+
+        function collectSettings() {
+            if (!appState.config) return null;
+            
+            const settings = {};
+            const modifiedSettings = {};
+
+            // Coletar configurações padrão modificadas
+            for (const key of appState.modifiedSettings) {
+                if (key !== 'OAUTH_PROVIDERS') { // Trataremos OAuth separadamente
+                    const element = document.getElementById(key.toLowerCase().replace(/_/g, '-'));
+                    if (element) {
+                        modifiedSettings[key] = element.type === 'checkbox' ? element.checked : 
+                                            element.type === 'number' ? parseInt(element.value) : 
+                                            element.value;
+                    }
+                }
+            }
+
+            // Coletar configurações de permissão se modificadas
+            if (appState.modifiedSettings.has('PERMISSIONS')) {
+                modifiedSettings.PERMISSIONS = appState.config.PERMISSIONS;
+            }
+
+            // Adicionar verificação para o prefixo de inspeção
+            const inspectionPrefixChanged = (
+                document.getElementById('inspection-prefix').value !== appState.config.INSPECTION_PREFIX
+            );
+            
+            if (inspectionPrefixChanged || appState.modifiedSettings.has('INSPECTION_PREFIX')) {
+                modifiedSettings.INSPECTION_PREFIX = document.getElementById('inspection-prefix').value;
+            }
+            
+            // Coletar configurações de OAuth se modificadas
+            const oauthChanged = (
+                document.getElementById('oauth-azure-enabled').checked !== appState.config.OAUTH_PROVIDERS?.azure?.enabled ||
+                document.getElementById('oauth-azure-client-id').value !== appState.config.OAUTH_PROVIDERS?.azure?.client_id ||
+                document.getElementById('oauth-azure-client-secret').value !== appState.config.OAUTH_PROVIDERS?.azure?.client_secret ||
+                document.getElementById('oauth-azure-tenant-id').value !== appState.config.OAUTH_PROVIDERS?.azure?.tenant_id ||
+                document.getElementById('oauth-azure-scopes').value !== appState.config.OAUTH_PROVIDERS?.azure?.scopes
+            );
+            
+            if (oauthChanged || appState.modifiedSettings.has('OAUTH_PROVIDERS')) {
+                modifiedSettings.OAUTH_PROVIDERS = {
+                    azure: {
+                        enabled: document.getElementById('oauth-azure-enabled').checked,
+                        client_id: document.getElementById('oauth-azure-client-id').value,
+                        client_secret: document.getElementById('oauth-azure-client-secret').value,
+                        tenant_id: document.getElementById('oauth-azure-tenant-id').value,
+                        scopes: document.getElementById('oauth-azure-scopes').value,
+                        authorize_params: {'response_type': 'code'}
+                    }
+                };
+            }
+            
+            // Só retornar configurações se houver modificações
+            if (Object.keys(modifiedSettings).length > 0) {
+                return modifiedSettings;
+            }
+            return null;
+        }
+
+        function updateUIWithSettings(settings) {
+            if (!settings || !appState.metadata) return;
+            
+            // Atualizar valores dos campos
+            for (const [key, data] of Object.entries(appState.metadata)) {
+                const element = document.getElementById(key.toLowerCase().replace(/_/g, '-'));
+                if (element) {
+                    const value = settings[key];
+                    if (element.type === 'checkbox') {
+                        element.checked = value;
+                    } else {
+                        element.value = value !== undefined ? value : '';
+                    }
+                }
+            }
+            
+            // Renderizar permissões
+            if (settings.PERMISSIONS) {
+                renderPermissions(settings.PERMISSIONS);
+            } else {
+                // Usar padrões se não existir configuração
+                renderPermissions({
+                    OPERATOR_PERMISSIONS: Object.values(SYSTEM_MENUS).flatMap(group => group.items.map(item => item.id)),
+                    READONLY_PERMISSIONS: [],
+                    ACTIONS: {}
+                });
+            }
+            
+            // Preencher o campo do prefixo de inspeção
+            document.getElementById('inspection-prefix').value = settings.INSPECTION_PREFIX || 'INS-';
+
+            // Configurações de OAuth Azure
+            const azureConfig = settings.OAUTH_PROVIDERS?.azure || {
+                enabled: false,
+                client_id: '',
+                client_secret: '',
+                tenant_id: '',
+                scopes: 'openid email profile'
+            };
+
+            document.getElementById('oauth-azure-enabled').checked = azureConfig.enabled;
+            document.getElementById('oauth-azure-client-id').value = azureConfig.client_id;
+            document.getElementById('oauth-azure-client-secret').value = azureConfig.client_secret;
+            document.getElementById('oauth-azure-tenant-id').value = azureConfig.tenant_id;
+            document.getElementById('oauth-azure-scopes').value = azureConfig.scopes;
+
+            // Atualizar extensões permitidas
+            renderAllowedExtensions();
+            
+            // Atualizar badges das tabs
+            updateTabBadges();
+        }
+
+        // Funções de API
+        async function fetchConfig() {
+            try {
+                showMessage('Carregando configurações...', 'info', 0);
+                
+                const response = await fetch('/api/system/config');
+                if (!response.ok) throw new Error('Erro ao carregar configurações');
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    appState.config = data.config;
+                    appState.metadata = data.metadata;
+                    
+                    // Resetar modificações
+                    appState.modifiedSettings.clear();
+                    
+                    showMessage('Configurações carregadas com sucesso!', 'success');
+                    return true;
+                }
+                throw new Error(data.message || 'Erro desconhecido');
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function saveConfig(settings) {
+            try {
+                showMessage('Salvando configurações...', 'info', 0);
+                
+                const response = await fetch('/api/system/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao salvar configurações');
+                }
+                
+                // Atualizar estado com as configurações salvas
+                appState.config = data.config;
+                appState.modifiedSettings.clear();
+                
+                showMessage('Configurações salvas com sucesso!', 'success');
+                return data.config;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return null;
+            }
+        }
+
+        async function resetToDefaults() {
+            try {
+                const confirmed = await showConfirm(
+                    'Restaurar configurações padrão?',
+                    'Todas as suas configurações personalizadas serão perdidas. Deseja continuar?',
+                    'warning'
+                );
+                
+                if (!confirmed) return;
+
+                showMessage('Restaurando configurações padrão...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/reset', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao resetar configurações');
+                }
+                
+                // Recarregar configurações
+                await fetchConfig();
+                updateUIWithSettings(data.config);
+                
+                showMessage('Configurações resetadas para padrão!', 'success');
+                return data.config;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return null;
+            }
+        }
+
+        async function fetchBackups() {
+            try {
+                showMessage('Carregando backups...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/backups');
+                if (!response.ok) throw new Error('Erro ao carregar backups');
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    appState.backups = data.backups || [];
+                    renderBackups();
+                    showMessage('Backups carregados com sucesso!', 'success');
+                    return true;
+                }
+                throw new Error(data.message || 'Erro desconhecido');
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function createBackup() {
+            try {
+                const confirmed = await showConfirm(
+                    'Criar backup',
+                    'Deseja criar um novo backup das configurações atuais?',
+                    'question'
+                );
+                
+                if (!confirmed) return false;
+
+                showMessage('Criando backup...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/backup', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao criar backup');
+                }
+                
+                // Atualizar lista de backups
+                await fetchBackups();
+                
+                showMessage('Backup criado com sucesso!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function restoreBackup(backupPath) {
+            try {
+                const confirmed = await showConfirm(
+                    'Restaurar backup?',
+                    'Esta ação substituirá todas as configurações atuais. Deseja continuar?',
+                    'warning'
+                );
+                
+                if (!confirmed) return false;
+
+                showMessage('Restaurando backup...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/restore', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ backup_file: backupPath })
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao restaurar backup');
+                }
+                
+                // Recarregar configurações
+                await fetchConfig();
+                updateUIWithSettings(data.config);
+                
+                showMessage('Backup restaurado com sucesso!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function testAzureConnection() {
+            try {
+                showMessage('Testando conexão com Azure AD...', 'info', 0);
+                
+                // Coletar configurações atuais
+                const azureConfig = {
+                    enabled: document.getElementById('oauth-azure-enabled').checked,
+                    client_id: document.getElementById('oauth-azure-client-id').value,
+                    client_secret: document.getElementById('oauth-azure-client-secret').value,
+                    tenant_id: document.getElementById('oauth-azure-tenant-id').value,
+                    scopes: document.getElementById('oauth-azure-scopes').value
+                };
+
+                // Verificar campos obrigatórios
+                if (!azureConfig.client_id || !azureConfig.client_secret || !azureConfig.tenant_id) {
+                    throw new Error('Preencha todos os campos obrigatórios (Client ID, Client Secret e Tenant ID)');
+                }
+
+                const response = await fetch('/auth/test-azure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(azureConfig)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    showMessage('Conexão com Azure AD bem-sucedida!', 'success');
+                    return true;
+                } else {
+                    throw new Error(data.message || 'Falha ao testar conexão');
+                }
+            } catch (error) {
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function logout() {
+            try {
+                const confirmed = await showConfirm(
+                    'Confirmação', 
+                    'Você tem certeza que deseja fazer logoff?',
+                    'question'
+                );
+                
+                if (!confirmed) return;
+
+                showMessage('Saindo do sistema...', 'info', 0);
+                
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    throw new Error('Falha no logoff');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+            }
+        }
+
+        let cropper = null;
+
+        document.getElementById('change-profile-pic').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Função genérica para abrir modais
+        function abrirModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.hidden = false;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Função genérica para fechar modais
+        function fecharModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.hidden = true;
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+             
+        // Configuração de Event Listeners
+        function setupEventListeners() {
+            // Configurar tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remover active de todas as tabs e conteúdos
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Adicionar active à tab clicada
+                    this.classList.add('active');
+                    
+                    // Mostrar o conteúdo correspondente
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Adicionar extensão
+            document.getElementById('add-extension-btn').addEventListener('click', function() {
+                const newExtInput = document.getElementById('new-extension');
+                let newExt = newExtInput.value.trim();
+                
+                if (!newExt) {
+                    showMessage('Por favor, insira uma extensão', 'warning');
+                    return;
+                }
+                
+                // Garantir que comece com ponto
+                if (!newExt.startsWith('.')) {
+                    newExt = '.' + newExt;
+                }
+                
+                // Converter para minúsculas
+                newExt = newExt.toLowerCase();
+                
+                // Verificar se já existe
+                if (appState.config.ALLOWED_EXTENSIONS.includes(newExt)) {
+                    showMessage('Esta extensão já está na lista', 'warning');
+                    return;
+                }
+                
+                // Adicionar à lista
+                const newExtensions = [...appState.config.ALLOWED_EXTENSIONS, newExt];
+                updateConfigValue('ALLOWED_EXTENSIONS', newExtensions);
+                renderAllowedExtensions();
+                
+                // Limpar input
+                newExtInput.value = '';
+            });
+            
+            // Permitir pressionar Enter para adicionar extensão
+            document.getElementById('new-extension').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('add-extension-btn').click();
+                }
+            });
+                
+            // Configurar listeners para campos editáveis com debounce
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('change', function() {
+                    const key = this.id.toUpperCase().replace(/-/g, '_');
+                    
+                    // Limpar timer anterior se existir
+                    if (appState.debounceTimers[key]) {
+                        clearTimeout(appState.debounceTimers[key]);
+                    }
+                    
+                    // Configurar novo timer
+                    appState.debounceTimers[key] = setTimeout(() => {
+                        // Determinar o valor com base no tipo do elemento
+                        let value;
+                        if (this.type === 'checkbox') {
+                            value = this.checked;
+                        } else if (this.type === 'number') {
+                            value = parseInt(this.value);
+                        } else {
+                            value = this.value;
+                        }
+                        
+                        updateConfigValue(key, value);
+                    }, 300);
+                });
+            });
+            
+            // Salvar configurações
+            document.getElementById('save-settings').addEventListener('click', async function() {
+                const settings = collectSettings();
+                if (settings && Object.keys(settings).length > 0) {
+                    await saveConfig(settings);
+                } else {
+                    showMessage('Nenhuma alteração para salvar', 'info');
+                }
+            });
+            
+            // Restaurar padrões
+            document.getElementById('reset-defaults').addEventListener('click', resetToDefaults);
+            
+            // Gerenciar backups
+            document.getElementById('create-backup-btn').addEventListener('click', createBackup);
+            document.getElementById('refresh-backups-btn').addEventListener('click', fetchBackups);
+            document.getElementById('create-backup-modal-btn').addEventListener('click', createBackup);
+            document.getElementById('close-backup-modal').addEventListener('click', () => toggleModal('backup-modal'));
+
+            // Fechar modal ao clicar fora
+            document.getElementById('backup-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('backup-modal')) {
+                    toggleModal('backup-modal');
+                }
+            });
+
+            // Configurações de autenticação
+            document.getElementById('test-oauth-btn').addEventListener('click', testAzureConnection);
+
+            // User profile
+            document.getElementById('logoutButton').addEventListener('click', logout);
+
+            // Fechar modais com ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const openModals = document.querySelectorAll('.modal:not([hidden]), .modal-overlay.active');
+                    openModals.forEach(modal => {
+                        const modalId = modal.id;
+                        if (modalId) {
+                            toggleModal(modalId);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Inicialização da aplicação
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Carregar configurações iniciais
+            await fetchConfig();
+            await fetchBackups();
+            updateUIWithSettings(appState.config);
+            
+            // Configurar listeners de eventos
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>

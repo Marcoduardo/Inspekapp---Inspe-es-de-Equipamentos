@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Equipamentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
+    <!-- Corte de imagens -->   
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        /* Sweet Alert Style Modals */
+        .swal-modal {
+            background-color: var(--darker-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .swal-title {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .swal-text {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .swal-icon {
+            margin: 1.5rem auto;
+        }
+
+        .swal-icon--success::before, 
+        .swal-icon--success::after {
+            background: var(--darker-bg);
+        }
+
+        .swal-icon--success__hide-corners {
+            background-color: transparent;
+        }
+
+        .swal-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .swal-button:not([disabled]):hover {
+            background-color: var(--primary-dark);
+        }
+
+        .swal-button--confirm {
+            background-color: var(--primary-color);
+        }
+
+        .swal-button--cancel {
+            background-color: var(--danger-color);
+        }
+
+        .swal-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+    
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Bar */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            flex-direction: row-reverse;
+        }
+
+        .top-bar .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-button i {
+            font-size: 1.1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .equipamentos-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .filter-control {
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            background: #242445;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .filter-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        select.filter-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B8B8B8'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
+
+        .filter-button {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .filter-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        /* DataTable Customization */
+        .dataTables_wrapper {
+            color: var(--text-light);
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_processing,
+        .dataTables_wrapper .dataTables_paginate {
+            color: var(--text-light) !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: var(--text-light) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            margin: 0 0.25rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        table.dataTable {
+            width: 100% !important;
+            margin: 1rem 0;
+            border-collapse: collapse;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        table.dataTable th,
+        table.dataTable td {
+            background: #242445 !important;
+            color: #fff !important;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table.dataTable tbody tr {
+            background: #242445 !important;
+        }
+
+        table.dataTable thead th {
+            background: #242445 !important;
+            color: #fff !important;
+            padding: 1rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-dark);
+        }
+
+        table.dataTable tbody tr:hover td {
+            background: #242445 !important;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-ativo {
+            background-color: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-manutencao {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: var(--warning-color);
+        }
+
+        .status-descartado {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Buttons */
+        .dt-buttons .dt-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: var(--border-radius) !important;
+            padding: 0.5rem 1.25rem !important;
+            margin-right: 0.5rem !important;
+            transition: var(--transition) !important;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3) !important;
+        }
+
+        .dt-buttons .dt-button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4) !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        /* Modals */
+        /* Modal Moderno */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1200;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--darker-bg);
+            margin: 5vh auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            animation: slideDown 0.4s;
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(255, 101, 132, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+        }
+
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .user-details strong {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        /* Adicione isso na seção de estilo */
+        #inspecoes-table_wrapper {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        #inspecoes-table {
+            min-width: 600px; /* Largura mínima para desktop */
+        }        
+        .select-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tab:hover:not(.active) {
+            border-bottom: 3px solid rgba(108, 99, 255, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Modal Buttons */
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-button {
+            padding: 0.75rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .modal-button i {
+            font-size: 1rem;
+        }
+
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .generate-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .edit-button {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+        }
+
+        .status-button {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .delete-button {
+            background: linear-gradient(135deg, var(--danger-color), #D32F2F);
+            color: white;
+        }
+
+        /* Equipamento Details */
+        .equipamento-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: var(--text-light);
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+        }
+
+        #code-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-code, .barcode {
+            padding: 10px;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .code-info {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        #code-display-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .download-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 0 auto;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        /* Status Options */
+        .status-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .status-option {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-option i {
+            font-size: 1.5rem;
+        }
+
+        .status-option-text {
+            flex: 1;
+        }
+
+        .status-option-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-option-description {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .manutencao-option {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .ativo-option {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .descarte-option {
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid rgba(255, 82, 82, 0.3);
+        }
+
+        /* Motivo Textarea */
+        #motivo-container {
+            margin-top: 1.5rem;
+        }
+
+        #motivo-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        #motivo-acao {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: var(--transition);
+        }
+
+        #motivo-acao:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        /* Confirmation Buttons */
+        .confirmation-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .confirm-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .confirm-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .cancel-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cancel-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 5rem 1rem 1rem;
+            }
+
+            .equipamentos-card {
+                padding: 1.5rem;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .filters-section {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .equipamento-details {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-buttons {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-bar">
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <button class="nav-button" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+            {% if 'novo_equipamento' in allowed_menus %}
+            <button class="nav-button" onclick="window.location.href='/equipamentos/novo_equipamento'">
+                <i class="fas fa-plus"></i> Novo Equipamento
+            </button> 
+            {% endif %}         
+        </div>
+        
+        <div class="user-profile" onclick="toggleModal()">
+            <img class="user-avatar" id="user-profile-pic" 
+                 src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                 alt="Foto de Perfil">
+            <span class="user-name" id="userName">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="equipamentos-card">
+            <div class="page-header">
+                <h1 class="page-title">Equipamentos Cadastrados</h1>
+                <p class="page-subtitle">Gerencie e visualize todos os equipamentos do sistema</p>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="search" class="filter-label">Pesquisar</label>
+                    <input type="text" id="search" class="filter-control" placeholder="Tag, localização ou tipo">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="status-filter" class="filter-label">Status</label>
+                    <select id="status-filter" class="filter-control">
+                        <option value="">Todos os Status</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Em Manutenção">Em Manutenção</option>
+                        <option value="Descartado">Descartado</option>
+                    </select>
+                </div>
+                
+                <button id="filter-button" class="filter-button" onclick="fetchEquipamentos()">
+                    <i class="fas fa-search"></i> Pesquisar
+                </button>
+            </div>
+
+            <!-- DataTable -->
+            <table id="equipamentosTable" class="display responsive nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Localização</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Equipamento Details Modal -->
+    <div id="equipamento-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalhes do Equipamento</h3>
+                <button class="modal-close" onclick="closeModalEquipamento()">&times;</button>
+            </div>
+            
+            <div id="equipamento-detalhes" class="equipamento-details">
+                <!-- Details will be loaded dynamically -->
+            </div>
+            
+            <div class="tabs">
+                <div id="tab-inspecoes" class="tab active" onclick="openTab('inspecoes')">Histórico de Inspeções</div>
+            </div>
+            
+            <div id="inspecoes-content" class="tab-content active">
+                <table id="inspecoes-table" class="display responsive nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Tipo</th>
+                            <th>Classe</th>
+                            <th>Localização</th>
+                            <th>Data Inspeção</th>
+                            <th>Validade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Inspection data will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-buttons">
+
+                {% if 'gerar_codigo' in allowed_menus %}    
+                <button onclick="showGenerateOptions()" class="modal-button generate-button">
+                    <i class="fas fa-barcode"></i> Gerar Código
+                </button>
+                {% endif %}  
+                {% if 'alterar_status_equipamento' in allowed_menus %}    
+                <button onclick="showStatusOptions()" class="modal-button status-button">
+                    <i class="fas fa-exchange-alt"></i> Alterar Status
+                </button>
+                {% endif %}  
+                {% if 'editar_equipamento' in allowed_menus %}    
+                <button onclick="openEditForm()" class="modal-button edit-button">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                {% endif %}  
+                {% if 'excluir_equipamento' in allowed_menus %}    
+                <button onclick="confirmDelete()" class="modal-button delete-button">
+                    <i class="fas fa-trash"></i> Apagar
+                </button>
+                {% endif %}  
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Options Modal -->
+    <div id="generate-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Gerar Código</h3>
+                <button class="modal-close" onclick="closeGenerateModal()">&times;</button>
+            </div>
+            
+            <div class="status-options">
+                <div class="status-option ativo-option">
+                    <i class="fas fa-qrcode"></i>
+                    <div class="status-option-text">
+                        <div class="status-option-title">QR Code</div>
+                        <div class="status-option-description">Gere um código QR para identificação rápida</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="status-option manutencao-option">
+                    <i class="fas fa-barcode"></i>
+                    <div class="status-option-text">
+                        <div class="status-option-title">Código de Barras</div>
+                        <div class="status-option-description">Gere um código de barras padrão</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Display Modal -->
+    <div id="code-display-modal" class="modal">
+        <div class="modal-content code-display">
+            <div class="modal-header">
+                <h3 class="modal-title">Código Gerado</h3>
+                <button class="modal-close" onclick="closeCodeDisplayModal()">&times;</button>
+            </div>
+            
+            <div id="code-container"></div>
+            
+            <button onclick="downloadCode()" class="download-button">
+                <i class="fas fa-download"></i> Baixar Código
+            </button>
+        </div>
+    </div>
+
+    <!-- Status Options Modal -->
+    <div id="status-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Alterar Status do Equipamento</h3>
+                <button class="modal-close" onclick="closeStatusModal()">&times;</button>
+            </div>
+            
+            <div class="status-options">
+                <div class="status-option ativo-option" onclick="changeStatus('ativo')">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="status-option-text">
+                        <div class="status-option-title">Ativar Equipamento</div>
+                        <div class="status-option-description">Marcar como disponível para uso</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="status-option manutencao-option" onclick="changeStatus('manutencao')">
+                    <i class="fas fa-tools"></i>
+                    <div class="status-option-text">
+                        <div class="status-option-title">Enviar para Manutenção</div>
+                        <div class="status-option-description">Equipamento está em reparo</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="status-option descarte-option" onclick="changeStatus('descarte')">
+                    <i class="fas fa-trash-alt"></i>
+                    <div class="status-option-text">
+                        <div class="status-option-title">Descartar Equipamento</div>
+                        <div class="status-option-description">Equipamento não será mais utilizado</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <div id="motivo-container" style="display: none;">
+                <label id="motivo-label" for="motivo-acao">Motivo da Ação:</label>
+                <textarea id="motivo-acao" placeholder="Descreva o motivo para esta alteração de status..."></textarea>
+                
+                <div class="confirmation-buttons">
+                    <button class="cancel-button" onclick="cancelStatusChange()">Cancelar</button>
+                    <button class="confirm-button" onclick="confirmStatusChange()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar Exclusão</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            
+            <p>Tem certeza que deseja excluir este equipamento permanentemente? Esta ação não pode ser desfeita.</p>
+            
+            <div id="delete-motivo-container">
+                <label id="motivo-label" for="delete-motivo">Motivo da Exclusão:</label>
+                <textarea id="delete-motivo" placeholder="Descreva o motivo para a exclusão deste equipamento..."></textarea>
+            </div>
+            
+            <div class="confirmation-buttons">
+                <button class="cancel-button" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="confirm-button" onclick="deleteEquipamento()">Confirmar Exclusão</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="crop-modal" style="display: none;">
+        <div id="crop-container">
+            <img id="crop-image" />
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleModal()" aria-label="Fechar modal">&times;</button>
+            <h2 id="modal-title">Perfil do Usuário</h2>
+            <div class="profile-pic-container">
+                <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <button id="change-profile-pic" class="btn-secondary wave-effect" aria-label="Alterar foto de perfil">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i> Alterar Foto
+                </button>
+            </div>
+            <div class="user-details">
+                <p><strong><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                <p><strong><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                <p><strong><i class="fas fa-id-card" style="margin-right: 0.5rem;"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                <p><strong><i class="fas fa-building" style="margin-right: 0.5rem;"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                <p><strong><i class="fas fa-user-tag" style="margin-right: 0.5rem;"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                <p><strong><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary">{{ current_user.nivel_acesso }}</span></p>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode/dist/JsBarcode.all.min.js"></script>
+    
+    <script>
+        // Variáveis globais
+        let currentEquipamentoId = null;
+        let currentStatusAction = null;
+        let equipamentosTable, inspecoesTable, manutencoesTable;
+        let currentPage = 1;
+        const limit = 15;
+
+        $(document).ready(function () {
+            $(".status-option.ativo-option").click(function () {
+                generateCode("qr");
+            });
+
+            $(".status-option.manutencao-option").click(function () {
+                generateCode("barcode");
+            });
+        });
+
+
+        // Inicialização da página
+        $(document).ready(function() {
+            initializeDataTables();
+            fetchEquipamentos();
+            
+        });
+    
+        // Inicializar DataTables
+        function initializeDataTables() {
+            equipamentosTable = $('#equipamentosTable').DataTable({
+                responsive: true,
+                dom: 'Brtip',
+                buttons: [
+                    'copy', 'csv', 'excel', 'pdf', 'print'
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+                },
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '/api/equipamentos_cadastrados',
+                    type: 'GET',
+                    data: function(d) {
+                        d.search = $('#search').val();
+                        d.status = $('#status-filter').val();
+                        d.page = currentPage;
+                        d.limit = limit;
+                    }
+                },
+                columns: [
+                    { data: 'tag_equipamento', name: 'tag_equipamento' },
+                    { data: 'localizacao', name: 'localizacao' },
+                    { data: 'tipo', name: 'tipo' },
+                    { 
+                        data: 'status',
+                        name: 'status',
+                        render: function(data, type, row) {
+                            let statusClass = '';
+                            let statusText = data || 'N/A';
+                            
+                            if (data === 'Ativo') {
+                                statusClass = 'status-ativo';
+                            } else if (data === 'Em Manutenção' || data === 'Reserva') {
+                                statusClass = 'status-manutencao';
+                            } else if (data === 'Descartado') {
+                                statusClass = 'status-descartado';
+                            }
+                            
+                            return `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                        }
+                    },
+                    {
+                        data: 'id',
+                        render: function(data, type, row) {
+                            return `
+                                <button class="nav-button" onclick="fetchEquipamentoDetalhes('${data}')" style="padding: 0.35rem 0.75rem;">
+                                    <i class="fas fa-eye"></i> Detalhes
+                                </button>`;
+                        },
+                        orderable: false
+                    }
+                ]
+            });
+    
+            inspecoesTable = $('#inspecoes-table').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+                },
+                columns: [
+                    { data: 'numero_inspecao', name: 'numero_inspecao' },
+                    { data: 'tipo', name: 'tipo' },
+                    { data: 'classe', name: 'classe' },
+                    { data: 'localizacao', name: 'localizacao' },
+                    { data: 'data_inspecao', name: 'data_inspecao' },
+                    { data: 'validade', name: 'validade' }
+                ]
+            });
+        }
+    
+        function fetchEquipamentos() {
+            equipamentosTable.ajax.reload();
+        }
+
+        function confirmDelete() {
+            document.getElementById('delete-modal').style.display = 'block';
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').style.display = 'none';
+            document.getElementById('delete-motivo').value = '';
+        }
+             
+        function changePage(offset) {
+            currentPage += offset;
+            if (currentPage < 1) currentPage = 1;
+            fetchEquipamentos();
+        }
+    
+        // Função para carregar os detalhes do equipamento
+        function fetchEquipamentoDetalhes(equipamentoId) {
+            fetch(`/api/equipamentos/${equipamentoId}`)
+                .then(response => response.json())
+                .then(equipamento => {
+                    const detalhesDiv = document.getElementById('equipamento-detalhes');
+                    detalhesDiv.dataset.id = equipamento.id;
+                    currentEquipamentoId = equipamento.id;
+
+                    let detalhesHTML = `
+                        <div class="equipamento-details">
+                            <div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Tag:</span>
+                                    <div class="detail-value">${equipamento.tag_equipamento || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Localização:</span>
+                                    <div class="detail-value">${equipamento.localizacao || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Tipo:</span>
+                                    <div class="detail-value">${equipamento.tipo || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Fabricante:</span>
+                                    <div class="detail-value">${equipamento.fabricante || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Modelo:</span>
+                                    <div class="detail-value">${equipamento.modelo || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Nº de Série:</span>
+                                    <div class="detail-value">${equipamento.numero_serie || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Patrimônio:</span>
+                                    <div class="detail-value">${equipamento.patrimonio || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status:</span>
+                                    <div class="detail-value">
+                                        <span class="status-badge ${equipamento.status === 'Ativo' ? 'status-ativo' : 
+                                            equipamento.status === 'Em Manutenção' || equipamento.status === 'Reserva' ? 'status-manutencao' : 'status-descartado'}">
+                                            ${equipamento.status || 'N/A'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Código Barras:</span>
+                                    <div class="detail-value">${equipamento.codigo_barras || 'N/A'}</div>
+                                </div>                                
+                            </div>
+                            <div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Data Fabricação:</span>
+                                    <div class="detail-value">${equipamento.data_fabricacao || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Data Validade:</span>
+                                    <div class="detail-value">${equipamento.data_validade || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Última Inspeção:</span>
+                                    <div class="detail-value">${equipamento.data_ultima_manutencao || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Validade da Última Inspeção:</span>
+                                    <div class="detail-value">${equipamento.data_proxima_manutencao || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Observações:</span>
+                                    <div class="detail-value">${equipamento.observacoes || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Usuário Criação:</span>
+                                    <div class="detail-value">${equipamento.usuario_geracao || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Usuário Atualização:</span>
+                                    <div class="detail-value">${equipamento.usuario_atualizacao || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Criado em:</span>
+                                    <div class="detail-value">${equipamento.criado_em || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Atualizado em:</span>
+                                    <div class="detail-value">${equipamento.atualizado_em || 'N/A'}</div>
+                                </div>
+                            </div>
+                    `;
+
+                    if (equipamento.tipo === "Extintor") {
+                        detalhesHTML += `
+                            <div class="detail-item" style="grid-column: 1 / -1;">
+                                <span class="detail-label">Informações Extintor:</span>
+                                <div class="detail-value">
+                                    <p><strong>Classe:</strong> ${equipamento.classe || 'N/A'}</p>
+                                    <p><strong>Teste Hidrostático N2:</strong> ${equipamento.teste_hidrostatico_n2 || 'N/A'}</p>
+                                    <p><strong>Teste Hidrostático N3:</strong> ${equipamento.teste_hidrostatico_n3 || 'N/A'}</p>
+                                    <p><strong>Peso:</strong> ${equipamento.peso || 'N/A'}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    detalhesHTML += `</div>`;
+                    detalhesDiv.innerHTML = detalhesHTML;
+
+                    $('#equipamento-modal').show();
+                    fetchHistoricoInspecoes(equipamento.id);
+                })
+                .catch(error => console.error('Erro:', error));
+        }
+
+
+        function fetchHistoricoInspecoes(equipamentoId) {
+            fetch(`/api/equipamentos/${equipamentoId}/inspecoes`)
+                .then(response => response.json())
+                .then(data => {
+                    inspecoesTable.clear().rows.add(data).draw();
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar histórico de inspeções:', error);
+                });
+        }
+    
+        // Função para abrir o formulário de edição
+        function openEditForm() {
+            const equipamentoId = document.getElementById('equipamento-detalhes').dataset.id;
+            window.location.href = `/equipamentos/edit_equipamento/${equipamentoId}`;
+        }
+    
+        // Função para deletar o equipamento
+        function deleteEquipamento() {
+            const equipamentoId = document.getElementById('equipamento-detalhes').dataset.id;
+    
+            if (confirm('Você tem certeza que deseja excluir este equipamento?')) {
+                fetch(`/api/equipamentos/${equipamentoId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.message) {
+                        alert(result.message);
+                        closeModalEquipamento();
+                        fetchEquipamentos();
+                    } else {
+                        alert(result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao excluir equipamento:', error);
+                });
+            }
+        }
+    
+        async function changeStatus(newStatus) {
+            const equipamentoId = document.getElementById('equipamento-detalhes').dataset.id;
+            const endpoints = {
+                'manutencao': 'manutencao',
+                'ativo': 'ativo',
+                'descarte': 'descarte'
+            };
+
+            const confirmMessages = {
+                'manutencao': 'Deseja colocar o equipamento em manutenção?',
+                'ativo': 'Deseja ativar o equipamento?',
+                'descarte': 'Deseja descartar o equipamento?'
+            };
+
+            const statusTitles = {
+                'manutencao': 'Confirmar Manutenção',
+                'ativo': 'Confirmar Ativação',
+                'descarte': 'Confirmar Descarte'
+            };
+
+            try {
+                // Mostra modal de confirmação personalizado
+                const confirmado = await showConfirm(
+                    statusTitles[newStatus],
+                    confirmMessages[newStatus],
+                    'question'
+                );
+
+                if (!confirmado) return;
+
+                // Mostra loading
+                Swal.fire({
+                    title: 'Processando...',
+                    html: 'Atualizando status do equipamento',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+
+                // Faz a requisição
+                const response = await fetch(`/api/equipamentos/${equipamentoId}/${endpoints[newStatus]}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin'
+                });
+
+                const data = await response.json();
+
+                // Fecha o loading
+                Swal.close();
+
+                if (response.ok) {
+                    await showAlert(
+                        'Sucesso!',
+                        data.message || 'Status do equipamento atualizado com sucesso.',
+                        'success'
+                    );
+                    closeStatusModal();
+                    fetchEquipamentos();
+                } else {
+                    await showAlert(
+                        'Erro',
+                        data.error || 'Falha ao atualizar o status do equipamento.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                await showAlert(
+                    'Erro',
+                    'Ocorreu um erro ao processar sua solicitação. Tente novamente.',
+                    'error'
+                );
+            }
+        }
+    
+        // Função para fechar o modal de equipamento
+        function closeModalEquipamento() {
+            $('#equipamento-modal').hide();
+        }
+    
+        // Função para abrir o modal
+        function toggleModal() {
+            const modal = $('#user-modal');
+            modal.toggle();
+        }
+    
+        let cropper = null;
+
+        document.getElementById('change-profile-pic').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+
+        // Exibir modal de geração de código
+        function showGenerateOptions() {
+            $('#generate-modal').fadeIn(200);
+        }
+
+        // Fechar modal de geração de código
+        function closeGenerateModal() {
+            $('#generate-modal').fadeOut(200);
+        }
+
+        // Capturar clique nos botões de geração de código dentro do modal
+        $(document).on('click', '.status-option.ativo-option', function () {
+            generateCode('qr');
+        });
+
+        $(document).on('click', '.status-option.manutencao-option', function () {
+            generateCode('barcode');
+        });
+
+        // Função genérica para criar código (QR Code ou Código de Barras)
+        function generateCode(type) {
+            const equipamento = $('#equipamento-detalhes');
+            currentEquipamentoId = equipamento.data('id'); // Armazena o ID do equipamento
+
+            // Busca o código de barras diretamente dos detalhes do equipamento
+            const codigoBarras = equipamento.find('div.detail-value').eq(8).text().trim(); // Índice ajustado para pegar o código de barras
+            const tag = equipamento.find('div.detail-value').eq(0).text().trim();
+            const localizacao = equipamento.find('div.detail-value').eq(1).text().trim();
+
+            if (!codigoBarras || codigoBarras === 'N/A') {
+                Swal.fire({
+                    title: 'Erro',
+                    text: 'Código de barras não encontrado para este equipamento.',
+                    icon: 'error',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+                return;
+            }
+
+            const codeContainer = $('#code-container').empty();
+
+            if (type === 'qr') {
+                generateQRCode(codigoBarras, codeContainer);
+            } else if (type === 'barcode') {
+                generateBarcode(codigoBarras, codeContainer);
+            }
+
+            // Adiciona informações visuais abaixo do código
+            codeContainer.append(`
+                <div class="code-info">
+                    <p><strong>Tag:</strong> ${tag}</p>
+                    <p><strong>Localização:</strong> ${localizacao}</p>
+                    <p><strong>Código:</strong> ${codigoBarras}</p>
+                </div>
+            `);
+
+            $('#code-display-modal').fadeIn(200);
+            closeGenerateModal();
+        }
+
+        // Gerar QR Code estilizado
+        function generateQRCode(data, container) {
+            const qrCanvas = $('<canvas>').addClass('qr-code');
+            container.append(qrCanvas);
+
+            QRCode.toCanvas(qrCanvas[0], data, {
+                width: 220,
+                margin: 1,
+                color: { dark: '#6C63FF', light: '#F4F4F4' }
+            });
+        }
+
+        // Gerar Código de Barras estilizado
+        function generateBarcode(data, container) {
+            const barcodeCanvas = $('<canvas>').addClass('barcode');
+            container.append(barcodeCanvas);
+
+            JsBarcode(barcodeCanvas[0], data, {
+                format: "CODE128",
+                width: 2.5,
+                height: 100,
+                displayValue: true,
+                fontSize: 18,
+                background: '#F4F4F4',
+                lineColor: '#6C63FF'
+            });
+        }
+
+        // Fechar modal de exibição do código
+        function closeCodeDisplayModal() {
+            $('#code-display-modal').fadeOut(200);
+        }
+
+        // Baixar código gerado
+        function downloadCode() {
+            const canvas = $('#code-container canvas')[0];
+            if (canvas) {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `codigo_equipamento_${currentEquipamentoId || 'desconhecido'}.png`;
+                link.click();
+            } else {
+                alert('Nenhum código gerado para download.');
+            }
+        }
+
+        // Eventos de clique
+        $('#generate-qr-btn').click(() => generateCode('qr'));
+        $('#generate-barcode-btn').click(() => generateCode('barcode'));
+        $('#close-code-modal').click(closeCodeDisplayModal);
+        $('#download-code-btn').click(downloadCode);
+            
+        // Função para exibir opções de status
+        function showStatusOptions() {
+            $('#status-modal').show();
+        }
+    
+        // Função para alternar entre abas
+        function openTab(tabName) {
+            $('.tab-content').removeClass('active');
+            $('.tab').removeClass('active');
+    
+            $(`#${tabName}-content`).addClass('active');
+            $(`#tab-${tabName}`).addClass('active');
+        }
+    
+        // Função para fechar o modal de status
+        function closeStatusModal() {
+            $('#status-modal').hide();
+        }
+
+        // Funções auxiliares para mostrar mensagens (adicionar no início do script)
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Inspeção de Equipamentos - InspekApp">
+    <title>InspekApp - Página Inicial</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/icons/favicon.ico') }}" type="image/x-icon">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- Corte de imagens -->   
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+        
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --primary-light: #A5A2FF;
+            --secondary-color: #FF6584;
+            --secondary-dark: #E04D6D;
+            --accent-color: #00C9A7;
+            --dark-bg: #121212;
+            --darker-bg: #1E1E1E;
+            --card-bg: #242424;
+            --card-hover: #2D2D2D;
+            --text-light: #F5F5F5;
+            --text-muted: #B0B0B0;
+            --text-dark: #333333;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #2196F3;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --box-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --header-height: 70px;
+            --glass-effect: rgba(30, 30, 30, 0.7);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    
+        /* Reset e Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text-light);
+            line-height: 1.6;
+            background-color: var(--dark-bg);
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    
+        h1, h2, h3, h4, h5 {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2rem;
+        }
+
+        h3 {
+            font-size: 1.75rem;
+        }
+
+        h4 {
+            font-size: 1.5rem;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* Layout Principal */
+        .app-container {
+            display: flex;
+            flex: 1;
+            margin-top: var(--header-height);
+        }
+        .hidden-by-permission {
+            display: none !important;
+        }
+        /* Header Moderno com Glassmorphism */
+        .u-header {
+            background: var(--glass-effect);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--box-shadow-sm);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: var(--header-height);
+            transition: var(--transition);
+            border-bottom: var(--glass-border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .logo-icon {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+            border-radius: 50px;
+            position: relative;
+        }
+
+        .user-info:hover {
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        #user-profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+            margin-right: 0.5rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info:hover #user-profile-pic {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .config-button {
+            background: rgba(255, 101, 132, 0.1);
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            width: 40px;
+            height: 40px;
+            overflow: hidden;
+        }
+
+        .config-button:hover {
+            background: rgba(255, 101, 132, 0.2);
+            color: var(--secondary-color);
+            width: 120px;
+        }
+
+        .config-button .text {
+            display: none;
+            white-space: nowrap;
+        }
+
+        .config-button:hover .text {
+            display: inline;
+        }
+
+        .logout-button {
+            background: rgba(255, 101, 132, 0.1);
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            width: 40px;
+            height: 40px;
+            overflow: hidden;
+        }
+
+        .logout-button:hover {
+            background: rgba(255, 101, 132, 0.2);
+            color: var(--secondary-color);
+            width: 120px;
+        }
+
+        .logout-button .text {
+            display: none;
+            white-space: nowrap;
+        }
+
+        .logout-button:hover .text {
+            display: inline;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .menu-category {
+            margin-bottom: 0.25rem;
+        }
+
+        .menu-title {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            margin: 0.25rem 0.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .menu-title:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .menu-title i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            min-width: 24px;
+            color: var(--primary-color);
+            text-align: center;
+            transition: var(--transition);
+        }
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .menu-title:hover i {
+            transform: scale(1.1);
+        }
+
+        .menu-title .arrow {
+            margin-left: auto;
+            transition: var(--transition);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .menu-title.active .arrow {
+            transform: rotate(90deg);
+            color: var(--primary-color);
+        }
+
+        .menu-title.active {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--text-light);
+        }
+
+        .menu-title.active i {
+            color: var(--primary-color);
+        }
+
+        .submenu {
+            background: rgba(0, 0, 0, 0.1);
+            border-left: 3px solid var(--primary-color);
+            margin-left: 2rem;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+        }
+
+        .submenu.show {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        .submenu-item {
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-muted);
+            margin: 0.15rem 0;
+            border-radius: 4px;
+            position: relative;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .submenu-item i {
+            margin-right: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--primary-light);
+            min-width: 20px;
+        }
+
+        .submenu-item:before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .submenu-item:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .submenu-item:hover:before {
+            background: var(--primary-color);
+        }
+
+        .submenu-item.active {
+            background: var(--primary-color);
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .submenu-item.active:before {
+            background: var(--text-light);
+        }
+        .main-content {        
+            flex: 1;
+            max-width: 2000px;
+            padding: 4rem;
+            display: flex;
+            background: rgba(18, 18, 18, 0.85);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;            
+            z-index: 1;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Conteúdo Principal */
+        .main-contentt {
+            flex: 1;
+            max-width: 2000px;
+            padding: 1.5rem;
+            background: rgba(18, 18, 18, 0.85);
+            min-height: calc(100vh - var(--header-height));
+
+            /* Centralização */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            /* Animação */
+            opacity: 0;
+            transform: translateY(20px);
+            z-index: 100;
+            animation: fadeInUp 0.8s ease-out;
+
+        }
+
+        /* Hero Section Modernizada */
+        .hero-section {
+            margin: 0.5rem 0 2rem;
+        }
+
+        .hero-image {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.9), rgba(0, 201, 167, 0.8)), 
+                        url(/static/images/equipamentos-bg.jpg);
+            background-size: cover;
+            background-position: center;
+            height: 280px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-light);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #ffffff, #e0e0e0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .hero-cta {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            padding: 0.75rem 1.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-cta:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Cards Modernos com Glassmorphism */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow);
+            border-color: rgba(108, 99, 255, 0.3);
+            background: var(--card-hover);
+        }
+
+        .card-header {
+            padding: 1.25rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: var(--transition);
+        }
+
+        .card:hover .card-header:after {
+            transform: translateX(100%);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .card-title {
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            padding: 0 1.25rem 1.25rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn i {
+            font-size: 1rem;
+        }
+
+        .btn:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:hover:after {
+            transform: translateX(100%);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Modal Moderno */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1200;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--darker-bg);
+            margin: 5vh auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            animation: slideDown 0.4s;
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(255, 101, 132, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+        }
+
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .user-details strong {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+
+        /* Footer Moderno */
+        .u-footer {
+            background: var(--glass-effect);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--text-muted);
+            padding: 1.25rem;
+            text-align: center;
+            margin-top: auto;
+            border-top: var(--glass-border);
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Efeito de onda nos botões */
+        .wave-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-effect:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.4);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .wave-effect:focus:not(:active)::after {
+            animation: wave 0.6s ease-out;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .badge-success {
+            background: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .badge-warning {
+            background: rgba(255, 165, 0, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .badge-danger {
+            background: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        /* Responsividade */
+        @media (max-width: 1200px) {
+            .menu-title span:not(.arrow),
+            .submenu {
+                display: none;
+            }
+
+            .menu-title {
+                justify-content: center;
+                padding: 0.75rem 0;
+            }
+
+            .menu-title i {
+                margin-right: 0;
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            html {
+                font-size: 15px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .hero-image {
+                height: 220px;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .u-header {
+                padding: 0 1rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .logout-button:hover {
+                width: 40px;
+            }
+
+            .logout-button .text {
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            html {
+                font-size: 14px;
+            }
+
+            .hero-title {
+                font-size: 1.6rem;
+            }
+
+            .hero-content {
+                padding: 1rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+        }
+
+        /* Dark Mode Toggle (opcional) */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--box-shadow-sm);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Floating Action Button (FAB) para mobile */
+        .fab {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .fab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .fab i {
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .fab {
+                display: flex;
+            }
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--darker-bg);
+            color: var(--text-light);
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 1100;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+            max-width: 350px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast i {
+            font-size: 1.25rem;
+        }
+
+        .toast.success i {
+            color: var(--success-color);
+        }
+
+        .toast.error i {
+            color: var(--danger-color);
+        }
+
+        .toast.warning i {
+            color: var(--warning-color);
+        }
+
+        .toast.info i {
+            color: var(--info-color);
+        }
+
+        .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Alterado para -1 para ficar atrás de tudo */
+            pointer-events: none; /* Impede interação com as partículas */
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float linear infinite;
+            pointer-events: none; /* Impede interação com as partículas */
+        }        
+        /* Animação de fundo */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 15s infinite linear;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-color);
+            top: 20%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+
+        .circle-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary-color);
+            top: 60%;
+            left: 30%;
+            animation-duration: 25s;
+            animation-delay: 5s;
+        }
+
+        .circle-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent-color);
+            top: 30%;
+            left: 70%;
+            animation-duration: 15s;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(50px, 50px);
+            }
+            50% {
+                transform: translate(0, 100px);
+            }
+            75% {
+                transform: translate(-50px, 50px);
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animação de fundo -->
+    <div class="bg-animation">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+    </div>
+
+    <!-- Efeito de partículas -->
+    <div class="particles" id="particles"></div>
+
+    <header class="u-header" id="header">
+        <div class="header-left">
+            <a href="#" class="logo">
+                <span class="logo-text">InspekApp</span>
+            </a>
+        </div> 
+
+        <div class="user-section">
+            {% if 'configuracoes' in allowed_menus %}
+            <button id="configButton" class="config-button wave-effect" onclick="window.location.href='/admin/configuracoes'" aria-label="Configurações do sistema">
+                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                <span class="text">Configurações</span>
+            </button>
+            {% endif %}
+            <button id="logoutButton" class="logout-button wave-effect" aria-label="Sair do sistema">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                <span class="text">Sair</span>
+            </button>
+
+            <div class="user-info wave-effect" onclick="toggleModal()" role="button" tabindex="0" aria-label="Ver informações do usuário" aria-haspopup="dialog">
+                <img id="user-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <span class="user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+
+        <main class="main-content" id="mainContent">
+            <section class="hero-section" aria-labelledby="hero-title">
+                <div class="hero-image" data-aos="fade-in">
+                    <div class="hero-content">
+                        <h1 id="hero-title" class="hero-title">Bem-vindo ao InspekApp</h1>
+                        <p class="hero-subtitle">Sistema completo para gestão e inspeção de equipamentos de segurança</p>
+                        {% if 'inspecao' in allowed_menus %}  
+                        <a href="{{ url_for('inspecao') }}" class="hero-cta wave-effect">
+                            <i class="fas fa-play" style="margin-right: 0.5rem;"></i> Começar Inspeção
+                        </a>
+                        {% endif %}                        
+                    </div>
+                </div>
+                
+                <div class="cards-grid" role="grid">
+
+                    {% if 'inspecoes_cadastrados' in allowed_menus %}
+                    <!-- Card 2 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <div class="card-icon" aria-hidden="true">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <h3 class="card-title">Inspeções</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Realize Inspeção e Consulte todo o histórico de inspeções realizadas com filtros avançados e exportação de dados.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('inspecoes_cadastrados') }}" class="btn wave-effect" aria-label="Acessar Inspeções Registradas">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'pendencias_inspecoes' in allowed_menus %}
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <div class="card-icon" aria-hidden="true">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <h3 class="card-title">Minhas Inspeções</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Consulte todo o histórico de inspeções realizadas por você, com filtros avançados e exportação de dados.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('pendencias_inspecoes') }}" class="btn wave-effect" aria-label="Acessar Minhas Inspeções">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+
+                    {% if 'mapas_inspecoes' in allowed_menus %}
+                    <!-- Card 8 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="400">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Mapa de Inspeções</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Visualize o Mapa de Inspeções no sistema de inspeção.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('mapa_inspecoes') }}" class="btn wave-effect">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+
+                    {% if 'equipamentos_cadastrados' in allowed_menus %}
+                    <!-- Card 4 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-fire-extinguisher" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Equipamentos</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Cadastre e gerencie todos os equipamentos de inspeção em um só lugar com visualização intuitiva.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('equipamentos_cadastrados') }}" class="btn wave-effect">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'usuarios_cadastrados' in allowed_menus %}
+                    <!-- Card 6 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="300">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-users" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Usuários</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Cadastre e gerencie os usuários no sistema com opções de edição e desativação.</p>
+                            <div class="badge badge-warning">Restrito</div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('usuarios_cadastrados') }}" class="btn wave-effect">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'setores_cadastrados' in allowed_menus %}
+                    <!-- Card 8 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="400">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-sitemap" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Setores</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Visualize, cadastre e gerencie todos os setores no sistema de inspeção.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('setores_cadastrados') }}" class="btn wave-effect">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+
+                    {% if 'tipos_equipamentos_cadastrados' in allowed_menus %}
+                    <!-- Card 8 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="400">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-toolbox" aria-hidden="true"></i>   
+                            </div>
+                            <h3 class="card-title">Tipos de equipamentos</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Visualize, cadastre e gerencie todos os tipos de equipamentos no sistema de inspeção.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('tipos_equipamentos_cadastrados') }}" class="btn wave-effect">
+                                <i class="fas fa-arrow-right" style="margin-right: 0.5rem;"></i> Acessar
+                            </a>
+                        </div>
+                    </article>
+                    {% endif %}
+
+                    {% if 'logs_auditoria' in allowed_menus %}
+                    <!-- Card 9 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="350">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Logs de Auditoria</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Visualize os logs de auditoria do sistema de inspeção.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('logs_auditoria') }}" class="btn wave-effect">Acessar</a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'visualizar_dashboards' in allowed_menus %}
+                    <!-- Card 10 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="350">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Dashboards</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Acompanhe métricas e indicadores do sistema em tempo real.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('visualizar_dashboards') }}" class="btn wave-effect">Acessar</a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'relatorio_equipamentos' in allowed_menus %}
+                    <!-- Card 11 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="350">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Relatório de Equipamentos</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Gere relatórios detalhados sobre os equipamentos cadastrados.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('relatorio_equipamentos') }}" class="btn wave-effect">Acessar</a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'relatorio_inspecoes' in allowed_menus %}
+                    <!-- Card 12 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="350">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Relatório de Inspeções</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Exporte relatórios completos das inspeções realizadas.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('relatorio_inspecoes') }}" class="btn wave-effect">Acessar</a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'notificacoes' in allowed_menus %}
+                    <!-- Card 13 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="350">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bell" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Notificações de Inspeções Pendentes</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Acompanhe as inspeções que estão próximas do vencimento.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('notificacoes') }}" class="btn wave-effect">Acessar</a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                    {% if 'notificacoes_equipamentos' in allowed_menus %}
+                    <!-- Card 14 -->
+                    <article class="card" role="gridcell" data-aos="fade-up" data-aos-delay="350">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bell" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="card-title">Notificações de Equipamentos</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Receba alertas sobre equipamentos que necessitam de atenção.</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('notificacoes_equipamentos') }}" class="btn wave-effect">Acessar</a>
+                        </div>
+                    </article>
+                    {% endif %}
+                
+                </div>
+                
+            </section>
+        </main>
+    </div>
+    
+    <!-- Floating Action Button para Mobile -->
+    <button class="fab" id="mobileFab" aria-label="Menu rápido">
+        <i class="fas fa-bolt"></i>
+    </button>
+    
+    <!-- User Modal -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleModal()" aria-label="Fechar modal">&times;</button>
+            <h2 id="modal-title">Perfil do Usuário</h2>
+            <div class="profile-pic-container">
+                <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <button id="change-profile-pic" class="btn-secondary wave-effect" aria-label="Alterar foto de perfil">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i> Alterar Foto
+                </button>
+            </div>
+            {% if 'alterar_senha' in allowed_menus %}  
+            <button class="nav-button" onclick="window.location.href='/senhas/reset_senha'">
+                <i class="fa fa-key"></i> Alterar Senha
+            </button>  
+            {% endif %}             
+            <div class="user-details">
+                <p><strong><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                <p><strong><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                <p><strong><i class="fas fa-id-card" style="margin-right: 0.5rem;"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                <p><strong><i class="fas fa-building" style="margin-right: 0.5rem;"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                <p><strong><i class="fas fa-user-tag" style="margin-right: 0.5rem;"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                <p><strong><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary">{{ current_user.nivel_acesso }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="crop-modal" style="display: none;">
+        <div id="crop-container">
+            <img id="crop-image" />
+        </div>
+    </div>
+    
+    
+    <footer class="u-footer" role="contentinfo">
+        <div class="footer-links">
+            <a href="#" onclick="showToast('Página de suporte em desenvolvimento', 'info')">Suporte</a>
+            <a href="#" onclick="showToast('Documentação em desenvolvimento', 'info')">Documentação</a>
+            <a href="#" onclick="showToast('Termos de serviço em desenvolvimento', 'info')">Termos</a>
+            <a href="#" onclick="showToast('Política de privacidade em desenvolvimento', 'info')">Privacidade</a>
+        </div>
+        <p>InspekApp &copy; <span id="current-year"></span> - Sistema de Inspeção de Equipamentos</p>
+        <p><small>v2.1.0</small></p>
+    </footer>
+
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Inicializa AOS Animation
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            offset: 50
+        });
+
+        // Toggle submenu
+        function toggleSubmenu(element) {
+            const submenu = element.nextElementSibling;
+            submenu.classList.toggle('show');
+            element.classList.toggle('active');
+        }
+
+        // Toggle user modal
+        function toggleModal() {
+            const modal = document.getElementById('user-modal');
+            modal.hidden = !modal.hidden;
+            modal.style.display = modal.hidden ? 'none' : 'block';
+            
+            // Fechar modal ao clicar fora
+            if (!modal.hidden) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        toggleModal();
+                    }
+                });
+            }
+        }
+
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Add wave effect to buttons
+        document.querySelectorAll('.wave-effect').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1000);
+            });
+        });
+
+        // Mobile FAB action
+        document.getElementById('mobileFab').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Ações Rápidas',
+                html: `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        {% if 'inspecao' in allowed_menus %}  
+                        <a href="{{ url_for('inspecao') }}" class="btn wave-effect" style="padding: 0.75rem; display: flex; flex-direction: column; align-items: center;">
+                            <i class="fas fa-clipboard-check" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <span>Nova Inspeção</span>
+                        </a>
+                        {% endif %}
+                        {% if 'novo_equipamento' in allowed_menus %}  
+                        <a href="{{ url_for('novo_equipamento') }}" class="btn wave-effect" style="padding: 0.75rem; display: flex; flex-direction: column; align-items: center;">
+                            <i class="fas fa-fire-extinguisher" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <span>Novo Equipamento</span>
+                        </a>
+                        {% endif %}
+                        {% if 'visualizar_dashboards' in allowed_menus %}  
+                        <a href="{{ url_for('visualizar_dashboards') }}" class="btn wave-effect" style="padding: 0.75rem; display: flex; flex-direction: column; align-items: center;">
+                            <i class="fas fa-chart-pie" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                width: '90%',
+                padding: '1.5rem'
+            });
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+                <span class="toast-close">&times;</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Close toast on click
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            });
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        let cropper = null;
+
+        document.getElementById('change-profile-pic').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Efeito de partículas
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.style.pointerEvents = 'none'; // Adiciona esta linha
+            
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.pointerEvents = 'none'; // Adiciona esta linha
+                
+                // Tamanho aleatório entre 2px e 6px
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Posição inicial aleatória
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Duração da animação aleatória
+                const duration = Math.random() * 20 + 10;
+                particle.style.animationDuration = `${duration}s`;
+                
+                // Atraso aleatório
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Modifique o evento de logout para:
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+                    
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        }); 
+        // Inicializar partículas quando a página carregar
+        window.addEventListener('load', () => {
+            createParticles();
+            
+            // Animação de entrada
+            document.querySelector('.main-content').style.animation = 'fadeInUp 0.8s ease-out';
+        });
+    </script>
+</body>
+</html>

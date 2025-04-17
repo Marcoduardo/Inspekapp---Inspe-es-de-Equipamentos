@@ -1,0 +1,3009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Dashboards</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sweet Alert Style Modals */
+        .swal-modal {
+            background-color: var(--darker-bg);
+            border-radius: var(--border-radius);
+            border: var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .swal-title {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .swal-text {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .swal-icon {
+            margin: 1.5rem auto;
+        }
+
+        .swal-icon--success::before, 
+        .swal-icon--success::after {
+            background: var(--darker-bg);
+        }
+
+        .swal-icon--success__hide-corners {
+            background-color: transparent;
+        }
+
+        .swal-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .swal-button:not([disabled]):hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .swal-button--confirm {
+            background-color: var(--primary-color);
+        }
+
+        .swal-button--cancel {
+            background-color: var(--danger-color);
+        }
+
+        .swal-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(108, 99, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 101, 132, 0.1) 0%, transparent 50%);
+        }
+
+        /* Top Navigation Bar */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            flex-direction: row-reverse;
+        }
+
+        .top-bar .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-button i {
+            font-size: 1.1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        /* Main Container */
+        .dashboard-container {
+            flex: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dashboard-title i {
+            color: var(--primary-color);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border: var(--glass-border);
+            transition: var(--transition);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin: 0.5rem 0;
+        }
+
+        .stat-card .stat-change {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-card .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-card .stat-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            gap: 0.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            border: var(--glass-border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            background-color: transparent;
+            color: var(--text-muted);
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Charts Grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .chart-container {
+            background-color: var(--darker-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-container h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-container h2 i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* Buttons */
+        button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1rem;
+            margin-top: 1rem;
+            backdrop-filter: blur(5px);
+            border: var(--glass-border);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        button.secondary:hover {
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        /* Modals */
+        /* Modal Moderno */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1200;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: var(--darker-bg);
+            margin: 5vh auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            animation: slideDown 0.4s;
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(255, 101, 132, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+        }
+
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .user-details strong {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .modal-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        .select-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 5rem 1rem 1rem;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1 1 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+            /* Ajustes para as tabelas dentro do modal */
+            .modal-content table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modal-content .checklist-table {
+                min-width: 100%;
+                table-layout: fixed;
+            }
+            
+            .modal-content .checklist-table th,
+            .modal-content .checklist-table td {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 150px;
+            }
+            
+            /* Ajuste para o modal em telas pequenas */
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+                max-height: 90vh;
+                overflow-y: auto;
+            }            
+        }
+    </style>
+
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-bar">
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <button class="nav-button" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+        
+        <div class="user-profile" onclick="toggleModal()">
+            <img class="user-avatar" id="user-profile-pic" 
+                 src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                 alt="Foto de Perfil">
+            <span class="user-name" id="userName">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-chart-line"></i> Dashboard de Inspeções
+            </h1>
+            <div class="dashboard-actions">
+                <button onclick="exportToCSV_inspecoes()"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+                <button onclick="exportToPDF()" class="secondary"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-title"><i class="fas fa-clipboard-check"></i> Total de Inspeções</span>
+                <span class="stat-value" id="total-inspecoes">0</span>
+                <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 12% desde o último mês</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title"><i class="fas fa-check-circle"></i> Inspeções Finalizadas</span>
+                <span class="stat-value" id="finalizada-inspecoes">0</span>
+                <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 8% desde o último mês</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title"><i class="fas fa-exclamation-triangle"></i> Inspeções Pendentes</span>
+                <span class="stat-value" id="pendentes-inspecoes">0</span>
+                <span class="stat-change negative"><i class="fas fa-arrow-down"></i> 5% desde o último mês</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title"><i class="fas fa-times-circle"></i> Inspeções Canceladas</span>
+                <span class="stat-value" id="canceladas-inspecoes">0</span>
+                <span class="stat-change negative"><i class="fas fa-arrow-up"></i> 3% desde o último mês</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title"><i class="fas fa-tools"></i> Equipamentos Ativos</span>
+                <span class="stat-value" id="equipamentos-ativos">0</span>
+                <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 7% desde o último mês</span>
+            </div>
+        </div>
+
+        <!-- Abas -->
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('inspecoes')"><i class="fas fa-clipboard-list"></i> Inspeções</div>
+            <div class="tab" onclick="showTab('equipamentos')"><i class="fas fa-cogs"></i> Equipamentos</div>
+            <div class="tab" onclick="showTab('analise')"><i class="fas fa-chart-bar"></i> Análise Detalhada</div>
+        </div>
+
+        <!-- Conteúdo das Abas -->
+        <div id="inspecoes" class="tab-content active">
+            <div class="main-content">
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <h2><i class="fas fa-chart-pie"></i> Status das Inspeções</h2>
+                        <canvas id="inspecoesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-map-marker-alt"></i> Inspeções por Localização</h2>
+                        <canvas id="inspecoesLocalizacaoChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-user-tie"></i> Inspeções por Responsável</h2>
+                        <canvas id="inspecoesResponsavelChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-tools"></i> Inspeções por Tipo de Equipamento</h2>
+                        <canvas id="inspecoesTipoEquipamentoChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-calendar-alt"></i> Status das Inspeções ao Longo do Tempo</h2>
+                        <canvas id="statusInspecoesTempoChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-clock"></i> Distribuição de Inspeções por Período</h2>
+                        <canvas id="distribuicaoInspecoesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-chart-line"></i> Inspeções por Responsável ao Longo do Tempo</h2>
+                        <canvas id="inspecoesResponsavelTempoChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-star"></i> Equipamentos Mais Inspecionados</h2>
+                        <canvas id="equipamentosMaisInspecionadosChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2><i class="fas fa-calendar-times"></i> Inspeções Vencidas</h2>
+                        <canvas id="inspecoesVencidasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="equipamentos" class="tab-content">
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h2><i class="fas fa-tags"></i> Equipamentos por Tipo</h2>
+                    <canvas id="equipamentosTipoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-map-marked-alt"></i> Equipamentos por Localização</h2>
+                    <canvas id="equipamentosLocalizacaoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-wrench"></i> Status de Manutenção</h2>
+                    <canvas id="manutencaoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-layer-group"></i> Equipamentos por Classe</h2>
+                    <canvas id="equipamentosClasseChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-weight"></i> Equipamentos por Peso</h2>
+                    <canvas id="equipamentosPesoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-calendar-plus"></i> Equipamentos por Data de Fabricação</h2>
+                    <canvas id="equipamentosDataFabricacaoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-calendar-check"></i> Equipamentos por Data de Validade</h2>
+                    <canvas id="equipamentosDataValidadeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-history"></i> Equipamentos por Última Manutenção</h2>
+                    <canvas id="equipamentosUltimaManutencaoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-calendar-day"></i> Equipamentos por Próxima Manutenção</h2>
+                    <canvas id="equipamentosProximaManutencaoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-tint"></i> Equipamentos por Teste Hidrostático</h2>
+                    <canvas id="equipamentosTesteHidrostaticoChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="analise" class="tab-content">
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h2><i class="fas fa-chart-area"></i> Tendência de Inspeções</h2>
+                    <canvas id="tendenciaInspecoesChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-calendar-alt"></i> Calendário de Inspeções</h2>
+                    <canvas id="calendarioInspecoesChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-balance-scale"></i> Comparação Anual</h2>
+                    <canvas id="comparacaoAnualChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-chart-network"></i> Relação Localização x Status</h2>
+                    <canvas id="relacaoLocalizacaoStatusChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2><i class="fas fa-hourglass-half"></i> Tempo Médio por Tipo</h2>
+                    <canvas id="tempoMedioTipoChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleModal()" aria-label="Fechar modal">&times;</button>
+            <h2 id="modal-title">Perfil do Usuário</h2>
+            <div class="profile-pic-container">
+                <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <button id="change-profile-pic" class="btn-secondary wave-effect" aria-label="Alterar foto de perfil">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i> Alterar Foto
+                </button>
+            </div>
+            <div class="user-details">
+                <p><strong><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                <p><strong><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                <p><strong><i class="fas fa-id-card" style="margin-right: 0.5rem;"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                <p><strong><i class="fas fa-building" style="margin-right: 0.5rem;"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                <p><strong><i class="fas fa-user-tag" style="margin-right: 0.5rem;"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                <p><strong><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary">{{ current_user.nivel_acesso }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inclua Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inclua Axios para requisições HTTP -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Inclua jsPDF para exportação de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Substitua a importação existente por esta versão mais recente -->
+    <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.min.js"></script>
+
+    <script>
+        // Configuração global do Chart.js
+        Chart.defaults.font.family = "'Poppins', sans-serif";
+        Chart.defaults.color = '#B8B8B8';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        let allData = {
+            inspecoes: [],
+            equipamentos: [],
+            usuarios: []
+        };
+        
+        let chartInstances = {}; // Armazenar instâncias dos gráficos para exportação
+
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Função para verificar se CountUp está disponível
+        function isCountUpLoaded() {
+            return typeof CountUp !== 'undefined' && typeof CountUp.prototype.start === 'function';
+        }
+
+        // Função para carregar o CountUp dinamicamente se necessário
+        function ensureCountUpLoaded() {
+            return new Promise((resolve) => {
+                if (isCountUpLoaded()) {
+                    resolve();
+                    return;
+                }
+
+                console.log('CountUp.js não detectado. Carregando dinamicamente...');
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/countup.js@2.6.0/dist/countUp.umd.min.js';
+                script.onload = resolve;
+                script.onerror = () => {
+                    console.warn('Falha ao carregar CountUp.js. Usando fallback simples.');
+                    resolve(); // Resolve mesmo com erro para continuar a execução
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // Variável global para verificar se já tentamos carregar o CountUp
+        let countUpLoaded = false;
+
+        async function animateCounters() {
+            const totalInspecoes = allData.inspecoes.length;
+            const finalizadas = allData.inspecoes.filter(i => i.status_inspecao === 'Finalizada').length;
+            const pendentes = allData.inspecoes.filter(i => i.status_inspecao === 'Pendente').length;
+            const canceladas = allData.inspecoes.filter(i => i.status_inspecao === 'Cancelada').length;
+            const equipamentosAtivos = allData.equipamentos.filter(e => e.status === 'Ativo').length;
+
+            const counters = [
+                { id: 'total-inspecoes', valor: totalInspecoes },
+                { id: 'finalizada-inspecoes', valor: finalizadas },
+                { id: 'pendentes-inspecoes', valor: pendentes },
+                { id: 'canceladas-inspecoes', valor: canceladas },
+                { id: 'equipamentos-ativos', valor: equipamentosAtivos }
+            ];
+
+            // Atualização imediata como fallback
+            counters.forEach(({id, valor, suffix = ''}) => {
+                document.getElementById(id).textContent = valor + suffix;
+            });
+
+            // Verifica se CountUp está disponível
+            if (typeof CountUp !== 'undefined' && typeof CountUp.prototype.start === 'function') {
+                countUpLoaded = true;
+                counters.forEach(({id, valor, suffix = ''}) => {
+                    try {
+                        const countAnim = new CountUp(id, valor, { 
+                            duration: 2,
+                            suffix: suffix
+                        });
+                        if (!countAnim.error) {
+                            countAnim.start();
+                        }
+                    } catch (err) {
+                        console.warn(`Erro ao animar contador ${id}:`, err);
+                    }
+                });
+            } else if (!countUpLoaded) {
+                console.log('CountUp.js não carregado - usando fallback estático');
+                countUpLoaded = true; // Para evitar múltiplas mensagens
+            }
+        }
+
+        function exportToCSV_inspecoes() {
+            const data = allData.inspecoes;
+            const headers = Object.keys(data[0]);
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + headers.join(",") + "\n"
+                + data.map(item => headers.map(header => item[header]).join(",")).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "inspecoes_" + new Date().toISOString().slice(0,10) + ".csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function exportToCSV_equipamentos() {
+            const data = allData.equipamentos;
+            const headers = Object.keys(data[0]);
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + headers.join(",") + "\n"
+                + data.map(item => headers.map(header => item[header]).join(",")).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "equipamentos_" + new Date().toISOString().slice(0,10) + ".csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Adicionar título
+            doc.setFontSize(20);
+            doc.setTextColor(108, 99, 255);
+            doc.text('Relatório de Inspeções', 105, 20, { align: 'center' });
+
+            // Adicionar data
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+
+            let yPosition = 40;
+
+            Object.keys(chartInstances).forEach((chartId, index) => {
+                if (index > 0 && index % 2 === 0) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+
+                const canvas = document.getElementById(chartId);
+                const imageData = canvas.toDataURL('image/png');
+
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                const title = document.querySelector(`#${chartId}`)
+                    .closest('.chart-container')
+                    .querySelector('h2')
+                    .textContent;
+                doc.text(title, 105, yPosition, { align: 'center' });
+                yPosition += 10;
+
+                doc.addImage(imageData, 'PNG', 15, yPosition, 180, 80);
+                yPosition += 90;
+            });
+
+            doc.save(`relatorio_inspecoes_${new Date().toISOString().slice(0,10)}.pdf`);
+        }
+
+        async function fetchData() {
+            try {
+                showAlert('Carregando', 'Buscando dados do dashboard...', 'info');
+
+                const [inspecoesResponse, equipamentosResponse, usuariosResponse] = await Promise.all([
+                    axios.get('/api/inspecoes'),
+                    axios.get('/api/equipamentos_cadastrados'),
+                    axios.get('/api/usuarios')
+                ]);
+
+                allData.inspecoes = inspecoesResponse.data.data;
+                allData.equipamentos = equipamentosResponse.data.data;
+                allData.usuarios = usuariosResponse.data;
+
+                // Gráficos de Inspeções
+                renderInspecoesChart(allData.inspecoes);
+                renderInspecoesLocalizacaoChart(allData.inspecoes);
+                renderInspecoesResponsavelChart(allData.inspecoes);
+                renderInspecoesTipoEquipamentoChart(inspecoesResponse.data);
+                renderStatusInspecoesTempoChart(inspecoesResponse.data);
+                renderDistribuicaoInspecoesChart(allData.inspecoes);
+                renderInspecoesResponsavelTempoChart(allData.inspecoes);
+                renderEquipamentosMaisInspecionadosChart(allData.inspecoes);
+                renderInspecoesVencidasChart(allData.inspecoes);
+
+                // Gráficos de Equipamentos
+                renderEquipamentosTipoChart(allData.equipamentos);
+                renderEquipamentosLocalizacaoChart(allData.equipamentos);
+                renderManutencaoChart(allData.equipamentos);
+                renderEquipamentosClasseChart(allData.equipamentos);
+                renderEquipamentosPesoChart(allData.equipamentos);
+                renderEquipamentosDataFabricacaoChart(allData.equipamentos);
+                renderEquipamentosDataValidadeChart(allData.equipamentos);
+                renderEquipamentosUltimaManutencaoChart(allData.equipamentos);
+                renderEquipamentosProximaManutencaoChart(allData.equipamentos);
+                renderEquipamentosTesteHidrostaticoChart(allData.equipamentos);
+
+                // Gráficos de Análise Detalhada
+                renderTendenciaInspecoesChart(allData.inspecoes);
+                renderCalendarioInspecoesChart(allData.inspecoes);
+                renderComparacaoAnualChart(allData.inspecoes);
+                renderRelacaoLocalizacaoStatusChart(allData.inspecoes);
+                renderTempoMedioTipoChart(allData.inspecoes);
+
+                animateCounters();
+
+                Swal.close();
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                showAlert('Erro', 'Falha ao carregar dados do dashboard', 'error');
+            }
+        }
+
+        function populateFilter(filterId, data, field) {
+            const filter = document.getElementById(filterId);
+            const uniqueValues = [...new Set(data.map(item => item[field]))];
+            uniqueValues.forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                filter.appendChild(option);
+            });
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
+
+        // Função para abrir o modal
+        function toggleModal() {
+            const modal = document.getElementById('user-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function getRandomColor(opacity = 1) {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsla(${hue}, 65%, 55%, ${opacity})`;
+        }
+
+        function generateGradient(ctx, chartArea, color1, color2) {
+            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(1, color2);
+            return gradient;
+        }
+
+        // ==============================================
+        // NOVAS FUNÇÕES PARA OS GRÁFICOS ADICIONADOS
+        // ==============================================
+
+        function renderInspecoesVencidasChart(data) {
+            const hoje = new Date();
+            const vencidas = data.filter(item => {
+                if (!item.data_validade_inspecao) return false;
+                const [dia, mes, ano] = item.data_validade_inspecao.split('-');
+                const dataValidade = new Date(`${ano}-${mes}-${dia}`);
+                return dataValidade < hoje;
+            }).length;
+
+            const emDia = data.length - vencidas;
+
+            const ctx = document.getElementById('inspecoesVencidasChart').getContext('2d');
+            chartInstances.inspecoesVencidasChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Em Dia', 'Vencidas'],
+                    datasets: [{
+                        data: [emDia, vencidas],
+                        backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+
+        function renderTendenciaInspecoesChart(data) {
+            const hoje = new Date();
+            const ultimos12Meses = Array.from({length: 12}, (_, i) => {
+                const date = new Date(hoje);
+                date.setMonth(date.getMonth() - i);
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            }).reverse();
+
+            const inspecoesPorMes = ultimos12Meses.map(mes => {
+                return data.filter(item => {
+                    if (!item.data_registro) return false;
+                    const [dia, mesReg, ano] = item.data_registro.split('-');
+                    return `${ano}-${mesReg}` === mes;
+                }).length;
+            });
+
+            const ctx = document.getElementById('tendenciaInspecoesChart').getContext('2d');
+            chartInstances.tendenciaInspecoesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ultimos12Meses.map(mes => {
+                        const [ano, mesNum] = mes.split('-');
+                        return `${mesNum}/${ano.slice(2)}`;
+                    }),
+                    datasets: [{
+                        label: 'Número de Inspeções',
+                        data: inspecoesPorMes,
+                        borderColor: 'rgba(108, 99, 255, 1)',
+                        backgroundColor: 'rgba(108, 99, 255, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mês/Ano',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCalendarioInspecoesChart(data) {
+            const hoje = new Date();
+            const diasNoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+            const dias = Array.from({length: diasNoMes}, (_, i) => i + 1);
+
+            const inspecoesPorDia = dias.map(dia => {
+                return data.filter(item => {
+                    if (!item.data_registro) return false;
+                    const [diaReg, mesReg, anoReg] = item.data_registro.split('-');
+                    return parseInt(diaReg) === dia && 
+                           parseInt(mesReg) === hoje.getMonth() + 1 && 
+                           parseInt(anoReg) === hoje.getFullYear();
+                }).length;
+            });
+
+            const ctx = document.getElementById('calendarioInspecoesChart').getContext('2d');
+            chartInstances.calendarioInspecoesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dias,
+                    datasets: [{
+                        label: 'Inspeções por Dia',
+                        data: inspecoesPorDia,
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(54, 162, 235, 0.7)';
+                            return generateGradient(ctx, chartArea, 'rgba(54, 162, 235, 0.7)', 'rgba(75, 192, 192, 0.7)');
+                        },
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Dia do Mês',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderComparacaoAnualChart(data) {
+            const hoje = new Date();
+            const anoAtual = hoje.getFullYear();
+            const anoAnterior = anoAtual - 1;
+            
+            const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dec'];
+            
+            const inspecoesAnoAtual = meses.map((_, index) => {
+                return data.filter(item => {
+                    if (!item.data_registro) return false;
+                    const [dia, mes, ano] = item.data_registro.split('-');
+                    return parseInt(mes) === index + 1 && parseInt(ano) === anoAtual;
+                }).length;
+            });
+            
+            const inspecoesAnoAnterior = meses.map((_, index) => {
+                return data.filter(item => {
+                    if (!item.data_registro) return false;
+                    const [dia, mes, ano] = item.data_registro.split('-');
+                    return parseInt(mes) === index + 1 && parseInt(ano) === anoAnterior;
+                }).length;
+            });
+
+            const ctx = document.getElementById('comparacaoAnualChart').getContext('2d');
+            chartInstances.comparacaoAnualChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: meses,
+                    datasets: [
+                        {
+                            label: anoAtual,
+                            data: inspecoesAnoAtual,
+                            borderColor: 'rgba(108, 99, 255, 1)',
+                            backgroundColor: 'rgba(108, 99, 255, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2
+                        },
+                        {
+                            label: anoAnterior,
+                            data: inspecoesAnoAnterior,
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mês',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRelacaoLocalizacaoStatusChart(data) {
+            const localizacoes = [...new Set(data.map(item => item.localizacao))];
+            const status = [...new Set(data.map(item => item.status_inspecao))];
+            
+            const datasets = status.map((st, index) => {
+                return {
+                    label: st,
+                    data: localizacoes.map(loc => {
+                        return data.filter(item => item.localizacao === loc && item.status_inspecao === st).length;
+                    }),
+                    backgroundColor: getRandomColor(0.7),
+                    borderColor: getRandomColor(1),
+                    borderWidth: 1,
+                    borderRadius: 4
+                };
+            });
+
+            const ctx = document.getElementById('relacaoLocalizacaoStatusChart').getContext('2d');
+            chartInstances.relacaoLocalizacaoStatusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: localizacoes,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Localização',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTempoMedioTipoChart(data) {
+            const tipos = [...new Set(data.map(item => item.tipo_equipamento))];
+            
+            const temposMedios = tipos.map(tipo => {
+                const inspecoes = data.filter(item => item.tipo_equipamento === tipo && item.tempo_inspecao);
+                const totalMinutos = inspecoes.reduce((acc, inspecao) => {
+                    const [horas, minutos] = inspecao.tempo_inspecao.split(':').map(Number);
+                    return acc + (horas * 60) + minutos;
+                }, 0);
+                
+                return totalMinutos > 0 ? (totalMinutos / inspecoes.length / 60).toFixed(2) : 0;
+            });
+
+            const ctx = document.getElementById('tempoMedioTipoChart').getContext('2d');
+            chartInstances.tempoMedioTipoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: tipos,
+                    datasets: [{
+                        label: 'Tempo Médio de Inspeção (horas)',
+                        data: temposMedios,
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(54, 162, 235, 0.7)';
+                            return generateGradient(ctx, chartArea, 'rgba(54, 162, 235, 0.7)', 'rgba(75, 192, 192, 0.7)');
+                        },
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tempo Médio (horas)',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tipo de Equipamento',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==============================================
+        // FUNÇÕES EXISTENTES (mantidas conforme o original)
+        // ==============================================
+
+        function renderInspecoesChart(data) {
+            const statusCounts = data.reduce((acc, item) => {
+                if (item.status_inspecao) {
+                    acc[item.status_inspecao] = (acc[item.status_inspecao] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('inspecoesChart').getContext('2d');
+            chartInstances.inspecoesChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        label: 'Status das Inspeções',
+                        data: Object.values(statusCounts),
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+        
+        function renderInspecoesLocalizacaoChart(data) {
+            const localizacaoCounts = data.reduce((acc, item) => {
+                if (item.localizacao) {
+                    acc[item.localizacao] = (acc[item.localizacao] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('inspecoesLocalizacaoChart').getContext('2d');
+            chartInstances.inspecoesLocalizacaoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(localizacaoCounts),
+                    datasets: [{
+                        label: 'Inspeções por Localização',
+                        data: Object.values(localizacaoCounts),
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)';
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Localização',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} inspeções`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        delay: (context) => {
+                            if (context.type === 'data' && context.mode === 'default') {
+                                return context.dataIndex * 100;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderInspecoesResponsavelChart(data) {
+            const responsavelCounts = data.reduce((acc, item) => {
+                if (item.responsavel) {
+                    acc[item.responsavel] = (acc[item.responsavel] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('inspecoesResponsavelChart').getContext('2d');
+            chartInstances.inspecoesResponsavelChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(responsavelCounts),
+                    datasets: [{
+                        label: 'Inspeções por Responsável',
+                        data: Object.values(responsavelCounts),
+                        backgroundColor: Object.keys(responsavelCounts).map(() => getRandomColor(0.7)),
+                        borderColor: Object.keys(responsavelCounts).map(() => getRandomColor(1)),
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Responsável',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} inspeções`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        delay: (context) => {
+                            if (context.type === 'data' && context.mode === 'default') {
+                                return context.dataIndex * 100;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderInspecoesTipoEquipamentoChart(data) {
+            const counts = data.tipo_equipamento_counts || {};
+            const ctx = document.getElementById('inspecoesTipoEquipamentoChart').getContext('2d');
+            chartInstances.inspecoesTipoEquipamentoChart = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        label: 'Inspeções por Tipo de Equipamento',
+                        data: Object.values(counts),
+                        backgroundColor: Object.keys(counts).map(() => getRandomColor(0.7)),
+                        borderColor: Object.keys(counts).map(() => getRandomColor(1)),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            pointLabels: {
+                                display: true,
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true
+                    }
+                }
+            });
+        }
+
+        function renderStatusInspecoesTempoChart(data) {
+            if (!data.status_por_tempo || data.status_por_tempo.length === 0) {
+                console.warn("Nenhum dado disponível para 'Status das Inspeções ao Longo do Tempo'");
+                return;
+            }
+
+            const statusData = {};
+            
+            data.status_por_tempo.forEach(entry => {
+                const mes = entry.mes.substring(0, 7);
+                if (!statusData[entry.status]) {
+                    statusData[entry.status] = {};
+                }
+                statusData[entry.status][mes] = entry.quantidade;
+            });
+
+            const meses = [...new Set(data.status_por_tempo.map(entry => entry.mes.substring(0, 7)))];
+            const datasets = Object.keys(statusData).map(status => ({
+                label: status,
+                data: meses.map(m => statusData[status][m] || 0),
+                fill: true,
+                backgroundColor: getRandomColor(0.2),
+                borderColor: getRandomColor(1),
+                borderWidth: 2,
+                tension: 0.4,
+                pointBackgroundColor: getRandomColor(1),
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+
+            const ctx = document.getElementById('statusInspecoesTempoChart').getContext('2d');
+            chartInstances.statusInspecoesTempoChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: meses, datasets: datasets },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            title: { 
+                                display: true, 
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: { 
+                            title: { 
+                                display: true, 
+                                text: 'Mês',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderDistribuicaoInspecoesChart(data) {
+            if (!data || !Array.isArray(data)) {
+                console.warn("Nenhum dado disponível para 'Distribuição de Inspeções'");
+                return;
+            }
+
+            const hoje = new Date();
+            const dentroPrazo = data.filter(item => item.data_validade_inspecao && new Date(item.data_validade_inspecao) >= hoje).length;
+            const foraPrazo = data.length - dentroPrazo;
+
+            const ctx = document.getElementById('distribuicaoInspecoesChart').getContext('2d');
+            chartInstances.distribuicaoInspecoesChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Dentro do Prazo', 'Fora do Prazo'],
+                    datasets: [{
+                        data: [dentroPrazo, foraPrazo],
+                        backgroundColor: ['rgba(76, 175, 80, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                        borderColor: ['rgba(76, 175, 80, 1)', 'rgba(255, 99, 132, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+
+        function renderInspecoesResponsavelTempoChart(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.warn("Nenhum dado válido disponível para 'Inspeções por Responsável'");
+                return;
+            }
+
+            const responsavelData = {};
+            const meses = new Set();
+
+            data.forEach(entry => {
+                if (!entry.responsavel || !entry.data_registro) {
+                    console.warn("Entrada inválida encontrada:", entry);
+                    return;
+                }
+
+                const regexData = /^\d{2}[-/]\d{2}[-/]\d{4}$/;
+                if (!regexData.test(entry.data_registro)) {
+                    console.warn("Formato de data inválido:", entry.data_registro);
+                    return;
+                }
+
+                const [dia, mes, ano] = entry.data_registro.split(/[-/]/);
+                const mesFormatado = `${ano}-${mes}`;
+
+                meses.add(mesFormatado);
+
+                if (!responsavelData[entry.responsavel]) {
+                    responsavelData[entry.responsavel] = {};
+                }
+                responsavelData[entry.responsavel][mesFormatado] = (responsavelData[entry.responsavel][mesFormatado] || 0) + 1;
+            });
+
+            const mesesOrdenados = [...meses].sort();
+
+            if (mesesOrdenados.length === 0 || Object.keys(responsavelData).length === 0) {
+                console.warn("Não há dados suficientes para gerar o gráfico.");
+                return;
+            }
+
+            const datasets = Object.keys(responsavelData).map(responsavel => ({
+                label: responsavel,
+                data: mesesOrdenados.map(m => responsavelData[responsavel][m] || 0),
+                fill: false,
+                borderColor: getRandomColor(1),
+                backgroundColor: getRandomColor(0.2),
+                tension: 0.3,
+                borderWidth: 2
+            }));
+
+            const ctx = document.getElementById('inspecoesResponsavelTempoChart').getContext('2d');
+            chartInstances.inspecoesResponsavelTempoChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: mesesOrdenados,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            title: { 
+                                display: true, 
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: { 
+                            title: { 
+                                display: true, 
+                                text: 'Mês',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosMaisInspecionadosChart(data) {
+            if (!data || !Array.isArray(data)) {
+                console.warn("Nenhum dado disponível para 'Equipamentos Mais Inspecionados'");
+                return;
+            }
+
+            const equipamentoCounts = data.reduce((acc, item) => {
+                if (!item.tag_equipamento) return acc;
+                acc[item.tag_equipamento] = (acc[item.tag_equipamento] || 0) + 1;
+                return acc;
+            }, {});
+
+            // Ordenar e pegar os top 10
+            const sorted = Object.entries(equipamentoCounts).sort((a, b) => b[1] - a[1]);
+            const top10 = sorted.slice(0, 10);
+            const labels = top10.map(item => item[0]);
+            const values = top10.map(item => item[1]);
+
+            const ctx = document.getElementById('equipamentosMaisInspecionadosChart').getContext('2d');
+            chartInstances.equipamentosMaisInspecionadosChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Frequência de Inspeções',
+                        data: values,
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)';
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(255, 165, 0, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            title: { 
+                                display: true, 
+                                text: 'Número de Inspeções',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: { 
+                            title: { 
+                                display: true, 
+                                text: 'Equipamento',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} inspeções`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosTipoChart(data) {
+            const tipoCounts = data.reduce((acc, item) => {
+                acc[item.tipo] = (acc[item.tipo] || 0) + 1;
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosTipoChart').getContext('2d');
+            chartInstances.equipamentosTipoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(tipoCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Tipo',
+                        data: Object.values(tipoCounts),
+                        backgroundColor: Object.keys(tipoCounts).map(() => getRandomColor(0.7)),
+                        borderColor: Object.keys(tipoCounts).map(() => getRandomColor(1)),
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tipo de Equipamento',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} equipamentos`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const tipo = Object.keys(tipoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosLocalizacaoChart(data) {
+            const localizacaoCounts = data.reduce((acc, item) => {
+                acc[item.localizacao] = (acc[item.localizacao] || 0) + 1;
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosLocalizacaoChart').getContext('2d');
+            chartInstances.equipamentosLocalizacaoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(localizacaoCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Localização',
+                        data: Object.values(localizacaoCounts),
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)';
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Localização',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} equipamentos`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const localizacao = Object.keys(localizacaoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosClasseChart(data) {
+            const classeCounts = data.reduce((acc, item) => {
+                acc[item.classe] = (acc[item.classe] || 0) + 1;
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosClasseChart').getContext('2d');
+            chartInstances.equipamentosClasseChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(classeCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Classe',
+                        data: Object.values(classeCounts),
+                        backgroundColor: Object.keys(classeCounts).map(() => getRandomColor(0.7)),
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const classe = Object.keys(classeCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosPesoChart(data) {
+            const pesoRanges = {
+                '0-50kg': 0,
+                '51-100kg': 0,
+                '101-150kg': 0,
+                '151-200kg': 0,
+                '200+kg': 0
+            };
+
+            data.forEach(item => {
+                const peso = item.peso;
+                if (peso <= 50) pesoRanges['0-50kg']++;
+                else if (peso <= 100) pesoRanges['51-100kg']++;
+                else if (peso <= 150) pesoRanges['101-150kg']++;
+                else if (peso <= 200) pesoRanges['151-200kg']++;
+                else pesoRanges['200+kg']++;
+            });
+
+            const ctx = document.getElementById('equipamentosPesoChart').getContext('2d');
+            chartInstances.equipamentosPesoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(pesoRanges),
+                    datasets: [{
+                        label: 'Equipamentos por Faixa de Peso',
+                        data: Object.values(pesoRanges),
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)';
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Faixa de Peso',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} equipamentos`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const range = Object.keys(pesoRanges)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosDataFabricacaoChart(data) {
+            const fabricacaoCounts = data.reduce((acc, item) => {
+                if (item.data_fabricacao) {
+                    const [day, month, year] = item.data_fabricacao.split('-');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    const yearOnly = new Date(formattedDate).getFullYear();
+                    acc[yearOnly] = (acc[yearOnly] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosDataFabricacaoChart').getContext('2d');
+            chartInstances.equipamentosDataFabricacaoChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(fabricacaoCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Ano de Fabricação',
+                        data: Object.values(fabricacaoCounts),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Ano de Fabricação',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const year = Object.keys(fabricacaoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosDataValidadeChart(data) {
+            const validadeCounts = data.reduce((acc, item) => {
+                if (item.data_validade) {
+                    const [day, month, year] = item.data_validade.split('-');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    const yearOnly = new Date(formattedDate).getFullYear();
+                    acc[yearOnly] = (acc[yearOnly] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosDataValidadeChart').getContext('2d');
+            chartInstances.equipamentosDataValidadeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(validadeCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Ano de Validade',
+                        data: Object.values(validadeCounts),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Ano de Validade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const year = Object.keys(validadeCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosUltimaManutencaoChart(data) {
+            const manutencaoCounts = data.reduce((acc, item) => {
+                if (item.data_ultima_manutencao) {
+                    const [day, month, year] = item.data_ultima_manutencao.split('-');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    const date = new Date(formattedDate);
+                    const monthYear = `${date.toLocaleString('default', { month: 'short' })}-${date.getFullYear()}`;
+                    acc[monthYear] = (acc[monthYear] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosUltimaManutencaoChart').getContext('2d');
+            chartInstances.equipamentosUltimaManutencaoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(manutencaoCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Mês-Ano de Última Manutenção',
+                        data: Object.values(manutencaoCounts),
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)'; // valor padrão até chartArea estar disponível
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mês-Ano',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const monthYear = Object.keys(manutencaoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosProximaManutencaoChart(data) {
+            const proximaManutencaoCounts = data.reduce((acc, item) => {
+                if (item.data_proxima_manutencao) {
+                    const [day, month, year] = item.data_proxima_manutencao.split('-');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    const date = new Date(formattedDate);
+                    const monthYear = `${date.toLocaleString('default', { month: 'short' })}-${date.getFullYear()}`;
+                    acc[monthYear] = (acc[monthYear] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosProximaManutencaoChart').getContext('2d');
+            chartInstances.equipamentosProximaManutencaoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(proximaManutencaoCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Mês-Ano de Próxima Manutenção',
+                        data: Object.values(proximaManutencaoCounts),
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)'; // valor padrão até chartArea estar disponível
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mês-Ano',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const monthYear = Object.keys(proximaManutencaoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEquipamentosTesteHidrostaticoChart(data) {
+            const testeHidrostaticoCounts = data.reduce((acc, item) => {
+                if (item.teste_hidrostatico_n2) {
+                    const [day, month, year] = item.teste_hidrostatico_n2.split('-');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    const date = new Date(formattedDate);
+                    const monthYear = `${date.toLocaleString('default', { month: 'short' })}-${date.getFullYear()}`;
+                    acc[monthYear] = (acc[monthYear] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('equipamentosTesteHidrostaticoChart').getContext('2d');
+            chartInstances.equipamentosTesteHidrostaticoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(testeHidrostaticoCounts),
+                    datasets: [{
+                        label: 'Equipamentos por Ano de Teste Hidrostático',
+                        data: Object.values(testeHidrostaticoCounts),
+                        backgroundColor: (context) => {
+                            const { ctx, chartArea } = context.chart;
+                            if (!chartArea) return 'rgba(76, 175, 80, 0.7)'; // valor padrão até chartArea estar disponível
+                            return generateGradient(ctx, chartArea, 'rgba(76, 175, 80, 0.7)', 'rgba(76, 175, 80, 0.2)');
+                        },
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Ano de Teste',
+                                color: '#B8B8B8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const year = Object.keys(testeHidrostaticoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderManutencaoChart(data) {
+            const manutencaoCounts = data.reduce((acc, item) => {
+                acc[item.status] = (acc[item.status] || 0) + 1;
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('manutencaoChart').getContext('2d');
+            chartInstances.manutencaoChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(manutencaoCounts),
+                    datasets: [{
+                        label: 'Status de Manutenção',
+                        data: Object.values(manutencaoCounts),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const status = Object.keys(manutencaoCounts)[index];
+                        }
+                    }
+                }
+            });
+        }
+
+        let cropper = null;
+
+        document.getElementById('change-profile-pic').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        }); 
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Primeiro verifica se o CountUp está disponível
+            if (typeof CountUp === 'undefined') {
+                console.log('CountUp.js não está disponível no carregamento inicial');
+            } else {
+                console.log('CountUp.js carregado com sucesso');
+            }
+
+            // Configura observadores para os contadores
+            setupCounterObservers();
+            
+            // Inicia o carregamento dos dados
+            fetchData();
+            
+            // Animação de hover nos cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-5px)';
+                    card.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = '';
+                    card.style.boxShadow = 'var(--box-shadow)';
+                });
+            });
+        });
+
+        // Função para configurar observadores de interseção
+        function setupCounterObservers() {
+            const observerOptions = {
+                threshold: 0.5
+            };
+
+            const counters = [
+                'total-inspecoes',
+                'finalizada-inspecoes',
+                'pendentes-inspecoes',
+                'canceladas-inspecoes'
+            ];
+
+            counters.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                animateCounters();
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, observerOptions);
+
+                    observer.observe(element);
+                }
+            });
+        }
+
+        function loadCountUp() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/countup.js@2.6.0/dist/countUp.umd.min.js';
+            script.onload = fetchData;
+            script.onerror = function() {
+                console.error('Falha ao carregar CountUp.js. Usando fallback.');
+                fetchData();
+            };
+            document.head.appendChild(script);
+        }
+
+    </script>
+</body>
+</html>

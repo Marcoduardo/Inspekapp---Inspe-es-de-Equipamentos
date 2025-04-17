@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Edição de Equipamento</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+        
+        /* Melhorias para os placeholders */
+        .form-control::placeholder,
+        .form-select::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Melhorias nos inputs */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        /* Melhorias nos botões */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }        
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .form-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .form-control[readonly] {
+            background-color: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #e04d6d);
+            color: white;
+        }
+        
+        .btn-secondary-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .btn-secondary-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .modal-content-custom {
+            background: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .table-custom {
+            color: var(--text-light);
+        }
+        
+        .table-custom th {
+            background-color: rgba(108, 99, 255, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .table-custom td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+            color: #fff;
+            background-color: #222c48;
+        }
+
+        
+        .table-custom tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-title {
+                font-size: 1.8rem;
+            }
+            
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .user-name {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+ 
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card">
+                    <div class="text-center mb-4">
+                        <h1 class="form-title">Editar Equipamento</h1>
+                        <p class="text-muted">Atualize os dados do equipamento no sistema</p>
+                    </div>
+
+                    <form id="equipamento-form" method="POST" action="/equipamentos/edit_equipamento/{{ equipamento.id }}" onsubmit="return validateFormEquipamento(event)" enctype="multipart/form-data">
+                        <div class="row g-3">
+                            <!-- Fabricante -->
+                            <div class="col-md-6">
+                                <label for="fabricante" class="form-label">Fabricante</label>
+                                <input type="text" id="fabricante" name="fabricante" class="form-control" 
+                                    value="{{ equipamento.fabricante or '' }}" placeholder="Digite o fabricante">
+                            </div>
+
+                            <!-- Modelo -->
+                            <div class="col-md-6">
+                                <label for="modelo" class="form-label">Modelo</label>
+                                <input type="text" id="modelo" name="modelo" class="form-control" 
+                                    value="{{ equipamento.modelo or '' }}" placeholder="Digite o modelo">
+                            </div>
+
+                            <!-- Número de Série -->
+                            <div class="col-md-6">
+                                <label for="numero_serie" class="form-label">Número de Série</label>
+                                <input type="text" id="numero_serie" name="numero_serie" class="form-control" 
+                                    value="{{ equipamento.numero_serie or '' }}" placeholder="Digite o número de série">
+                            </div>
+
+                            <!-- Patrimônio -->
+                            <div class="col-md-6">
+                                <label for="patrimonio" class="form-label">Patrimônio</label>
+                                <input type="text" id="patrimonio" name="patrimonio" class="form-control" 
+                                    value="{{ equipamento.patrimonio or '' }}" placeholder="Digite o número do patrimônio">
+                            </div>
+
+                            <!-- Equipment Tag -->
+                            <div class="col-md-6">
+                                <label for="tag_equipamento" class="form-label">Tag do Equipamento <span class="text-danger">*</span></label>
+                                <input type="text" id="tag_equipamento" name="tag_equipamento" class="form-control" 
+                                    value="{{ equipamento.tag_equipamento }}" required>
+                                <div class="invalid-feedback" id="tag_equipamento-error"></div>
+                            </div>
+ 
+                            <!-- Setor/Localização -->
+                            <div class="col-md-6">
+                                <label for="localizacao" class="form-label">Setor/Localização <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" id="localizacao" name="localizacao" class="form-control" 
+                                        value="{{ equipamento.localizacao }}" placeholder="Selecione o Setor/Localização" required readonly
+                                        onclick="abrirModalSetor()">
+                                    <button class="btn btn-outline-primary" type="button" onclick="abrirModalSetor()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="setor_id" name="setor_id" value="{{ equipamento.setor_id }}">
+                                <div class="invalid-feedback" id="localizacao-error"></div>
+                            </div>
+
+                            <!-- Tipo -->
+                            <div class="col-md-6">
+                                <label for="tipo" class="form-label">Tipo <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" id="tipo" name="tipo" class="form-control" 
+                                        value="{{ equipamento.tipo }}" placeholder="Selecione o tipo do equipamento" required readonly
+                                        onclick="abrirModalTipoEquipamento()">
+                                    <button class="btn btn-outline-primary" type="button" onclick="abrirModalTipoEquipamento()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="tipo_id" name="tipo_id" value="{{ equipamento.tipo_id }}">
+                                <div class="invalid-feedback" id="tipo-error"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="criticidade" class="form-label">Criticidade do Equipamento</label>
+                                <div class="input-group">
+                                    <select id="criticidade" name="criticidade" class="form-select bg-dark text-white" required>
+                                        <option value="1" {% if equipamento.criticidade == 1 %}selected{% endif %}>Baixa</option>
+                                        <option value="2" {% if equipamento.criticidade == 2 %}selected{% endif %}>Média</option>
+                                        <option value="3" {% if equipamento.criticidade == 3 %}selected{% endif %}>Alta</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+
+                            <!-- Class (visible only for Extintor) -->
+                            <div class="col-md-6" id="classe-group" {% if equipamento.tipo != 'Extintor' %}style="display: none;"{% endif %}>
+                                <label for="classe" class="form-label">Classe</label>
+                                <select id="classe" name="classe" class="form-select">
+                                    <option value="">Selecione a Classe do Extintor</option>
+                                    <option value="Classe A - Aparas de papel e madeira" {% if equipamento.classe == 'Classe A - Aparas de papel e madeira' %}selected{% endif %}>Classe A - Aparas de papel e madeira</option>
+                                    <option value="Classe B - Líquidos inflamáveis" {% if equipamento.classe == 'Classe B - Líquidos inflamáveis' %}selected{% endif %}>Classe B - Líquidos inflamáveis</option>
+                                    <option value="Classe C - Equipamentos elétricos" {% if equipamento.classe == 'Classe C - Equipamentos elétricos' %}selected{% endif %}>Classe C - Equipamentos elétricos</option>
+                                    <option value="Classe D - Metais combustíveis" {% if equipamento.classe == 'Classe D - Metais combustíveis' %}selected{% endif %}>Classe D - Metais combustíveis</option>
+                                    <option value="Classe K - Óleos e gorduras" {% if equipamento.classe == 'Classe K - Óleos e gorduras' %}selected{% endif %}>Classe K - Óleos e gorduras</option>
+                                    <option value="Classe ABC - Múltiplos tipos de fogo" {% if equipamento.classe == 'Classe ABC - Múltiplos tipos de fogo' %}selected{% endif %}>Classe ABC - Múltiplos tipos de fogo</option>
+                                    <option value="Classe AB - Sólidos e líquidos inflamáveis" {% if equipamento.classe == 'Classe AB - Sólidos e líquidos inflamáveis' %}selected{% endif %}>Classe AB - Sólidos e líquidos inflamáveis</option>
+                                    <option value="Classe BC - Líquidos inflamáveis e equipamentos elétricos" {% if equipamento.classe == 'Classe BC - Líquidos inflamáveis e equipamentos elétricos' %}selected{% endif %}>Classe BC - Líquidos inflamáveis e equipamentos elétricos</option>
+                                </select>                
+                                <div class="invalid-feedback" id="classe-error"></div>
+                            </div>
+
+                            <!-- Manufacturing Date -->
+                            <div class="col-md-6">
+                                <label for="data_fabricacao" class="form-label">Data de Fabricação <span class="text-danger">*</span></label>
+                                <input type="date" id="data_fabricacao" name="data_fabricacao" class="form-control" 
+                                    value="{{ equipamento.data_fabricacao.strftime('%Y-%m-%d') }}" required>
+                                <div class="invalid-feedback" id="data_fabricacao-error"></div>
+                            </div>
+
+                            <!-- Expiration Date -->
+                            <div class="col-md-6">
+                                <label for="data_validade" class="form-label">Data de Validade <span class="text-danger">*</span></label>
+                                <input type="date" id="data_validade" name="data_validade" class="form-control" 
+                                    value="{{ equipamento.data_validade.strftime('%Y-%m-%d') }}" required>
+                                <div class="invalid-feedback" id="data_validade-error"></div>
+                            </div>
+
+                            <!-- Weight (visible only for Extintor) -->
+                            <div class="col-md-6" id="peso-group" {% if equipamento.tipo != 'Extintor' %}style="display: none;"{% endif %}>
+                                <label for="peso" class="form-label">Peso</label>
+                                <div class="input-group">
+                                    <input type="text" id="peso" name="peso" class="form-control" 
+                                        value="{{ equipamento.peso }}">
+                                    <span class="input-group-text">kg</span>
+                                </div>
+                                <div class="invalid-feedback" id="peso-error"></div>
+                            </div>
+
+                            <!-- Hydrostatic Test N2 (visible only for Extintor) -->
+                            <div class="col-md-6" id="teste_hidrostatico_n2-group" {% if equipamento.tipo != 'Extintor' %}style="display: none;"{% endif %}>
+                                <label for="teste_hidrostatico_n2" class="form-label">Teste Hidrostático N2</label>
+                                <input type="text" id="teste_hidrostatico_n2" name="teste_hidrostatico_n2" class="form-control" 
+                                    value="{{ equipamento.teste_hidrostatico_n2.strftime('%m/%Y') if equipamento.teste_hidrostatico_n2 else '' }}" placeholder="MM/AAAA">
+                                <div class="invalid-feedback" id="teste_hidrostatico_n2-error"></div>
+                            </div>
+
+                            <!-- Hydrostatic Test N3 (visible only for Extintor) -->
+                            <div class="col-md-6" id="teste_hidrostatico_n3-group" {% if equipamento.tipo != 'Extintor' %}style="display: none;"{% endif %}>
+                                <label for="teste_hidrostatico_n3" class="form-label">Teste Hidrostático N3</label>
+                                <input type="text" id="teste_hidrostatico_n3" name="teste_hidrostatico_n3" class="form-control" 
+                                    value="{{ equipamento.teste_hidrostatico_n3.strftime('%m/%Y') if equipamento.teste_hidrostatico_n3 else '' }}" placeholder="MM/AAAA">
+                                <div class="invalid-feedback" id="teste_hidrostatico_n3-error"></div>
+                            </div>
+            
+                            <!-- Barcode -->
+                            <div class="col-md-6">
+                                <label for="codigo_barras" class="form-label">Código de Barras</label>
+                                <div class="input-group">
+                                    <input type="text" id="codigo_barras" name="codigo_barras" class="form-control" 
+                                        value="{{ equipamento.codigo_barras }}">
+                                    <button class="btn btn-outline-primary" type="button" onclick="gerarCodigoBarras()">
+                                        <i class="fas fa-barcode"></i> Gerar
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback" id="codigo_barras-error"></div>
+                            </div>
+            
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select id="status" name="status" class="form-select" required>
+                                    <option value="">Selecione o Status</option>
+                                    <option value="Ativo" {% if equipamento.status == 'Ativo' %}selected{% endif %}>Ativo</option>
+                                    <option value="Manutenção" {% if equipamento.status == 'Manutenção' %}selected{% endif %}>Manutenção</option>
+                                    <option value="Descartado" {% if equipamento.status == 'Descartado' %}selected{% endif %}>Descartado</option>
+                                    <option value="Reserva" {% if equipamento.status == 'Reserva' %}selected{% endif %}>Reserva</option>               
+                                </select>
+                                <div class="invalid-feedback" id="status-error"></div>
+                            </div>
+
+                            <!-- Foto -->
+                            <div class="col-12">
+                                <label for="foto" class="form-label">Foto do Equipamento</label>
+                                <input type="file" id="foto" name="foto" class="form-control" accept="image/*">
+                                <div class="form-text">Formatos aceitos: JPG, PNG (Tamanho máximo: 10MB)</div>
+                            </div>
+
+                            <!-- Caminho da foto (preenchido automaticamente após upload) -->
+                            <input type="hidden" id="foto_path" name="foto_path">
+
+                            <!-- Observações -->
+                            <div class="col-12">
+                                <label for="observacoes" class="form-label">Observações</label>
+                                <textarea id="observacoes" name="observacoes" class="form-control" rows="3" placeholder="Observações gerais">{{ equipamento.observacoes or '' }}</textarea>
+                            </div>
+                            
+                            <!-- Form Buttons -->
+                            <div class="col-12 mt-4 text-center">
+                                <button type="submit" class="btn btn-primary-custom btn-lg me-3">
+                                    <i class="fas fa-check-circle me-2"></i> Salvar
+                                </button>
+                                <button type="button" class="btn btn-secondary-custom btn-lg" onclick="window.location.href='/equipamentos/equipamentos_cadastrados'">
+                                    <i class="fas fa-times me-2"></i> Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sector Selection Modal -->
+    <div class="modal fade" id="modalSetor" tabindex="-1" aria-labelledby="modalSetorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSetorLabel">Selecionar Setor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" id="modalSetorSearch" class="form-control" 
+                            placeholder="Pesquisar por nome ou centro de custo..." oninput="filtrarSetores()">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="modalSetorTable" class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Nome do Setor</th>
+                                    <th>Centro de Custo</th>                    
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Sector data will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tipo de Equipamento Selection Modal -->
+    <div class="modal fade" id="modalTipoEquipamento" tabindex="-1" aria-labelledby="modalTipoEquipamentoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTipoEquipamentoLabel">Selecionar Tipo de Equipamento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" id="modalTipoEquipamentoSearch" class="form-control" 
+                            placeholder="Pesquisar por nome ou descrição..." oninput="filtrarTiposEquipamentos()">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="modalTipoEquipamentoTable" class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Nome do Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Equipment type data will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                            class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Variáveis para controle de modais
+        let tiposCarregados = false;
+        let setoresCarregados = false;
+
+        document.getElementById('foto').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Verifica o tamanho do arquivo (opcional, pode fazer no backend também)
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    showAlert('Erro', 'O arquivo é muito grande. Tamanho máximo: 10MB', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('foto', file);
+                formData.append('tag_equipamento', tagEquipamento);
+                formData.append('localizacao', localizacao);
+
+                // Mostra loading
+                Swal.fire({
+                    title: 'Enviando foto...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+
+                fetch('/api/upload_foto_equipamento', {
+                    method: 'POST',
+                    body: formData,
+                    // Não definir Content-Type, o browser vai definir automaticamente com boundary
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        // Armazene o filepath para usar quando cadastrar o equipamento
+                        document.getElementById('foto_path').value = data.filepath;
+                        showAlert('Sucesso', data.message, 'success');
+                    } else {
+                        showAlert('Erro', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                    const message = error.message || 'Falha ao enviar foto';
+                    showAlert('Erro', message, 'error');
+                });
+            }
+        }); 
+
+        // Função para abrir o modal de tipos de equipamento
+        function abrirModalTipoEquipamento() {
+            if (!tiposCarregados) {
+                carregarTiposEquipamento();
+                tiposCarregados = true;
+            }
+            var modal = new bootstrap.Modal(document.getElementById('modalTipoEquipamento'));
+            modal.show();
+        }
+        
+        // Função para carregar os tipos de equipamento da API
+        async function carregarTiposEquipamento() {
+            try {
+                const response = await fetch('/api/tipos_equipamentos_ativos');
+                const tipos = await response.json();
+                preencherTabelaTiposEquipamento(tipos);
+            } catch (error) {
+                console.error('Erro ao carregar tipos de equipamento:', error);
+                showAlert('Erro', 'Não foi possível carregar a lista de tipos de equipamento', 'error');
+            }
+        }
+        
+        // Função para preencher a tabela de tipos no modal
+        function preencherTabelaTiposEquipamento(tipos) {
+            const tbody = document.getElementById('modalTipoEquipamentoTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            tipos.forEach(tipo => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = tipo.nome;
+                row.insertCell(1).textContent = tipo.descricao || 'N/A';
+                
+                // Célula de status
+                const statusCell = row.insertCell(2);
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `badge bg-${tipo.status ? 'success' : 'danger'}`;
+                statusBadge.textContent = tipo.status ? 'Ativo' : 'Inativo';
+                statusCell.appendChild(statusBadge);
+                
+                // Célula de ação
+                const selectCell = row.insertCell(3);
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Selecionar';
+                selectButton.className = 'btn btn-sm btn-primary-custom';
+                selectButton.onclick = function() {
+                    document.getElementById('tipo').value = tipo.nome;
+                    document.getElementById('tipo_id').value = tipo.id;
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('modalTipoEquipamento'));
+                    modal.hide();
+                    toggleExtintorCampos();
+                };
+                selectCell.appendChild(selectButton);
+            });
+        }
+        
+        // Função para filtrar tipos de equipamento na tabela
+        function filtrarTiposEquipamentos() {
+            const searchValue = document.getElementById('modalTipoEquipamentoSearch').value.toLowerCase();
+            const rows = document.getElementById('modalTipoEquipamentoTable').getElementsByTagName('tbody')[0].rows;
+            
+            for (let row of rows) {
+                const nomeTipo = row.cells[0].textContent.toLowerCase();
+                const descricao = row.cells[1].textContent.toLowerCase();
+                
+                if (nomeTipo.includes(searchValue) || descricao.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }       
+
+        // Função para o modal de setor
+        function abrirModalSetor() {
+            if (!setoresCarregados) {
+                carregarSetores();
+                setoresCarregados = true;
+            }
+            var modal = new bootstrap.Modal(document.getElementById('modalSetor'));
+            modal.show();
+        }
+
+        // Função para carregar os setores da API
+        async function carregarSetores() {
+            try {
+                const response = await fetch('/api/setores_selecao');
+                const setores = await response.json();
+                preencherTabelaSetores(setores);
+            } catch (error) {
+                console.error('Erro ao carregar setores:', error);
+                showAlert('Erro', 'Não foi possível carregar a lista de setores', 'error');
+            }
+        }
+
+        // Função para preencher a tabela de setores no modal
+        function preencherTabelaSetores(setores) {
+            const tbody = document.getElementById('modalSetorTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            setores.forEach(setor => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = setor.nome_setor;
+                row.insertCell(1).textContent = setor.centro_custo;
+                
+                const selectCell = row.insertCell(2);
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Selecionar';
+                selectButton.className = 'btn btn-sm btn-primary-custom';
+                selectButton.onclick = function() {
+                    document.getElementById('localizacao').value = setor.nome_setor;
+                    document.getElementById('setor_id').value = setor.id;
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('modalSetor'));
+                    modal.hide();
+                };
+                selectCell.appendChild(selectButton);
+            });
+        }
+
+        // Função para filtrar setores na tabela
+        function filtrarSetores() {
+            const searchValue = document.getElementById('modalSetorSearch').value.toLowerCase();
+            const rows = document.getElementById('modalSetorTable').getElementsByTagName('tbody')[0].rows;
+            
+            for (let row of rows) {
+                const nomeSetor = row.cells[0].textContent.toLowerCase();
+                const centroCusto = row.cells[1].textContent.toLowerCase();
+                
+                if (nomeSetor.includes(searchValue) || centroCusto.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        // Função para exibir ou ocultar campos específicos do Extintor
+        function toggleExtintorCampos() {
+            const tipo = document.getElementById('tipo').value;
+            const classeGroup = document.getElementById('classe-group');
+            const pesoGroup = document.getElementById('peso-group');            
+            const testeN2Group = document.getElementById('teste_hidrostatico_n2-group');
+            const testeN3Group = document.getElementById('teste_hidrostatico_n3-group');
+
+            if (tipo === 'Extintor') {
+                classeGroup.style.display = 'block';
+                testeN2Group.style.display = 'block';
+                testeN3Group.style.display = 'block';
+                pesoGroup.style.display = 'block';               
+                document.getElementById('classe').required = true;
+                document.getElementById('peso').required = true;                                 
+            } else {
+                classeGroup.style.display = 'none';
+                testeN2Group.style.display = 'none';
+                testeN3Group.style.display = 'none';
+                pesoGroup.style.display = 'none';                
+                document.getElementById('classe').required = false;
+                document.getElementById('peso').required = false;               
+            }
+        }
+
+        // Função para validar o formato de data (MM/AAAA)
+        function validarDataMMAAAA(data) {
+            const regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+            return regex.test(data);
+        }
+
+        // Função para gerar código de barras
+        function gerarCodigoBarras() {
+            const dataAtual = new Date();
+            const ano = dataAtual.getFullYear().toString().slice(-2); // Últimos 2 dígitos do ano
+            const numerosAleatorios = Array.from({ length: 3 }, () => Math.floor(Math.random() * 900) + 100).join('');
+            const codigoBarras = `${ano}${numerosAleatorios}`;
+    
+            document.getElementById('codigo_barras').value = codigoBarras;
+        }
+
+        // Funções auxiliares para mostrar mensagens
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Configuração do cropper para alteração de foto de perfil
+        let cropper = null;
+        
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+        async function validateFormEquipamento(event) {
+            event.preventDefault();
+            
+            // Limpa mensagens de erro anteriores
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            
+            // Validação básica dos campos obrigatórios
+            let isValid = true;
+            const camposObrigatorios = [
+                'tag_equipamento', 'localizacao', 'tipo', 'data_fabricacao', 'data_validade', 'status'
+            ];
+
+            camposObrigatorios.forEach(campo => {
+                const inputElement = document.getElementById(campo);
+                const errorElement = document.getElementById(`${campo}-error`);
+                
+                if (!inputElement.value.trim()) {
+                    inputElement.classList.add('is-invalid');
+                    errorElement.textContent = `O campo ${campo.replace('_', ' ')} é obrigatório.`;
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                await showAlert('Atenção', 'Preencha todos os campos obrigatórios corretamente.', 'warning');
+                return false;
+            }
+
+            // Validação específica para os campos de teste hidrostático
+            const tipo = document.getElementById('tipo').value;
+            if (tipo === 'Extintor') {
+                const testeN2 = document.getElementById('teste_hidrostatico_n2').value.trim();
+                const testeN3 = document.getElementById('teste_hidrostatico_n3').value.trim();
+
+                if (testeN2 && !validarDataMMAAAA(testeN2)) {
+                    document.getElementById('teste_hidrostatico_n2').classList.add('is-invalid');
+                    document.getElementById('teste_hidrostatico_n2-error').textContent = 'Formato inválido. Use MM/AAAA.';
+                    document.getElementById('teste_hidrostatico_n2-error').style.display = 'block';
+                    isValid = false;
+                }
+
+                if (testeN3 && !validarDataMMAAAA(testeN3)) {
+                    document.getElementById('teste_hidrostatico_n3').classList.add('is-invalid');
+                    document.getElementById('teste_hidrostatico_n3-error').textContent = 'Formato inválido. Use MM/AAAA.';
+                    document.getElementById('teste_hidrostatico_n3-error').style.display = 'block';
+                    isValid = false;
+                }
+            }
+
+            // Validação das datas
+            const dataFabricacao = new Date(document.getElementById('data_fabricacao').value);
+            const dataValidade = new Date(document.getElementById('data_validade').value);
+            const dataAtual = new Date();
+
+            if (dataFabricacao > dataAtual) {
+                document.getElementById('data_fabricacao').classList.add('is-invalid');
+                document.getElementById('data_fabricacao-error').textContent = 'A data de fabricação não pode ser superior à data atual.';
+                document.getElementById('data_fabricacao-error').style.display = 'block';
+                isValid = false;
+            }
+
+            if (dataValidade < dataFabricacao) {
+                document.getElementById('data_validade').classList.add('is-invalid');
+                document.getElementById('data_validade-error').textContent = 'A data de validade não pode ser inferior à data de fabricação.';
+                document.getElementById('data_validade-error').style.display = 'block';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return false;
+            }
+
+            // Se todas as validações passarem, envia o formulário
+            enviarFormulario();
+        }
+    
+        async function enviarFormulario() {
+            const form = document.getElementById('equipamento-form');
+            const formData = new FormData(form);
+
+            // Mostra loading
+            Swal.fire({
+                title: 'Processando...',
+                html: 'Atualizando o equipamento',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            });
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                Swal.close();
+
+                if (data.success) {
+                    await showAlert('Sucesso!', data.success, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/equipamentos/equipamentos_cadastrados';
+                    }, 2000);
+                } else if (data.error) {
+                    await showAlert('Erro', data.error, 'error');
+                } else if (data.errors) {
+                    // Tratar erros de validação do backend
+                    Object.keys(data.errors).forEach(field => {
+                        const inputElement = document.getElementById(field);
+                        const errorElement = document.getElementById(`${field}-error`);
+                        
+                        if (inputElement && errorElement) {
+                            inputElement.classList.add('is-invalid');
+                            errorElement.textContent = data.errors[field][0];
+                            errorElement.style.display = 'block';
+                        }
+                    });
+                    await showAlert('Erro', 'Corrija os erros no formulário.', 'error');
+                }
+            } catch (error) {
+                Swal.close();
+                await showAlert('Erro', 'Erro ao processar sua solicitação.', 'error');
+                console.error('Erro:', error);
+            }
+        }
+
+        // Inicializa os campos específicos do Extintor se já for um
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('tipo').value === 'Extintor') {
+                toggleExtintorCampos();
+            }
+        });
+    </script>
+</body>
+</html>

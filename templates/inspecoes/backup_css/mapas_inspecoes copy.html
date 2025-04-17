@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Mapa de Inspeções</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Corte de imagens -->   
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>     
+    
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #2DCCFF;
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Sweet Alert Style Modals */
+        .swal-modal {
+            background-color: var(--darker-bg);
+            border-radius: var(--border-radius);
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .swal-title {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .swal-text {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .swal-icon {
+            margin: 1.5rem auto;
+        }
+
+        .swal-icon--success::before, 
+        .swal-icon--success::after {
+            background: var(--darker-bg);
+        }
+
+        .swal-icon--success__hide-corners {
+            background-color: transparent;
+        }
+
+        .swal-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .swal-button:not([disabled]):hover {
+            background-color: var(--primary-dark);
+        }
+
+        .swal-button--confirm {
+            background-color: var(--primary-color);
+        }
+
+        .swal-button--cancel {
+            background-color: var(--danger-color);
+        }
+
+        .swal-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* Top Navigation Bar */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            flex-direction: row-reverse;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: var(--glass-border);
+        }
+
+        .top-bar .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-button i {
+            font-size: 1.1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .map-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            height: 1400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            border: var(--glass-border);
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .filter-control {
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: var(--glass-border);
+            border-radius: var(--border-radius);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .filter-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        select.filter-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B8B8B8'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
+
+        .filter-button {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .filter-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        /* Map Container */
+        #map-container {
+            flex: 1;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: var(--darker-bg);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 100px;
+            border: 1px solid;
+        }
+
+        .status-pendente {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+
+        .status-finalizada {
+            background-color: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .status-cancelada {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        /* Custom Marker Icons */
+        .marker-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .marker-pendente {
+            background-color: var(--warning-color);
+        }
+
+        .marker-finalizada {
+            background-color: var(--success-color);
+        }
+
+        .marker-cancelada {
+            background-color: var(--danger-color);
+        }
+
+        /* Cluster Marker Styles */
+        .marker-cluster {
+            background-clip: padding-box;
+            border-radius: 50%;
+        }
+        
+        .marker-cluster div {
+            width: 30px;
+            height: 30px;
+            margin-left: 5px;
+            margin-top: 5px;
+            text-align: center;
+            border-radius: 50%;
+            font: 12px "Poppins", sans-serif;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .marker-cluster-pendente {
+            background-color: rgba(255, 165, 0, 0.6);
+        }
+        
+        .marker-cluster-pendente div {
+            background-color: rgba(255, 165, 0, 0.8);
+            color: white;
+        }
+
+        .marker-cluster-finalizada {
+            background-color: rgba(75, 181, 67, 0.6);
+        }
+        
+        .marker-cluster-finalizada div {
+            background-color: rgba(75, 181, 67, 0.8);
+            color: white;
+        }
+
+        .marker-cluster-cancelada {
+            background-color: rgba(255, 82, 82, 0.6);
+        }
+        
+        .marker-cluster-cancelada div {
+            background-color: rgba(255, 82, 82, 0.8);
+            color: white;
+        }
+
+        .marker-cluster-mixed {
+            background-color: rgba(108, 99, 255, 0.6);
+        }
+        
+        .marker-cluster-mixed div {
+            background-color: rgba(108, 99, 255, 0.8);
+            color: white;
+        }
+
+        /* Popup Styles */
+        .leaflet-popup-content {
+            margin: 0.75rem;
+            font-family: 'Poppins', sans-serif;
+            min-width: 200px;
+        }
+
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+
+        .popup-content {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .popup-footer {
+            margin-top: 0.75rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .popup-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .popup-button:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Cluster Popup Styles */
+        .cluster-popup-content {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .cluster-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cluster-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .cluster-item-title {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cluster-item-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        /* Modal Moderno - Melhorado */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1200;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: var(--darker-bg);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            margin: 2vh auto;
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(255, 101, 132, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+        }
+
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .user-details strong {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        img {
+            overflow-clip-margin: content-box;
+            overflow: clip;
+        }
+
+        /* Inspection Detail Modal */
+        #inspection-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .inspection-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .inspection-detail-item {
+            margin-bottom: 1rem;
+        }
+
+        .inspection-detail-item strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .inspection-detail-item span {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 5rem 1rem 1rem;
+            }
+
+            .map-card {
+                padding: 1rem;
+                height: 1400px;
+
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .filters-section {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .inspection-detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .user-name {
+                display: none;
+            }
+            /* Ajuste para o modal em telas pequenas */
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+                max-height: 95vh;
+            }
+            /* Ajustes para as tabelas dentro do modal */
+            .modal-content table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modal-content .checklist-table {
+                min-width: 100%;
+                table-layout: fixed;
+            }
+            
+            .modal-content .checklist-table th,
+            .modal-content .checklist-table td {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 150px;
+            }           
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-bar">
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <button class="nav-button" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+        
+        <div class="user-profile" onclick="toggleModal()">
+            <img class="user-avatar" id="user-profile-pic" 
+                 src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                 alt="Foto de Perfil">
+            <span class="user-name" id="userName">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+        </div>
+    </header>
+ 
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="map-card">
+            <div class="page-header">
+                <h1 class="page-title">Mapa de Inspeções</h1>
+                <p class="page-subtitle">Visualize todas as inspeções realizadas em suas localizações geográficas</p>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="statusFilter" class="filter-label">Status</label>
+                    <select id="statusFilter" class="filter-control">
+                        <option value="all">Todos</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Cancelada">Cancelada</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="dateFromFilter" class="filter-label">Data Inicial</label>
+                    <input type="date" id="dateFromFilter" class="filter-control">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="dateToFilter" class="filter-label">Data Final</label>
+                    <input type="date" id="dateToFilter" class="filter-control">
+                </div>
+                
+                <button class="filter-button" id="applyFilters">
+                    <i class="fas fa-filter"></i> Aplicar Filtros
+                </button>
+            </div>
+
+            <!-- Map Container -->
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleModal()" aria-label="Fechar modal">&times;</button>
+            <h2 id="modal-title">Perfil do Usuário</h2>
+            <div class="profile-pic-container">
+                <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <button id="change-profile-pic" class="btn-secondary wave-effect" aria-label="Alterar foto de perfil">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i> Alterar Foto
+                </button>
+            </div>
+            <div class="user-details">
+                <p><strong><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                <p><strong><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                <p><strong><i class="fas fa-id-card" style="margin-right: 0.5rem;"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                <p><strong><i class="fas fa-building" style="margin-right: 0.5rem;"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                <p><strong><i class="fas fa-user-tag" style="margin-right: 0.5rem;"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                <p><strong><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary">{{ current_user.nivel_acesso }}</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="crop-modal" style="display: none;">
+        <div id="crop-container">
+            <img id="crop-image" />
+        </div>
+    </div>
+
+    <!-- Inspection Detail Modal -->
+    <div id="inspection-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="inspection-modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleInspectionModal()" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <h2 id="inspection-modal-title">Detalhes da Inspeção</h2>
+            </div>
+            
+            <div class="inspection-detail-grid">
+                <div class="inspection-detail-item">
+                    <strong>Número da Inspeção</strong>
+                    <span id="detail-inspection-number">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Tag do Equipamento</strong>
+                    <span id="detail-equipment-tag">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Tipo de Equipamento</strong>
+                    <span id="detail-equipment-type">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Localização</strong>
+                    <span id="detail-location">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Responsável</strong>
+                    <span id="detail-responsible">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Data de Registro</strong>
+                    <span id="detail-register-date">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Data de Validade</strong>
+                    <span id="detail-expiry-date">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Status</strong>
+                    <span id="detail-status" class="status-badge">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Observações</strong>
+                    <span id="detail-notes">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Motivo da Ação</strong>
+                    <span id="detail-motivo-acao">-</span>
+                </div>
+                
+                <div class="inspection-detail-item">
+                    <strong>Status do Equipamento</strong>
+                    <span id="detail-status-equipamento">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/pt-br.min.js"></script>
+
+    <script>
+        // Global variables
+        let map;
+        let markerCluster;
+        let currentInspectionId = null;
+        
+        // Create custom marker icons
+        function createMarkerIcon(status) {
+            let className = 'marker-icon ';
+            let icon = 'fa-search';
+            
+            switch(status) {
+                case 'Pendente':
+                    className += 'marker-pendente';
+                    icon = 'fa-clock';
+                    break;
+                case 'Finalizada':
+                    className += 'marker-finalizada';
+                    icon = 'fa-check-circle';
+                    break;
+                case 'Cancelada':
+                    className += 'marker-cancelada';
+                    icon = 'fa-times-circle';
+                    break;
+                default:
+                    className += 'marker-pendente';
+            }
+            
+            return L.divIcon({
+                className: className,
+                html: `<i class="fas ${icon}"></i>`,
+                iconSize: [32, 32]
+            });
+        }
+        
+        // Initialize the map
+        function initMap() {
+            // Default coordinates (can be adjusted or set dynamically)
+            const defaultCoords = [-15.793889, -47.882778]; // Brasília coordinates
+            
+            map = L.map('map').setView(defaultCoords, 13);
+            
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+            }).addTo(map);
+            
+            // Initialize marker cluster group
+            markerCluster = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    const childMarkers = cluster.getAllChildMarkers();
+                    let statusCounts = {
+                        'Pendente': 0,
+                        'Finalizada': 0,
+                        'Cancelada': 0
+                    };
+                    
+                    // Count markers by status
+                    childMarkers.forEach(marker => {
+                        const status = marker.options.status || 'Pendente';
+                        statusCounts[status]++;
+                    });
+                    
+                    // Determine cluster type
+                    let clusterType = 'mixed';
+                    if (statusCounts['Pendente'] === childMarkers.length) {
+                        clusterType = 'pendente';
+                    } else if (statusCounts['Finalizada'] === childMarkers.length) {
+                        clusterType = 'finalizada';
+                    } else if (statusCounts['Cancelada'] === childMarkers.length) {
+                        clusterType = 'cancelada';
+                    }
+                    
+                    // Create cluster icon
+                    return L.divIcon({
+                        className: `marker-cluster marker-cluster-${clusterType}`,
+                        html: `<div>${childMarkers.length}</div>`,
+                        iconSize: L.point(40, 40)
+                    });
+                },
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                maxClusterRadius: 40
+            });
+            
+            map.addLayer(markerCluster);
+            
+            // Load inspections data
+            loadInspections();
+        }
+        
+        // Load inspections with optional filters
+        async function loadInspections(filters = {}) {
+            try {
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Carregando...',
+                    html: 'Buscando inspeções no mapa',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+                
+                // Build query string from filters
+                const queryParams = new URLSearchParams();
+                
+                if (filters.status && filters.status !== 'all') {
+                    queryParams.append('status', filters.status);
+                }
+                
+                if (filters.dateFrom) {
+                    queryParams.append('dateFrom', filters.dateFrom);
+                }
+                
+                if (filters.dateTo) {
+                    queryParams.append('dateTo', filters.dateTo);
+                }
+                
+                // Fetch inspections data
+                const response = await fetch(`/api/inspecoes?${queryParams.toString()}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Falha ao carregar inspeções');
+                }
+                
+                const data = await response.json();
+                
+                // Clear existing markers
+                clearMarkers();
+                
+                // Process each inspection
+                const inspections = data.data || [];
+                let hasLocations = false;
+                let markers = [];
+                
+                for (const inspection of inspections) {
+                    // Get location for this inspection
+                    const locationResponse = await fetch(`/api/inspecoes/${inspection.id}/localizacao`);
+                    
+                    if (locationResponse.ok) {
+                        const locationData = await locationResponse.json();
+                        
+                        if (locationData.latitude && locationData.longitude) {
+                            hasLocations = true;
+                            const marker = createMarker(inspection, locationData);
+                            markers.push(marker);
+                        }
+                    }
+                }
+                
+                // Add all markers to cluster group at once for better performance
+                markerCluster.addLayers(markers);
+                
+                // Fit map to show all markers if we have any
+                if (markers.length > 0) {
+                    map.fitBounds(markerCluster.getBounds().pad(0.5));
+                }
+                
+                Swal.close();
+                
+                if (!hasLocations) {
+                    showAlert('Aviso', 'Nenhuma inspeção com localização encontrada.', 'info');
+                }
+                
+            } catch (error) {
+                Swal.close();
+                console.error('Erro ao carregar inspeções:', error);
+                showAlert('Erro', error.message || 'Não foi possível carregar as inspeções.', 'error');
+            }
+        }
+        
+        // Create marker with popup
+        function createMarker(inspection, location) {
+            const marker = L.marker([location.latitude, location.longitude], {
+                icon: createMarkerIcon(inspection.status_inspecao),
+                status: inspection.status_inspecao
+            });
+            
+            // Add popup with inspection info
+            marker.bindPopup(`
+                <div class="popup-title">
+                    Inspeção ${inspection.numero_inspecao || ''}
+                </div>
+                <div class="popup-content">
+                    <strong>Equipamento:</strong> ${inspection.tag_equipamento || '-'}<br>
+                    <strong>Local:</strong> ${inspection.localizacao || '-'}<br>
+                    <strong>Status:</strong> ${inspection.status_inspecao}<br>
+                    <strong>Data da Inspeção:</strong> ${inspection.data_registro}<br>
+                    <strong>Data Validade:</strong> ${inspection.data_validade_inspecao}                    
+                </div>
+                <div class="popup-footer">
+                    <button class="popup-button" onclick="viewInspectionDetails('${inspection.id}', event)">
+                        <i class="fas fa-eye"></i> Detalhes
+                    </button>
+                </div>
+            `);
+            
+            return marker;
+        }
+        
+        // Create cluster popup content
+        function createClusterPopup(markers) {
+            let content = `<div class="cluster-popup-content">`;
+            content += `<div class="popup-title">${markers.length} Inspeções neste local</div>`;
+            
+            // Group by status
+            const grouped = {};
+            markers.forEach(marker => {
+                const status = marker.options.status || 'Pendente';
+                if (!grouped[status]) {
+                    grouped[status] = [];
+                }
+                grouped[status].push(marker.options.inspection);
+            });
+            
+            // Add items for each status group
+            for (const [status, inspections] of Object.entries(grouped)) {
+                content += `<div style="margin-top: 0.5rem;"><strong>${status}:</strong> ${inspections.length}</div>`;
+                
+                inspections.forEach(inspection => {
+                    content += `
+                        <div class="cluster-item" onclick="viewInspectionDetails('${inspection.id}', event)">
+                            <div class="cluster-item-title">
+                                <span class="cluster-item-status" style="background-color: ${getStatusColor(status)}"></span>
+                                ${inspection.numero_inspecao || 'Sem número'} - ${inspection.tag_equipamento || 'Sem tag'}
+                            </div>
+                            <div style="font-size: 0.8rem; color: #666;">
+                                ${formatDate(inspection.data_registro)}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            content += `</div>`;
+            return content;
+        }
+        
+        // Get color for status
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Pendente': return 'var(--warning-color)';
+                case 'Finalizada': return 'var(--success-color)';
+                case 'Cancelada': return 'var(--danger-color)';
+                default: return 'var(--primary-color)';
+            }
+        }
+        
+        // Clear all markers from the map
+        function clearMarkers() {
+            markerCluster.clearLayers();
+        }
+        
+        // Format status with badge
+        function formatStatus(status) {
+            if (!status) return '-';
+            
+            const statusMap = {
+                'Pendente': 'status-pendente',
+                'Finalizada': 'status-finalizada',
+                'Cancelada': 'status-cancelada'
+            };
+            
+            const statusClass = statusMap[status] || '';
+            return `<span class="status-badge ${statusClass}">${status}</span>`;
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            
+            // Verifica se a data está no formato 'dd-mm-YYYY HH:MM:SS'
+            if (dateString.match(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$/)) {
+                return moment(dateString, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY HH:mm');
+            }
+            
+            // Tenta outros formatos como fallback
+            return moment(dateString).isValid() ? moment(dateString).format('DD/MM/YYYY HH:mm') : '-';
+        }
+        
+        // View inspection details
+        async function viewInspectionDetails(inspectionId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            currentInspectionId = inspectionId;
+            
+            try {
+                Swal.fire({
+                    title: 'Carregando...',
+                    html: 'Buscando detalhes da inspeção',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+
+                const response = await fetch(`/api/inspecoes/${inspectionId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Falha ao carregar detalhes da inspeção');
+                }
+                
+                const inspection = await response.json();
+                Swal.close();
+                
+                // Update all fields
+                document.getElementById('detail-inspection-number').textContent = inspection.numero_inspecao || '-';
+                document.getElementById('detail-equipment-tag').textContent = inspection.tag_equipamento || '-';
+                document.getElementById('detail-equipment-type').textContent = inspection.tipo || '-';
+                document.getElementById('detail-location').textContent = inspection.localizacao || '-';
+                document.getElementById('detail-responsible').textContent = inspection.responsavel || '-';
+                document.getElementById('detail-register-date').textContent = inspection.data_registro || '-';
+                document.getElementById('detail-expiry-date').textContent = inspection.data_validade_inspecao || '-';
+                document.getElementById('detail-status').innerHTML = inspection.status_inspecao || '-';
+                document.getElementById('detail-notes').textContent = inspection.observacoes || '-';
+                document.getElementById('detail-motivo-acao').textContent = inspection.motivo_acao || '-';
+                document.getElementById('detail-status-equipamento').textContent = inspection.status_equipamento || '-';
+                
+                document.getElementById('inspection-modal-title').textContent = 
+                    `Inspeção ${inspection.numero_inspecao || ''} - ${inspection.tag_equipamento || ''}`;
+                
+                toggleInspectionModal();
+            } catch (error) {
+                Swal.close();
+                console.error('Erro ao carregar detalhes:', error);
+                showAlert('Erro', error.message || 'Não foi possível carregar os detalhes da inspeção.', 'error');
+            }
+        }
+
+        // Toggle inspection modal
+        function toggleInspectionModal() {
+            const modal = document.getElementById('inspection-modal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'flex';
+            }
+        }
+        
+        // Toggle user modal
+        function toggleModal() {
+            const modal = document.getElementById('user-modal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'flex';
+            }
+        }
+
+        // Helper functions for showing messages
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Initialize the application
+        $(document).ready(function() {
+            // Initialize the map
+            initMap();
+            
+            // Apply filters button
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                const filters = {
+                    status: document.getElementById('statusFilter').value,
+                    dateFrom: document.getElementById('dateFromFilter').value,
+                    dateTo: document.getElementById('dateToFilter').value
+                };
+                
+                loadInspections(filters);
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                const userModal = document.getElementById('user-modal');
+                const inspectionModal = document.getElementById('inspection-modal');
+                
+                if (event.target === userModal) {
+                    toggleModal();
+                }
+                
+                if (event.target === inspectionModal) {
+                    toggleInspectionModal();
+                }
+            });
+        });
+        let cropper = null;
+
+        document.getElementById('change-profile-pic').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+       
+        // Logout function
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

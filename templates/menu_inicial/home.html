@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Inspeção de Equipamentos - InspekApp">
+    <title>InspekApp - Pagina Principal</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --primary-light: #A5A2FF;
+            --secondary-color: #FF6584;
+            --secondary-dark: #E04D6D;
+            --accent-color: #00C9A7;
+            --dark-bg: #121212;
+            --darker-bg: #1E1E1E;
+            --card-bg: #242424;
+            --card-hover: #2D2D2D;
+            --text-light: #F5F5F5;
+            --text-muted: #B0B0B0;
+            --text-dark: #333333;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #2196F3;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --box-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --glass-effect: rgba(30, 30, 30, 0.7);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .text-muted {
+            --bs-text-opacity: 1;
+            color: #fff !important;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text-light);
+            line-height: 1.6;
+            background-color: var(--dark-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+        .stat-change.up {
+            color: green;
+        }
+
+        .stat-change.down {
+            color: red;
+        }
+        h1, h2, h3, h4, h5 {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        /* Layout Principal */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Moderna - Inicia oculto em todas as telas */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-effect);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: var(--glass-border);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            overflow-y: auto;
+            padding-top: var(--header-height);
+            transform: translateX(-100%);
+        }
+
+        /* Sidebar visível quando não está collapsed */
+        .sidebar:not(.sidebar-collapsed) {
+            transform: translateX(0);
+        }
+
+        /* Ajuste quando sidebar está visível */
+        .sidebar:not(.sidebar-collapsed) + .main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Navbar - ajuste para sidebar oculto */
+        .navbar {
+            background: var(--glass-effect);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--box-shadow-sm);
+            height: var(--header-height);
+            border-bottom: var(--glass-border);
+            padding: 0.5rem 1.5rem;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0; /* Ocupa toda a largura quando sidebar oculto */
+            z-index: 999;
+            transition: var(--transition);
+        }
+
+        /* Ajuste da navbar quando sidebar está visível */
+        .sidebar:not(.sidebar-collapsed) + .main-content .navbar {
+            left: var(--sidebar-width);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-brand-icon {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        .notificacao-item {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .notificacao-item:hover {
+            background-color: rgba(108, 99, 255, 0.05);
+        }
+        .notificacao-item.vencido {
+            border-left-color: var(--danger-color);
+        }
+        .notificacao-item.proximo {
+            border-left-color: var(--warning-color);
+        }
+        .notificacao-item.normal {
+            border-left-color: var(--info-color);
+        }
+        .notificacao-tempo {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .notificacao-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+
+        element.style {
+            width: 600px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .nav-item {
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-muted);
+            transition: var(--transition);
+            border-radius: var(--border-radius-sm);
+            position: relative;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color);
+            background: rgba(108, 99, 255, 0.1);
+        }
+
+        .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .nav-link.active:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-color);
+            border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-text {
+            flex: 1;
+        }
+
+        .nav-badge {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            margin-top: auto;
+            border-top: var(--glass-border);
+        }
+
+        /* Conteúdo Principal - ajuste para sidebar oculto */
+        .main-content {
+            flex: 1;
+            margin-left: 0; /* Inicia sem margem */
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content-expanded {
+            margin-left: 0;
+        }
+
+        /* Header Moderno com Glassmorphism */
+        .navbar {
+            background: var(--glass-effect);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--box-shadow-sm);
+            height: var(--header-height);
+            border-bottom: var(--glass-border);
+            padding: 0.5rem 1.5rem;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            z-index: 999;
+            transition: var(--transition);
+        }
+
+        .navbar-expanded {
+            left: 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .navbar-toggler {
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            transition: var(--transition);
+            margin-right: 1rem;
+        }
+
+        .navbar-toggler:hover {
+            color: var(--primary-color);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        .dropdown-menu {
+            background: var(--darker-bg);
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .dropdown-item {
+            color: var(--text-light);
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+        }
+
+        .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: transparent;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 0;
+        }
+
+        .breadcrumb-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary-color);
+        }
+
+        /* Conteúdo da Página */
+        .page-content {
+            flex: 1;
+            padding: 1.5rem;
+            margin-top: var(--header-height);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-title-icon {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        /* Cards de Estatísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow);
+            border-color: rgba(108, 99, 255, 0.3);
+            background: var(--card-hover);
+        }
+
+        .stat-card:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover:after {
+            transform: translateX(100%);
+        }
+
+        .stat-icon {
+            font-size: 1.75rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .stat-change.up {
+            color: var(--success-color);
+        }
+
+        .stat-change.down {
+            color: var(--danger-color);
+        }
+
+        /* Cards de Ação */
+        .action-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow);
+            border-color: rgba(108, 99, 255, 0.3);
+            background: var(--card-hover);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: var(--transition);
+        }
+
+        .action-card:hover .card-header:after {
+            transform: translateX(100%);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .action-card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-title {
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .card-body {
+            flex: 1;
+            padding: 1.25rem;
+        }
+
+        .card-footer {
+            padding: 0 1.25rem 1.25rem;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            transition: var(--transition);
+            width: 100%;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            min-height: 42px;            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            color: var(--text-light);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        }
+
+        .btn-primary-custom:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: var(--transition);
+        }
+
+        .btn-primary-custom:hover:after {
+            transform: translateX(100%);
+        }
+
+        /* Badges */
+        .badge-custom {
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-primary-custom {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .badge-success-custom {
+            background: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .badge-warning-custom {
+            background: rgba(255, 165, 0, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .badge-danger-custom {
+            background: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        /* Seção Hero */
+        .hero-section {
+            margin-bottom: 3rem;
+            position: relative;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .hero-image {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.9), rgba(0, 201, 167, 0.8));       
+            background-size: cover;
+            background-position: center;
+            height: 320px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-light);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #ffffff, #e0e0e0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .hero-cta {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: white;
+            padding: 0.75rem 1.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-cta:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        /* Seção de Ações Rápidas */
+        .quick-actions {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+            border-radius: 3px;
+        }
+
+        .section-title-icon {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        /* Grid de Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--glass-effect);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--text-muted);
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: auto;
+            border-top: var(--glass-border);
+            font-size: 0.85rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Modal */
+        .modal-content {
+            background-color: var(--darker-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+        }
+
+        .modal-title {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+        }
+
+        .btn-close {
+            filter: invert(1);
+            opacity: 0.8;
+        }
+
+        /* Animação de fundo */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 15s infinite linear;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-color);
+            top: 20%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+
+        .circle-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary-color);
+            top: 60%;
+            left: 30%;
+            animation-duration: 25s;
+            animation-delay: 5s;
+        }
+
+        .circle-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent-color);
+            top: 30%;
+            left: 70%;
+            animation-duration: 15s;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(50px, 50px);
+            }
+            50% {
+                transform: translate(0, 100px);
+            }
+            75% {
+                transform: translate(-50px, 50px);
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* Efeito de partículas */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float linear infinite;
+            pointer-events: none;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--darker-bg);
+            color: var(--text-light);
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .toast.info {
+            border-left-color: var(--info-color);
+        }
+
+        .toast-close {
+            cursor: pointer;
+            margin-left: 1rem;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Ajustes para telas grandes (desktop) */
+        @media (min-width: 1200px) {
+            /* Garante que o botão de toggle esteja sempre visível */
+            #sidebarToggle {
+                display: block !important;
+            }
+
+            /* Ajuste específico para o botão na navbar */
+            .navbar .navbar-toggler {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                margin-right: 1rem;
+            }
+
+            /* Ajusta o posicionamento do toggle */
+            .navbar-toggler {
+                display: flex;
+            }
+            
+            /* Sidebar pode ser mostrado/ocultado com o botão */
+            .sidebar-collapsed {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar:not(.sidebar-collapsed) {
+                transform: translateX(0);
+            }
+        }
+
+        /* Ajustes para telas médias (tablets) */
+        @media (max-width: 1199.98px) {
+            /* Garante que o sidebar fique oculto */
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar-collapsed {
+                transform: translateX(0);
+            }
+            
+            /* Garante que o botão de toggle esteja sempre visível */
+            #sidebarToggle {
+                display: block !important;
+            }
+            
+            /* Ajusta o conteúdo principal */
+            .main-content {
+                margin-left: 0;
+            }
+            
+            /* Ajusta a navbar */
+            .navbar {
+                left: 0;
+            }
+        }
+
+        /* Ajustes para telas pequenas (celulares) */
+        @media (max-width: 767.98px) {
+            /* Sidebar sempre inicia oculto */
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            /* Garante que o botão de toggle esteja sempre visível */
+            #sidebarToggle {
+                display: block !important;
+            }   
+
+            .navbar>.container, .navbar>.container-fluid, .navbar>.container-lg, .navbar>.container-md, .navbar>.container-sm, .navbar>.container-xl, .navbar>.container-xxl {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: baseline;
+                background: #1e1e1e;
+                justify-content: center;
+                align-content: stretch;
+            }
+
+            /* Esconde o toggle do desktop */
+            #sidebarToggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animação de fundo -->
+    <div class="bg-animation">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+    </div>
+
+    <!-- Efeito de partículas -->
+    <div class="particles" id="particles"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-header">
+                    <span class="sidebar-brand">
+                        <i class="fas fa-shield-alt sidebar-brand-icon"></i>
+                        <span class="logo-text">InspekApp</span>
+                    </span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-home nav-icon"></i>
+                            <span class="nav-text">Menu Inicial</span>
+                        </a>
+                    </li>
+                    
+                    {% if 'visualizar_dashboards' in allowed_menus %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('visualizar_dashboards') }}">
+                            <i class="fas fa-chart-pie nav-icon"></i>
+                            <span class="nav-text">Visualizar Dashboards</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'logs_auditoria' in allowed_menus %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logs_auditoria') }}">
+                            <i class="fas fa-clipboard-list nav-icon"></i>
+                            <span class="nav-text">Visualizar Logs</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('abre_gestao_manutencao') }}">
+                            <i class="fas fa-clipboard-list nav-icon"></i>
+                            <span class="nav-text">Gestão de Manutenções</span>
+                        </a>
+                    </li>
+
+                    {% if 'configuracoes' in allowed_menus %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/configuracoes">
+                            <i class="fas fa-cog nav-icon"></i>
+                            <span class="nav-text">Configurações</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <div>
+                        <div class="text-white">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</div>
+                        <small class="text-muted">{{ current_user.nivel_acesso }}</small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-light w-100" id="logoutButton">
+                    <i class="fas fa-sign-out-alt me-1"></i> Sair
+                </button>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content" id="mainContent">
+            
+            <!-- Navbar --> 
+            <nav class="navbar navbar-expanded navbar-dark">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="d-flex align-items-center">
+                        
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item active" aria-current="page">Olá, {{ current_user.primeiro_nome }}</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                    <!-- Dropdown de Notificações Aprimorado -->
+                    <div class="dropdown">
+                        <a href="#" class="text-white me-3 position-relative" data-bs-toggle="dropdown" aria-expanded="false" id="notificacoesDropdown">
+                            <i class="fas fa-bell fa-lg"></i>
+                            <span class="notification-badge" id="notificationCounter">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-0" style="width: 350px; max-height: 600px; overflow-y: auto;">
+                            <li>
+                                <h6 class="dropdown-header d-flex justify-content-between align-items-center bg-dark text-white p-3">
+                                    <span class="fw-bold fs-5">
+                                        <i class="fas fa-bell me-2"></i> Notificações
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-light" id="marcarTodasComoLidas">
+                                        <i class="fas fa-check-circle me-1"></i> Marcar todas como lidas
+                                    </button>
+                                </h6>
+                            </li>
+                            <li><hr class="dropdown-divider m-0"></li>
+                            <div id="notificacoesLista" class="p-0">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Carregando...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <li><hr class="dropdown-divider m-0"></li>
+                            <li>
+                                <a class="dropdown-item text-center text-primary fw-bold py-3" href="/notificacoes">
+                                    <i class="fas fa-list me-2"></i> Ver histórico completo
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                                               
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                                <span class="d-none d-sm-inline">{{ current_user.primeiro_nome }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <h6 class="dropdown-header text-center">
+                                        <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar mb-2" style="width: 80px; height: 80px;">
+                                        <div>{{ current_user.nome }}</div>
+                                        <small class="text-muted">{{ current_user.email }}</small>
+                                    </h6>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                        <i class="fas fa-user me-2"></i> Meu Perfil
+                                    </a>
+                                </li>
+                                {% if 'alterar_senha' in allowed_menus %}
+                                <li>
+                                    <a class="dropdown-item" href="/senhas/reset_senha">
+                                        <i class="fas fa-key me-2"></i> Alterar Senha
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                                        <i class="fas fa-camera me-2"></i> Alterar Foto
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" id="logoutButton">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Sair
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Conteúdo da Página -->
+            <div class="page-content">
+                <!-- Seção Hero -->
+                <section class="hero-section mb-4" data-aos="fade-in">
+                    <div class="hero-image">
+                        <div class="hero-content">
+                            <h1 class="hero-title">Bem-vindo ao InspekApp</h1>
+                            <p class="hero-subtitle">Sistema completo para gestão e inspeção de equipamentos de segurança</p>
+                            {% if 'inspecao' in allowed_menus %}  
+                            <a href="{{ url_for('inspecao') }}" class="hero-cta">
+                                <i class="fas fa-play me-2"></i> Começar Nova Inspeção
+                            </a>
+                            {% endif %}                        
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Estatísticas -->
+                <section class="mb-5">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-line section-title-icon"></i>
+                        Visão Geral
+                    </h2>
+                    
+                    <div class="stats-grid" id="stats-dashboard">
+                        <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="stat-icon"><i class="fas fa-fire-extinguisher"></i></div>
+                            <h3 class="stat-title">Equipamentos Cadastrados</h3>
+                            <p class="stat-value" id="equipamentos-total">...</p>
+                        </div>                                        
+                        <div class="stat-card" data-aos="fade-up" data-aos-delay="150">
+                            <div class="stat-icon"><i class="fas fa-calendar-times"></i></div>
+                            <h3 class="stat-title">Equipamentos Vencidos</h3>
+                            <p class="stat-value" id="equipamentos-vencidos">...</p>
+                        </div>
+                        <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                            <h3 class="stat-title">Inspeções Finalizadas</h3>
+                            <p class="stat-value" id="inspecoes-finalizadas">...</p>
+                        </div>
+                        <div class="stat-card" data-aos="fade-up" data-aos-delay="250">
+                            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                            <h3 class="stat-title">Inspeções Pendentes</h3>
+                            <p class="stat-value" id="inspecoes-pendentes">...</p>
+                        </div>
+                        <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+                            <div class="stat-icon"><i class="fas fa-calendar-times"></i></div>
+                            <h3 class="stat-title">Inspeções Vencidas</h3>
+                            <p class="stat-value" id="inspecoes-atrasadas">...</p>
+                        </div>
+                    </div>
+                    
+                </section>
+
+                <!-- Ações Rápidas -->
+                <section class="quick-actions mb-5">
+                    <h2 class="section-title">
+                        <i class="fas fa-bolt section-title-icon"></i>
+                        Ações Rápidas
+                    </h2>
+                    
+                    <div class="cards-grid">
+                        {% if 'inspecoes_cadastrados' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-list-alt"></i>
+                                </div>
+                                <h3 class="card-title">Inspeções</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Realize Inspeção e Consulte todo o histórico de inspeções realizadas com filtros avançados e exportação de dados.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('inspecoes_cadastrados') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                        {% if 'pendencias_inspecoes' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="150">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <h3 class="card-title">Minhas Inspeções</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Consulte todo o histórico de inspeções realizadas por você, com filtros avançados e exportação de dados.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('pendencias_inspecoes') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if 'mapas_inspecoes' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </div>
+                                <h3 class="card-title">Mapa de Inspeções</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Visualize o Mapa de Inspeções no sistema de inspeção.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('mapa_inspecoes') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if 'equipamentos_cadastrados' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="250">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-fire-extinguisher"></i>
+                                </div>
+                                <h3 class="card-title">Equipamentos</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Cadastre e gerencie todos os equipamentos de inspeção em um só lugar com visualização intuitiva.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('equipamentos_cadastrados') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                        {% if 'usuarios_cadastrados' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="300">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h3 class="card-title">Usuários</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Cadastre e gerencie os usuários no sistema com opções de edição e desativação.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('usuarios_cadastrados') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                        {% if 'setores_cadastrados' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="350">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-sitemap"></i>
+                                </div>
+                                <h3 class="card-title">Setores</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Visualize, cadastre e gerencie todos os setores no sistema de inspeção.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('setores_cadastrados') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if 'tipos_equipamentos_cadastrados' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fa-solid fa-toolbox"></i>   
+                                </div>
+                                <h3 class="card-title">Tipos de equipamentos</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Visualize, cadastre e gerencie todos os tipos de equipamentos no sistema de inspeção.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <a href="{{ url_for('tipos_equipamentos_cadastrados') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}                        
+                    </div>
+                </section>
+
+                <!-- Outras Funcionalidades -->
+                <section class="mb-5">
+                    <h2 class="section-title">
+                        <i class="fas fa-cogs section-title-icon"></i>
+                        Outras Funcionalidades
+                    </h2>
+                    
+                    <div class="cards-grid">
+                        {% if 'notificacoes' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="350">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h3 class="card-title">Notificações de Inspeções</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Acompanhe as inspeções que estão próximas do vencimento ou já vencidas.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('notificacoes') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                        {% if 'notificacoes_equipamentos' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="400">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h3 class="card-title">Notificações de Equipamentos</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Receba alertas sobre equipamentos que necessitam de atenção ou manutenção.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <a href="{{ url_for('notificacoes_equipamentos') }}" class="btn btn-primary-custom">
+                                    <i class="fas fa-arrow-right me-2"></i> Acessar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if 'relatorio_equipamentos' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="250">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h3 class="card-title">Relatório de Equipamentos</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Gere relatórios detalhados sobre os equipamentos cadastrados.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <a href="{{ url_for('relatorio_equipamentos') }}" class="btn btn-primary-custom">Acessar</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                        {% if 'relatorio_inspecoes' in allowed_menus %}
+                        <div class="action-card" data-aos="fade-up" data-aos-delay="300">
+                            <div class="card-header">
+                                <div class="card-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h3 class="card-title">Relatório de Inspeções</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Exporte relatórios completos das inspeções realizadas.</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <a href="{{ url_for('relatorio_inspecoes') }}" class="btn btn-primary-custom">Acessar</a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Perfil -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar mb-3" style="width: 120px; height: 120px;">
+
+                    <div class="user-details text-start">
+                        <p class="border-bottom pb-2 mb-3"><strong><i class="fas fa-user me-2"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                        <p class="border-bottom pb-2 mb-3"><strong><i class="fas fa-envelope me-2"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                        <p class="border-bottom pb-2 mb-3"><strong><i class="fas fa-id-card me-2"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                        <p class="border-bottom pb-2 mb-3"><strong><i class="fas fa-building me-2"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                        <p class="border-bottom pb-2 mb-3"><strong><i class="fas fa-user-tag me-2"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                        <p><strong><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary-custom">{{ current_user.nivel_acesso }}</span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="#" onclick="showToast('Página de suporte em desenvolvimento', 'info')">Suporte</a>
+                <a href="#" onclick="showToast('Documentação em desenvolvimento', 'info')">Documentação</a>
+                <a href="#" onclick="showToast('Termos de serviço em desenvolvimento', 'info')">Termos</a>
+                <a href="#" onclick="showToast('Política de privacidade em desenvolvimento', 'info')">Privacidade</a>
+            </div>
+            <p class="mb-0">InspekApp &copy; <span id="current-year"></span> - Sistema de Inspeção de Equipamentos</p>
+            <p class="mb-0"><small>v2.1.0</small></p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- CropperJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
+    <script>
+        // Inicializa AOS Animation
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            offset: 50
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.stat-card');
+
+            const endpoints = {
+                'equipamentos-cadastrados': '/api/equipamentos/contagem_mensal',
+                'equipamentos-vencidos': '/api/equipamentos/vencidos_mensal',
+                'inspecoes-pendentes': '/api/inspecoes/contagem_mensal?status=Pendente',
+                'inspecoes-finalizadas': '/api/inspecoes/contagem_mensal?status=Finalizada',
+                'inspecoes-atrasadas': '/api/inspecoes/vencidas_mensal',
+            };
+
+            cards.forEach(card => {
+                const type = card.dataset.type;
+                const endpoint = endpoints[type];
+                if (!endpoint) return;
+
+                fetch(endpoint)
+                    .then(res => res.json())
+                    .then(data => {
+                        const valueEl = card.querySelector('.stat-value');
+                        const changeEl = card.querySelector('.stat-change');
+
+                        const valor = data.atual ?? data.total ?? 0;
+                        const variacao = data.variacao ?? 0;
+
+                        // Atualiza o valor principal
+                        valueEl.textContent = valor.toLocaleString('pt-BR');
+
+                        // Atualiza a variação
+                        const isUp = variacao >= 0;
+                        const iconClass = isUp ? 'fa-arrow-up' : 'fa-arrow-down';
+                        const changeClass = isUp ? 'up' : 'down';
+                        const corTexto = isUp ? 'positivo' : 'negativo';
+
+                        // Atualiza o texto e ícone
+                        changeEl.classList.remove('up', 'down');
+                        changeEl.classList.add(changeClass);
+                        changeEl.innerHTML = `
+                            <i class="fas ${iconClass} me-1"></i> ${Math.abs(variacao)}% este mês
+                        `;
+                    })
+                    .catch(err => {
+                        console.error(`Erro ao carregar ${type}:`, err);
+                    });
+            });
+        });
+
+        async function fetchContadoresDashboard() {
+            const equipamentosRes = await fetch('/api/equipamentos/contagem_status');
+            const inspecoesFinalizadasRes = await fetch('/api/inspecoes/contagem?status=Finalizada');
+            const inspecoesPendentesRes = await fetch('/api/inspecoes/contagem?status=Pendente');
+            const inspecoesAtrasadasRes = await fetch('/api/inspecoes/vencidas_mensal');
+
+            const equipamentos = await equipamentosRes.json();
+            const inspecoesFinalizadas = await inspecoesFinalizadasRes.json();
+            const inspecoesPendentes = await inspecoesPendentesRes.json();
+            const inspecoesAtrasadas = await inspecoesAtrasadasRes.json();
+
+            document.getElementById('equipamentos-total').textContent = (
+                (equipamentos['Ativo'] || 0) + 
+                (equipamentos['Inativo'] || 0) + 
+                (equipamentos['Descartado'] || 0)
+            );
+
+            document.getElementById('equipamentos-vencidos').textContent = equipamentos['Vencido'] || 0;
+            document.getElementById('inspecoes-finalizadas').textContent = inspecoesFinalizadas.total || 0;
+            document.getElementById('inspecoes-pendentes').textContent = inspecoesPendentes.total || 0;
+            document.getElementById('inspecoes-atrasadas').textContent = inspecoesAtrasadas.total || 0;
+
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchContadoresDashboard);
+     
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Toggle Sidebar
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const navbar = document.querySelector('.navbar');
+
+        // Função para verificar o tamanho da tela e ajustar o sidebar
+        function checkScreenSize() {
+            if (window.innerWidth >= 1200) {
+                // Desktop - sidebar pode ser mostrado/ocultado
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.add('main-content-expanded');
+                navbar.classList.add('navbar-expanded');
+            } else {
+                // Mobile/Tablet - sidebar inicia oculto
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.add('main-content-expanded');
+                navbar.classList.add('navbar-expanded');
+            }
+        }
+
+        // Verifica o tamanho da tela ao carregar
+        document.addEventListener('DOMContentLoaded', checkScreenSize);
+
+        // Verifica o tamanho da tela ao redimensionar
+        window.addEventListener('resize', checkScreenSize);
+
+        // Event listeners para os botões de toggle
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-collapsed');
+            mainContent.classList.toggle('main-content-expanded');
+            navbar.classList.toggle('navbar-expanded');
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+                <span class="toast-close">&times;</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Close toast on click
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            });
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        // Efeito de partículas
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.style.pointerEvents = 'none';
+            
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.pointerEvents = 'none';
+                
+                // Tamanho aleatório entre 2px e 6px
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Posição inicial aleatória
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Duração da animação aleatória
+                const duration = Math.random() * 20 + 10;
+                particle.style.animationDuration = `${duration}s`;
+                
+                // Atraso aleatório
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Função para carregar notificações - Versão Aprimorada
+        function carregarNotificacoes() {
+            fetch('/api/notificacoes')
+                .then(response => response.json())
+                .then(data => {
+                    const notificacoesLista = document.getElementById('notificacoesLista');
+                    const notificationCounter = document.getElementById('notificationCounter');
+                    
+                    notificationCounter.textContent = data.total;
+                    
+                    if (data.total === 0) {
+                        notificacoesLista.innerHTML = `
+                            <div class="text-center py-4">
+                                <i class="fas fa-bell-slash text-muted fa-2x mb-3"></i>
+                                <p class="text-muted">Nenhuma notificação nova</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.notificacoes.forEach(notificacao => {
+                        const classeTipo = notificacao.subtipo === 'vencido' ? 'vencido' : 
+                                        notificacao.subtipo === 'proximo' ? 'proximo' : 'normal';
+                        
+                        const icone = notificacao.tipo === 'inspecao' ? 'fa-clipboard-check' : 'fa-fire-extinguisher';
+                        const corBadge = notificacao.subtipo === 'vencido' ? 'danger' : 
+                                       notificacao.subtipo === 'proximo' ? 'warning' : 'primary';
+                        
+                        // Estilo aprimorado para melhor legibilidade
+                        html += `
+                            <li class="notificacao-item ${classeTipo}">
+                                <div class="dropdown-item p-3" style="cursor: default;"> <!-- Removido o href para evitar redirecionamento -->
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            <span class="badge bg-${corBadge} rounded-pill p-2 notificacao-badge">
+                                                <i class="fas ${icone} fa-lg"></i>
+                                            </span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <h6 class="mb-0 fw-bold text-white">${notificacao.titulo}</h6>
+                                                <small class="notificacao-tempo text-muted" title="${new Date(notificacao.timestamp).toLocaleString()}">
+                                                    ${tempoDecorrido(notificacao.timestamp)}
+                                                </small>
+                                            </div>
+                                            <p class="mb-2 text-light">${notificacao.mensagem}</p>
+                                            <div class="d-flex align-items-center text-muted small">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                ${notificacao.detalhes.localizacao}
+                                                ${notificacao.subtipo === 'proximo' ? 
+                                                    ` | <i class="far fa-clock me-1"></i> Vence em ${notificacao.detalhes.dias_restantes} dias` : 
+                                                    notificacao.subtipo === 'vencido' ? ' | <span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Vencido</span>' : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider m-0"></li>
+                        `;
+                    });
+                    
+                    notificacoesLista.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar notificações:', error);
+                    document.getElementById('notificacoesLista').innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle text-danger fa-2x mb-3"></i>
+                            <p class="text-danger">Erro ao carregar notificações</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // Função para calcular tempo decorrido
+        function tempoDecorrido(timestamp) {
+            const agora = new Date();
+            const dataNotificacao = new Date(timestamp);
+            const segundos = Math.floor((agora - dataNotificacao) / 1000);
+            
+            if (segundos < 60) return 'Agora mesmo';
+            if (segundos < 3600) return `${Math.floor(segundos/60)} min atrás`;
+            if (segundos < 86400) return `${Math.floor(segundos/3600)} h atrás`;
+            return `${Math.floor(segundos/86400)} dias atrás`;
+        }
+
+        // Marcar todas como lidas
+        document.getElementById('marcarTodasComoLidas').addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch('/api/notificacoes/marcar_lida', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({todas: true})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('notificationCounter').textContent = '0';
+                    showToast('Todas notificações marcadas como lidas', 'success');
+                }
+            });
+        });
+
+        // Carregar notificações quando o dropdown é aberto
+        document.getElementById('notificacoesDropdown').addEventListener('click', function() {
+            carregarNotificacoes();
+        });
+
+        // Atualizar notificações a cada 5 minutos
+        setInterval(carregarNotificacoes, 300000)
+        
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Logout
+        document.querySelectorAll('#logoutButton').forEach(button => {
+            button.addEventListener('click', async function(event) {
+                event.preventDefault();
+                        
+                const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+                
+                if (confirmed) {
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            window.location.href = '/login';
+                        } else {
+                            await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erro de rede:', error);
+                        await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                    }
+                }
+            });
+        });
+
+        let cropper = null;
+                
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Inicializar partículas quando a página carregar
+        window.addEventListener('load', () => {
+            createParticles();
+        });
+    </script>
+</body>
+</html>

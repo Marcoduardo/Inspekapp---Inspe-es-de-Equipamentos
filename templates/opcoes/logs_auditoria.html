@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Logs de Auditoria</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #17a2b8;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+        
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #e04d6d);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+        
+        .btn-secondary-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .btn-secondary-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            transform: translateY(-2px);
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, var(--info-color), #138496);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .btn-export:hover {
+            background: linear-gradient(135deg, #138496, #117a8b);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(23, 162, 184, 0.4);
+        }
+        
+        .modal-content-custom {
+            background: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        /* Logs Styles */
+        .logs-container {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.03);
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .log-item {
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            border-radius: var(--border-radius);
+            position: relative;
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log-item:hover {
+            background: rgba(108, 99, 255, 0.05);
+        }
+        
+        .log-item.expanded {
+            background: rgba(108, 99, 255, 0.1);
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .log-type {
+            font-weight: 600;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .log-type i {
+            font-size: 1.1rem;
+        }
+        
+        .log-type.login { color: var(--success-color); }
+        .log-type.logout { color: var(--danger-color); }
+        .log-type.create { color: var(--primary-color); }
+        .log-type.update { color: var(--warning-color); }
+        .log-type.delete { color: var(--danger-color); }
+        .log-type.info { color: var(--info-color); }
+        
+        .log-date {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .log-user {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .log-content {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            display: none;
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--primary-color);
+        }
+        
+        .log-item.expanded .log-content {
+            display: block;
+        }
+        
+        .log-details {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .log-details p {
+            margin-bottom: 0.3rem;
+        }
+        
+        .log-details strong {
+            color: var(--text-light);
+        }
+        
+        .log-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+            gap: 5px;
+        }
+        
+        .log-item:hover .log-actions {
+            display: flex;
+        }
+        
+        .log-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-light);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .log-action-btn:hover {
+            background: var(--primary-color);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        /* Badges */
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Export Dropdown */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--card-bg);
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .export-dropdown-content a {
+            color: var(--text-light);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: var(--transition);
+        }
+        
+        .export-dropdown-content a:hover {
+            background-color: rgba(108, 99, 255, 0.2);
+        }
+        
+        .export-dropdown:hover .export-dropdown-content {
+            display: block;
+        }
+        
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .form-card, .form-card * {
+                visibility: visible;
+            }
+            .form-card {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                background: white;
+                color: black;
+            }
+            .logs-container {
+                max-height: none;
+                overflow: visible;
+            }
+            .log-content {
+                display: block !important;
+            }
+            .btn, .export-dropdown, .navbar {
+                display: none !important;
+            }
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .log-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .log-date {
+                align-self: flex-end;
+            }
+            
+            .filters-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .logs-container {
+                max-height: 400px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+ 
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="form-card">
+                    <div class="text-center mb-4">
+                        <h1 class="page-title">Logs de Auditoria</h1>
+                        <p class="page-subtitle">Registro de todas as atividades do sistema</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-container" id="stats-container">
+                        <!-- Will be populated dynamically -->
+                    </div>
+
+                    <!-- Filters and Actions Section -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
+                        <div class="d-flex flex-wrap gap-3">
+                            <div>
+                                <label for="date" class="form-label">Data</label>
+                                <input type="date" id="date" class="form-control" value="{{ current_date }}">
+                            </div>
+                            
+                            <div>
+                                <label for="usuario" class="form-label">Usuário</label>
+                                <select id="usuario" class="form-select">
+                                    <option value="Todos">Todos os Usuários</option>
+                                    <!-- Users will be populated dynamically -->
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="tipo" class="form-label">Tipo de Ação</label>
+                                <select id="tipo" class="form-select">
+                                    <option value="Todos">Todos os Tipos</option>
+                                    <option value="login">Login</option>
+                                    <option value="logout">Logout</option>
+                                    <option value="create">Criação</option>
+                                    <option value="update">Atualização</option>
+                                    <option value="delete">Exclusão</option>
+                                </select>
+                            </div> 
+                            
+                            <div class="d-flex align-items-end">
+                                <button id="filter-button" class="btn btn-primary-custom">
+                                    <i class="fas fa-filter me-2"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="export-dropdown">
+                            <button class="btn btn-export">
+                                <i class="fas fa-download me-2"></i> Exportar
+                            </button>
+                            <div class="export-dropdown-content">
+                                <a href="#" id="export-pdf"><i class="fas fa-file-pdf me-2"></i> PDF</a>
+                                <a href="#" id="export-excel"><i class="fas fa-file-excel me-2"></i> Excel</a>
+                                <a href="#" id="export-csv"><i class="fas fa-file-csv me-2"></i> CSV</a>
+                                <a href="#" id="print-logs"><i class="fas fa-print me-2"></i> Imprimir</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logs Container -->
+                    <div class="logs-container" id="logs-container">
+                        <!-- Will be populated dynamically -->
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h3>Carregando logs...</h3>
+                            <p>Aguarde enquanto os dados são carregados</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted" id="logs-count">
+                            Mostrando 0 de 0 registros
+                        </div>
+                        <div>
+                            <button id="prev-page" class="btn btn-secondary-custom me-2" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span id="page-info" class="mx-2">Página 1</span>
+                            <button id="next-page" class="btn btn-secondary-custom ms-2" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                             class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Funções auxiliares para mostrar mensagens
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+        
+        // Variáveis globais para paginação
+        let currentPage = 1;
+        let totalPages = 1;
+        let allLogs = [];
+        let filteredLogs = [];
+        const logsPerPage = 10;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButton = document.getElementById('filter-button');
+            const logsContainer = document.getElementById('logs-container');
+            const usuarioSelect = document.getElementById('usuario');
+            const tipoSelect = document.getElementById('tipo');
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+            const pageInfo = document.getElementById('page-info');
+            const logsCount = document.getElementById('logs-count');
+            const statsContainer = document.getElementById('stats-container');
+
+            // Carrega os filtros (usuários e tipos de logs) e os logs iniciais
+            fetch('/api/logs')
+                .then(response => response.json())
+                .then(data => {
+                    // Preenche os filtros de usuários e tipos de logs
+                    const users = data.unique_users;
+                    const types = data.unique_types;
+
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user;
+                        option.textContent = user;
+                        usuarioSelect.appendChild(option);
+                    });
+
+                    types.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type;
+                        option.textContent = type;
+                        tipoSelect.appendChild(option);
+                    });
+
+                    // Exibe os logs iniciais
+                    displayLogs(data.logs);
+                });
+
+                
+            // Elementos de exportação
+            const exportPdfBtn = document.getElementById('export-pdf');
+            const exportExcelBtn = document.getElementById('export-excel');
+            const exportCsvBtn = document.getElementById('export-csv');
+            const printLogsBtn = document.getElementById('print-logs');
+            
+            // Carrega os logs iniciais
+            loadLogs();
+            
+            function loadLogs() {
+                // Show loading state
+                document.getElementById('logs-container').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <h3>Carregando logs...</h3>
+                    </div>
+                `;
+
+                fetch('/api/logs')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.error || 'Failed to load logs');
+                        }
+                        
+                        // Ensure we have valid logs data
+                        if (!Array.isArray(data.logs)) {
+                            throw new Error('Invalid logs data format');
+                        }
+                        
+                        allLogs = data.logs;
+                        filteredLogs = [...allLogs];
+                        
+                        // Update stats and UI
+                        updateStats(data.stats || {});
+                        applyFilters();
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar logs:', error);
+                        document.getElementById('logs-container').innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>Erro ao carregar logs</h3>
+                                <p>${error.message || 'Erro desconhecido'}</p>
+                                <button onclick="loadLogs()" class="btn btn-primary-custom mt-3">
+                                    <i class="fas fa-sync-alt"></i> Tentar novamente
+                                </button>
+                            </div>
+                        `;
+                    });
+            }
+
+            // Função para atualizar as estatísticas
+            function updateStats(stats) {
+                statsContainer.innerHTML = '';
+                
+                const statCards = [
+                    { icon: 'fas fa-list', value: stats.total_logs, label: 'Total de Logs', color: 'var(--primary-color)' },
+                    { icon: 'fas fa-sign-in-alt', value: stats.login_logs, label: 'Logins', color: 'var(--success-color)' },
+                    { icon: 'fas fa-sign-out-alt', value: stats.logout_logs, label: 'Logouts', color: 'var(--danger-color)' },
+                    { icon: 'fas fa-plus-circle', value: stats.create_logs, label: 'Criações', color: 'var(--primary-color)' },
+                    { icon: 'fas fa-edit', value: stats.update_logs, label: 'Atualizações', color: 'var(--warning-color)' },
+                    { icon: 'fas fa-trash-alt', value: stats.delete_logs, label: 'Exclusões', color: 'var(--danger-color)' }
+                ];
+                
+                statCards.forEach(stat => {
+                    const card = document.createElement('div');
+                    card.classList.add('stat-card');
+                    card.innerHTML = `
+                        <i class="${stat.icon}" style="color: ${stat.color}; font-size: 1.5rem;"></i>
+                        <div class="stat-value">${stat.value}</div>
+                        <div class="stat-label">${stat.label}</div>
+                    `;
+                    statsContainer.appendChild(card);
+                });
+            }
+                        
+            // Função para aplicar os filtros
+            function applyFilters() {
+                const selectedDate = document.getElementById('date').value;
+                const selectedUser = usuarioSelect.value;
+                const selectedType = tipoSelect.value;
+                
+                filteredLogs = allLogs.filter(log => {
+                    // Tratamento seguro para a data
+                    let logDateFormatted = '';
+                    try {
+                        // Tenta parsear a data de diferentes formatos
+                        const logDate = log.data_geracao ? new Date(log.data_geracao) : null;
+                        
+                        if (logDate instanceof Date && !isNaN(logDate)) {
+                            logDateFormatted = logDate.toISOString().split('T')[0];
+                        } else if (typeof log.data_geracao === 'string') {
+                            // Tenta extrair a data de strings no formato dd-mm-yyyy
+                            const parts = log.data_geracao.split(' ')[0].split('-');
+                            if (parts.length === 3) {
+                                const [day, month, year] = parts;
+                                logDateFormatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Erro ao processar data:', log.data_geracao, e);
+                    }
+
+                    const matchesDate = !selectedDate || logDateFormatted === selectedDate;
+                    const matchesUser = selectedUser === 'Todos' || log.usuario === selectedUser;
+                    const matchesType = selectedType === 'Todos' || 
+                                    (log.tipo_log && log.tipo_log.toLowerCase().includes(selectedType.toLowerCase()));
+                    
+                    return matchesDate && matchesUser && matchesType;
+                });
+                
+                totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+                currentPage = 1;
+                
+                updatePagination();
+                displayLogs(getPaginatedLogs());
+            }
+            
+            // Função para obter os logs paginados
+            function getPaginatedLogs() {
+                const startIndex = (currentPage - 1) * logsPerPage;
+                const endIndex = startIndex + logsPerPage;
+                return filteredLogs.slice(startIndex, endIndex);
+            }
+            
+            // Função para atualizar a paginação
+            function updatePagination() {
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+                pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+                logsCount.textContent = `Mostrando ${filteredLogs.length > 0 ? (currentPage - 1) * logsPerPage + 1 : 0} - ${Math.min(currentPage * logsPerPage, filteredLogs.length)} de ${filteredLogs.length} registros`;
+            }
+            
+            // Função para exibir os logs
+            function displayLogs(logs) {
+                logsContainer.innerHTML = '';
+                
+                if (logs.length > 0) {
+                    logs.forEach(log => {
+                        const logItem = document.createElement('div');
+                        logItem.classList.add('log-item');
+                        
+                        const logHeader = document.createElement('div');
+                        logHeader.classList.add('log-header');
+                        
+                        // Garantir que a data está no formato correto
+                        let logDate = log.data_geracao;
+                        
+                        // Se a data estiver no formato ISO (2025-04-02 16:40:24.480414)
+                        if (/^\d{4}-\d{2}-\d{2}/.test(logDate)) {
+                            const dt = new Date(logDate);
+                            logDate = `${dt.getDate().toString().padStart(2, '0')}/${(dt.getMonth()+1).toString().padStart(2, '0')}/${dt.getFullYear()} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}`;
+                        }
+                        
+                        logHeader.innerHTML = `
+                            <span class="log-type ${getLogTypeClass(log.tipo_log)}">
+                                <i class="${getLogIcon(log.tipo_log)}"></i> ${log.tipo_log}
+                            </span>
+                            <span class="log-date">${logDate}</span>
+                        `;
+                        logItem.appendChild(logHeader);
+
+                        const logUser = document.createElement('div');
+                        logUser.classList.add('log-user');
+                        logUser.textContent = `Usuário: ${log.usuario} (${log.nivel_acesso})`;
+                        logItem.appendChild(logUser);
+
+                        const logContent = document.createElement('div');
+                        logContent.classList.add('log-content');
+                        
+                        // Parse JSON se a mensagem for um JSON válido
+                        let logMessage = log.mensagem;
+                        try {
+                            const parsedMessage = JSON.parse(log.mensagem);
+                            if (typeof parsedMessage === 'object' && parsedMessage !== null) {
+                                logMessage = '';
+                                for (const [key, value] of Object.entries(parsedMessage)) {
+                                    logMessage += `<p><strong>${key}:</strong> ${value}</p>`;
+                                }
+                            }
+                        } catch (e) {
+                            // Não é JSON, mantém a mensagem original
+                        }
+                        
+                        logContent.innerHTML = `<p>${logMessage}</p>`;
+                        
+                        // Adiciona detalhes adicionais se existirem
+                        if (log.detalhes) {
+                            const logDetails = document.createElement('div');
+                            logDetails.classList.add('log-details');
+                            
+                            try {
+                                const details = JSON.parse(log.detalhes);
+                                for (const [key, value] of Object.entries(details)) {
+                                    logDetails.innerHTML += `<p><strong>${key}:</strong> ${value}</p>`;
+                                }
+                            } catch (e) {
+                                logDetails.innerHTML += `<p><strong>Detalhes:</strong> ${log.detalhes}</p>`;
+                            }
+                            
+                            logContent.appendChild(logDetails);
+                        }
+                        
+                        logItem.appendChild(logContent);
+                        
+                        // Adiciona ações ao log (copiar, expandir)
+                        const logActions = document.createElement('div');
+                        logActions.classList.add('log-actions');
+                        logActions.innerHTML = `
+                            <button class="log-action-btn" title="Copiar log" onclick="copyLogToClipboard(${log.id})">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="log-action-btn" title="Expandir/Recolher" onclick="event.stopPropagation(); this.closest('.log-item').classList.toggle('expanded')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        `;
+                        logItem.appendChild(logActions);
+
+                        logItem.addEventListener('click', function(e) {
+                            if (!e.target.closest('.log-action-btn')) {
+                                logItem.classList.toggle('expanded');
+                            }
+                        });
+
+                        logsContainer.appendChild(logItem);
+                    });
+                } else {
+                    const emptyState = document.createElement('div');
+                    emptyState.classList.add('empty-state');
+                    emptyState.innerHTML = `
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>Nenhum log encontrado</h3>
+                        <p>Não há registros de auditoria para os filtros selecionados</p>
+                    `;
+                    logsContainer.appendChild(emptyState);
+                }
+            }
+            
+            // Aplica os filtros ao clicar no botão
+            filterButton.addEventListener('click', function() {
+                applyFilters();
+            });
+            
+            // Navegação da paginação
+            prevPageBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayLogs(getPaginatedLogs());
+                    updatePagination();
+                }
+            });
+            
+            nextPageBtn.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayLogs(getPaginatedLogs());
+                    updatePagination();
+                }
+            });
+            
+            // Exportação para PDF
+            exportPdfBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                exportToPDF();
+            });
+            
+            // Exportação para Excel
+            exportExcelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                exportToExcel();
+            });
+            
+            // Exportação para CSV
+            exportCsvBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                exportToCSV();
+            });
+            
+            // Impressão
+            printLogsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.print();
+            });
+        });
+        
+        // Função para copiar log para área de transferência
+        function copyLogToClipboard(logId) {
+            // Implementação simplificada - na prática você buscaria o log completo pelo ID
+            const logElement = document.querySelector(`.log-item[data-id="${logId}"]`);
+            if (logElement) {
+                const logText = `${logElement.querySelector('.log-type').textContent}\n` +
+                               `${logElement.querySelector('.log-date').textContent}\n` +
+                               `${logElement.querySelector('.log-user').textContent}\n` +
+                               `${logElement.querySelector('.log-content').textContent}`;
+                
+                navigator.clipboard.writeText(logText).then(() => {
+                    showAlert('Sucesso', 'Log copiado para a área de transferência!', 'success');
+                }).catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    showAlert('Erro', 'Falha ao copiar o log.', 'error');
+                });
+            }
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(18);
+            doc.setTextColor(108, 99, 255);
+            doc.text('Relatório de Logs de Auditoria', 105, 15, { align: 'center' });
+            
+            // Data de emissão
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Emitido em: ${new Date().toLocaleString()}`, 105, 22, { align: 'center' });
+            
+            // Filtros aplicados
+            const dateFilter = document.getElementById('date').value;
+            const userFilter = document.getElementById('usuario').value;
+            const typeFilter = document.getElementById('tipo').value;
+            
+            let filtersText = 'Filtros aplicados: ';
+            if (dateFilter) filtersText += `Data: ${dateFilter}, `;
+            if (userFilter !== 'Todos') filtersText += `Usuário: ${userFilter}, `;
+            if (typeFilter !== 'Todos') filtersText += `Tipo: ${typeFilter}`;
+            
+            if (filtersText.endsWith(', ')) filtersText = filtersText.slice(0, -2);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(80, 80, 80);
+            doc.text(filtersText, 14, 30);
+            
+            // Cabeçalho da tabela
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setFillColor(230, 230, 230);
+            doc.rect(14, 40, 182, 10, 'F');
+            doc.text('Data/Hora', 20, 46);
+            doc.text('Usuário', 60, 46);
+            doc.text('Tipo', 120, 46);
+            doc.text('Mensagem', 160, 46);
+            
+            // Conteúdo dos logs
+            doc.setFontSize(10);
+            let y = 50;
+            
+            filteredLogs.forEach((log, index) => {
+                if (y > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                const logDate = log.data_geracao;
+                const logUser = log.usuario || 'N/A';
+                const logType = log.tipo_log || 'N/A';
+                const logMessage = typeof log.mensagem === 'string' ? log.mensagem : 
+                                (log.mensagem ? JSON.stringify(log.mensagem) : 'N/A');
+                
+                doc.text(logDate, 20, y + 10);
+                doc.text(logUser, 60, y + 10);
+                doc.text(logType, 120, y + 10);
+                
+                // Quebra de linha para mensagens longas
+                const splitText = doc.splitTextToSize(logMessage, 40);
+                doc.text(splitText, 160, y + 10);
+                
+                y += 10 + (splitText.length * 5);
+                
+                // Linha divisória
+                if (index < filteredLogs.length - 1) {
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(14, y + 2, 196, y + 2);
+                    y += 5;
+                }
+            });
+            
+            // Rodapé
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Total de registros: ${filteredLogs.length}`, 14, 290);
+            doc.text('InspekApp - Sistema de Auditoria', 105, 290, { align: 'center' });
+            doc.text(`Página ${doc.internal.getNumberOfPages()}`, 196, 290, { align: 'right' });
+            
+            // Salvar o PDF
+            doc.save(`logs_auditoria_${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+        
+        // Função para exportar para Excel
+        function exportToExcel() {
+            // Preparar os dados
+            const data = [
+                ['Data/Hora', 'Usuário', 'Tipo', 'Mensagem', 'Detalhes']
+            ];
+            
+            filteredLogs.forEach(log => {
+                const logDate = log.data_geracao;
+                const logUser = log.usuario || 'N/A';
+                const logType = log.tipo_log || 'N/A';
+                const logMessage = typeof log.mensagem === 'string' ? log.mensagem : 
+                                (log.mensagem ? JSON.stringify(log.mensagem) : 'N/A');
+                const logDetails = log.detalhes || '';
+                
+                data.push([logDate, logUser, logType, logMessage, logDetails]);
+            });
+            
+            // Criar a planilha
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Logs de Auditoria");
+            
+            // Exportar
+            XLSX.writeFile(wb, `logs_auditoria_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        }
+
+        // Função para exportar para CSV
+        function exportToCSV() {
+            // Preparar os dados
+            let csv = 'Data/Hora,Usuário,Tipo,Mensagem,Detalhes\n';
+                      
+            filteredLogs.forEach(log => {
+                const logDate = log.data_geracao;
+                const logUser = log.usuario || 'N/A';
+                const logType = log.tipo_log || 'N/A';
+                const logMessage = typeof log.mensagem === 'string' ? 
+                    log.mensagem.replace(/"/g, '""') : 
+                    (log.mensagem ? JSON.stringify(log.mensagem).replace(/"/g, '""') : 'N/A');
+                const logDetails = (log.detalhes || '').replace(/"/g, '""');
+                
+                csv += `"${logDate}","${logUser}","${logType}","${logMessage}","${logDetails}"\n`;
+            });
+            
+            // Criar o blob e fazer download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `logs_auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+
+        // Funções auxiliares para ícones e classes CSS
+        function getLogIcon(tipo) {
+            if (tipo.includes('Login')) return 'fas fa-sign-in-alt';
+            if (tipo.includes('Logout')) return 'fas fa-sign-out-alt';
+            if (tipo.includes('Criar') || tipo.includes('Criação')) return 'fas fa-plus-circle';
+            if (tipo.includes('Atualizar') || tipo.includes('Atualização')) return 'fas fa-edit';
+            if (tipo.includes('Excluir') || tipo.includes('Exclusão')) return 'fas fa-trash-alt';
+            return 'fas fa-info-circle';
+        }
+
+        function getLogTypeClass(tipo) {
+            if (tipo.includes('Login')) return 'login';
+            if (tipo.includes('Logout')) return 'logout';
+            if (tipo.includes('Criar') || tipo.includes('Criação')) return 'create';
+            if (tipo.includes('Atualizar') || tipo.includes('Atualização')) return 'update';
+            if (tipo.includes('Excluir') || tipo.includes('Exclusão')) return 'delete';
+            return 'info';
+        }
+
+        let cropper = null;
+
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+  
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

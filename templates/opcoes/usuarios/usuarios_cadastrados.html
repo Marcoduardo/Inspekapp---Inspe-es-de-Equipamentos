@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Usuários Cadastrados</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .card {
+            --bs-card-spacer-y: 5rem;
+            --bs-card-spacer-x: 1rem;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+        /* Melhorias para os placeholders */
+        .form-control::placeholder,
+        .form-select::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Melhorias nos inputs */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        /* Melhorias na área de upload */
+        .file-upload label {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .file-upload label:hover {
+            background-color: rgba(108, 99, 255, 0.1) !important;
+            border-color: var(--primary-color);
+        }
+
+        /* Melhorias nos botões */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .main-container {
+            padding-top: 150px;
+            flex: 1;
+        }
+
+        .card-custom {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #e04d6d);
+            color: white;
+        }
+
+        /* Customização das abas */
+        .nav-tabs .nav-link {
+            color: var(--text-muted);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: transparent;
+        }
+
+        /* DataTables customization */
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_filter input,
+        .dataTables_wrapper .dataTables_length select {
+            color: var(--text-light) !important;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table.dataTable {
+            color: var(--text-light) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        table.dataTable thead th {
+            background-color: rgba(108, 99, 255, 0.1) !important;
+            border-bottom-color: var(--primary-dark) !important;
+        }
+        
+        table.dataTable th, table.dataTable td {
+            background: rgba(0, 0, 0, 0.2) !important;
+            color: #fff !important;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table.dataTable tbody tr {
+            background-color: var(--card-bg) !important;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: var(--text-light) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            color: white !important;
+            border: none !important;
+        }
+        div.table-responsive>div.dataTables_wrapper>div.row>div[class^=col-]:last-child {
+            padding-right: 0;
+            color: #fff;
+        }
+        
+        table.dataTable>thead>tr>th:not(.sorting_disabled), table.dataTable>thead>tr>td:not(.sorting_disabled) {
+            padding-right: 30px;
+            color: #fff;
+        }
+
+        div.dataTables_wrapper div.dataTables_length label {
+            font-weight: normal;
+            text-align: left;
+            white-space: nowrap;
+            color: #fff;
+        }
+
+        .text-muted {
+            --bs-text-opacity: 1;
+            color: #fff !important;
+        }
+
+        .row {
+            --bs-gutter-x: 1.5rem;
+            --bs-gutter-y: 0;
+            display: flex;
+            color: #fff;
+            flex-wrap: wrap;
+            margin-top: calc(-1 * var(--bs-gutter-y));
+            margin-right: calc(-.5 * var(--bs-gutter-x));
+            margin-left: calc(-.5 * var(--bs-gutter-x));
+        }
+        .card-header:first-child {
+            border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0;
+            color: #fff;
+        }
+
+        .card-body {
+            flex: 1 1 auto;
+            padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
+            color: #fff;
+        }
+
+        .text-center {
+            text-align: center !important;
+            color: #000;
+        } 
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-ativo {
+            background-color: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-bloqueado {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Modal customization */
+        .modal-content {
+            background: var(--darker-bg);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        /* User avatar */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        /* User details */
+        .user-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .user-detail-item {
+            margin-bottom: 1rem;
+        }
+
+        .user-detail-label {
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .user-detail-value {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .main-container {
+                padding-top: 100px;
+            }
+            
+            .user-name {
+                display: none;
+            }
+            
+            .user-details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+                {% if 'novo_usuario' in allowed_menus %}
+                <button class="btn btn-primary-custom me-2" onclick="window.location.href='/usuarios/novo_usuario'">
+                    <i class="fas fa-plus me-1"></i> Novo Usuário
+                </button>
+                {% endif %}
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container container py-4">
+        <div class="card card-custom mb-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h1 class="page-title">Usuários Cadastrados</h1>
+                    <p class="text-muted">Gerencie e visualize todos os usuários do sistema</p>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Pesquisar</label>
+                        <input type="text" id="search" class="form-control" placeholder="Nome, matrícula ou email">
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="status-filter" class="form-label">Status</label>
+                        <select id="status-filter" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Acesso Liberado">Liberado</option>
+                            <option value="Acesso Bloqueado">Bloqueado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="nivel-acesso-filter" class="form-label">Nível Acesso</label>
+                        <select id="nivel-acesso-filter" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Técnico">Somente Leitura</option>
+                            <option value="Operador">Operador</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="d-flex w-100 gap-2">
+                            <button id="filter-button" class="btn btn-primary-custom flex-grow-1">
+                                <i class="fas fa-search me-2"></i> Filtrar
+                            </button>
+                            <button id="reset-filters" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DataTable -->
+                <div class="table-responsive">
+                    <table id="usuariosTable" class="table table-borderless table-hover w-100">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Matrícula</th>
+                                <th>Setor</th>
+                                <th>Nível de Acesso</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Usuário Details Modal -->
+    <div class="modal fade" id="usuarioModal" tabindex="-1" aria-labelledby="usuarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usuarioModalLabel">Detalhes do Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Abas de navegação -->
+                    <ul class="nav nav-tabs mb-4" id="usuarioTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="detalhes-tab" data-bs-toggle="tab" data-bs-target="#detalhes-content" type="button" role="tab">Detalhes</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="inspecoes-tab" data-bs-toggle="tab" data-bs-target="#inspecoes-content" type="button" role="tab">Histórico de Inspeções</button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- Conteúdo da aba Detalhes -->
+                        <div class="tab-pane fade show active" id="detalhes-content" role="tabpanel">
+                            <div class="user-details-grid">
+                                <div>
+                                    <div class="user-detail-item">
+                                        <div class="user-detail-label">Nome:</div>
+                                        <div class="user-detail-value" id="detail-nome"></div>
+                                    </div>
+                                    <div class="user-detail-item">
+                                        <div class="user-detail-label">Email:</div>
+                                        <div class="user-detail-value" id="detail-email"></div>
+                                    </div>
+                                    <div class="user-detail-item">
+                                        <div class="user-detail-label">Matrícula:</div>
+                                        <div class="user-detail-value" id="detail-matricula"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="user-detail-item">
+                                        <div class="user-detail-label">Setor:</div>
+                                        <div class="user-detail-value" id="detail-setor"></div>
+                                    </div>
+                                    <div class="user-detail-item">
+                                        <div class="user-detail-label">Usuário:</div>
+                                        <div class="user-detail-value" id="detail-usuario"></div>
+                                    </div>
+                                    <div class="user-detail-item">
+                                        <div class="user-detail-label">Nível de Acesso:</div>
+                                        <div class="user-detail-value" id="detail-nivel-acesso"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Conteúdo da aba Inspeções -->
+                        <div class="tab-pane fade" id="inspecoes-content" role="tabpanel">
+                            <div class="table-responsive">
+                                <table id="inspecoesTable" class="table table-borderless table-hover w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Número</th>
+                                            <th>Tipo</th>
+                                            <th>Classe</th>
+                                            <th>Localização</th>
+                                            <th>Data Inspeção</th>
+                                            <th>Validade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Os dados serão preenchidos via JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    {% if 'editar_usuario' in allowed_menus %}
+                    <button onclick="openEditForm()" class="btn btn-success">
+                        <i class="fas fa-edit me-2"></i> Editar
+                    </button>
+                    {% endif %}
+
+                    {% if 'excluir_usuario' in allowed_menus %}
+                    <button onclick="confirmDelete()" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i> Apagar
+                    </button>
+                    {% endif %}
+
+                    {% if 'bloquear_usuario' in allowed_menus %}
+                    <button onclick="confirmToggleStatus()" class="btn btn-warning" id="toggle-status-btn">
+                        <i class="fas fa-ban me-2"></i> <span id="toggle-status-text">Bloquear</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Confirmation Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">Confirmar Alteração de Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p id="status-confirm-message"></p>
+                    
+                    <div class="mb-3">
+                        <label for="status-motivo" class="form-label">Motivo:</label>
+                        <textarea id="status-motivo" class="form-control" placeholder="Descreva o motivo para esta alteração..." rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="toggleUsuarioStatus()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir este usuário permanentemente? Esta ação não pode ser desfeita.</p>
+                    
+                    <div class="mb-3">
+                        <label for="delete-motivo" class="form-label">Motivo:</label>
+                        <textarea id="delete-motivo" class="form-control" placeholder="Descreva o motivo para esta exclusão..." rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteUsuario()">Confirmar Exclusão</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                             class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap5.min.js"></script>
+    
+    <!-- CropperJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
+    <script>
+        // Variáveis globais
+        let selectedUsuarioId = null;
+        let selectedUsuarioStatus = true;
+        let usuariosTable, inspecoesTable;
+
+        // Inicialização da página
+        $(document).ready(function() {
+            initializeDataTables();
+ 
+        });
+    
+        // Inicializar DataTables
+        function initializeDataTables() {
+            usuariosTable = $('#usuariosTable').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                ajax: {
+                    url: '/api/usuarios',
+                    type: 'GET',
+                    data: function(d) {
+                        // Adicionar filtros extras
+                        d.status = $('#status-filter').val();
+                        d.nivel_acesso = $('#nivel-acesso-filter').val();
+                    }
+                },
+                columns: [
+                    { data: 'nome', name: 'nome' },
+                    { data: 'matricula', name: 'matricula' },
+                    { data: 'setor', name: 'setor' },
+                    { data: 'nivel_acesso', name: 'nivel_acesso' },
+                    { 
+                        data: 'status',
+                        name: 'status',
+                        render: function(data, type, row) {
+                            if (data === 'Acesso Liberado') {
+                                return `<span class="status-badge status-ativo">${data}</span>`;
+                            } else if (data === 'Acesso Bloqueado') {
+                                return `<span class="status-badge status-bloqueado">${data}</span>`;
+                            }
+                            return data || 'N/A';
+                        }
+                    },
+                    {
+                        data: 'id',
+                        render: function(data, type, row) {
+                            return `
+                                <button class="btn btn-sm btn-outline-primary" onclick="fetchUsuarioDetalhes('${data}')">
+                                    <i class="fas fa-eye me-1"></i> Detalhes
+                                </button>`;
+                        },
+                        orderable: false
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+                },
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                buttons: [
+                    {
+                        extend: 'copy',
+                        className: 'btn btn-sm btn-outline-secondary'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'btn btn-sm btn-outline-secondary'
+                    },
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-sm btn-outline-secondary'
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'btn btn-sm btn-outline-secondary'
+                    }
+                ],
+                initComplete: function() {
+                    $('.dt-buttons .btn').removeClass('btn-secondary');
+                }
+            });
+
+            // Inicializar a tabela de inspeções
+            inspecoesTable = $('#inspecoesTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+                },
+                searching: false,
+                paging: false,
+                info: false,
+                columns: [
+                    { data: 'numero_inspecao', name: 'numero_inspecao' },
+                    { data: 'tipo', name: 'tipo' },
+                    { data: 'classe', name: 'classe' },
+                    { data: 'localizacao', name: 'localizacao' },
+                    { data: 'data_inspecao', name: 'data_inspecao' },
+                    { data: 'validade', name: 'validade' }
+                ]
+            });
+
+            // Atualizar tabela quando filtrar
+            $('#filter-button').click(function() {
+                usuariosTable.ajax.reload();
+            });
+            
+            // Limpar filtros
+            $('#reset-filters').click(function() {
+                $('#search').val('');
+                $('#status-filter').val('');
+                $('#nivel-acesso-filter').val('');
+                usuariosTable.ajax.reload();
+            });
+            
+            // Atualizar tabela quando mudar filtros (opcional)
+            $('.form-control, .form-select').on('change', function() {
+                usuariosTable.ajax.reload();
+            });
+        }
+
+        function fetchUsuarios() {
+            usuariosTable.ajax.reload();
+        }
+
+        // Função para buscar histórico de inspeções
+        function fetchHistoricoInspecoes(usuarioId) {
+            // Limpar a tabela de forma segura
+            if ($.fn.DataTable.isDataTable('#inspecoesTable')) {
+                inspecoesTable.clear().draw();
+            }
+
+            fetch(`/api/usuarios/${usuarioId}/inspecoes`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao buscar histórico de inspeções');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Verificar se a tabela está inicializada
+                    if ($.fn.DataTable.isDataTable('#inspecoesTable')) {
+                        inspecoesTable.clear();
+                        inspecoesTable.rows.add(data).draw();
+                    } else {
+                        console.error('Tabela de inspeções não inicializada');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar histórico de inspeções:', error);
+                    showAlert('Erro', 'Erro ao carregar histórico de inspeções.', 'error');
+                    
+                    // Limpar a tabela mesmo em caso de erro
+                    if ($.fn.DataTable.isDataTable('#inspecoesTable')) {
+                        inspecoesTable.clear().draw();
+                    }
+                });
+        }
+
+        // Modificar a função fetchUsuarioDetalhes para usar ID
+        function fetchUsuarioDetalhes(usuarioId) {
+            selectedUsuarioId = usuarioId;
+
+            fetch(`/api/usuarios/${usuarioId}`)
+                .then(response => response.json())
+                .then(usuario => {
+                    selectedUsuarioStatus = usuario.status === 'Acesso Liberado';
+                    
+                    // Preencher detalhes básicos
+                    document.getElementById('detail-nome').textContent = usuario.nome || 'N/A';
+                    document.getElementById('detail-matricula').textContent = usuario.matricula || 'N/A';
+                    document.getElementById('detail-setor').textContent = usuario.setor || 'N/A';
+                    document.getElementById('detail-email').textContent = usuario.email || 'N/A';
+                    document.getElementById('detail-usuario').textContent = usuario.usuario || 'N/A';
+                    document.getElementById('detail-nivel-acesso').textContent = usuario.nivel_acesso || 'N/A';
+                    
+                    // Atualizar texto do botão de toggle status
+                    const toggleBtn = document.getElementById('toggle-status-btn');
+                    const toggleText = document.getElementById('toggle-status-text');
+                    if (toggleBtn && toggleText) {
+                        toggleText.textContent = selectedUsuarioStatus ? 'Bloquear' : 'Desbloquear';
+                    }
+                    
+                    // Carregar histórico de inspeções usando o ID
+                    fetchHistoricoInspecoes(usuarioId);
+                    
+                    // Mostrar o modal
+                    const usuarioModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+                    usuarioModal.show();
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar detalhes do usuário:', error);
+                    showAlert('Erro', 'Erro ao carregar detalhes do usuário.', 'error');
+                });
+        }
+
+        function openEditForm() {
+            if (selectedUsuarioId) {
+                window.location.href = `/usuarios/edit_usuario/${selectedUsuarioId}`;
+            }
+        }
+
+        function confirmDelete() {
+            if (!selectedUsuarioId) return;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        async function deleteUsuario() {
+            const motivo = document.getElementById('delete-motivo').value;
+            if (!motivo) {
+                showAlert('Atenção', 'Por favor, informe o motivo da exclusão.', 'warning');
+                return;
+            }
+
+            // Mostra loading
+            Swal.fire({
+                title: 'Processando...',
+                html: 'Excluindo usuário',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            });
+
+            try {
+                const response = await fetch(`/api/usuarios/${selectedUsuarioId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        motivo: motivo
+                    })
+                });
+
+                const data = await response.json();
+                Swal.close(); // Fecha o loading
+
+                if (response.ok) {
+                    await showAlert('Sucesso', data.success || 'Usuário excluído com sucesso.', 'success');
+                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                    deleteModal.hide();
+                    const usuarioModal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                    usuarioModal.hide();
+                    fetchUsuarios();
+                } else {
+                    await showAlert('Erro', data.error || 'Erro ao excluir usuário.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                await showAlert('Erro', error.message || 'Erro ao excluir usuário.', 'error');
+            }
+        }
+
+        function confirmToggleStatus() {
+            if (!selectedUsuarioId) return;
+            
+            const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+            const message = document.getElementById('status-confirm-message');
+            
+            if (selectedUsuarioStatus) {
+                message.textContent = 'Tem certeza que deseja bloquear este usuário? O usuário não poderá acessar o sistema enquanto estiver bloqueado.';
+            } else {
+                message.textContent = 'Tem certeza que deseja desbloquear este usuário?';
+            }
+            
+            statusModal.show();
+        }
+
+        async function toggleUsuarioStatus() {
+            const motivo = document.getElementById('status-motivo').value;
+            if (!motivo) {
+                showAlert('Atenção', 'Por favor, informe o motivo da alteração.', 'warning');
+                return;
+            }
+
+            const newStatus = !selectedUsuarioStatus;
+            const endpoint = newStatus ? 'desbloquear' : 'bloquear';
+            
+            // Mostra loading
+            Swal.fire({
+                title: 'Processando...',
+                html: 'Alterando status do usuário',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            });
+
+            try {
+                const response = await fetch(`/api/usuarios/${selectedUsuarioId}/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        motivo: motivo
+                    })
+                });
+
+                const data = await response.json();
+                Swal.close(); // Fecha o loading
+
+                if (response.ok) {
+                    await showAlert('Sucesso', data.success || 'Status do usuário alterado com sucesso.', 'success');
+                    const statusModal = bootstrap.Modal.getInstance(document.getElementById('statusModal'));
+                    statusModal.hide();
+                    const usuarioModal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                    usuarioModal.hide();
+                    fetchUsuarios();
+                } else {
+                    await showAlert('Erro', data.error || 'Erro ao alterar status do usuário.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                await showAlert('Erro', error.message || 'Erro ao alterar status do usuário.', 'error');
+            }
+        }
+
+        // Funções auxiliares para mostrar mensagens
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+        // Configuração do cropper para alteração de foto de perfil
+        let cropper = null;
+        
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Mapa de Inspeções</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <!-- Bibliotecas JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+        /* Melhorias para os placeholders */
+        .form-control::placeholder,
+        .form-select::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Melhorias nos inputs */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        /* Melhorias nos botões */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }        
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+    
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #e04d6d);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+        
+        .btn-secondary-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .btn-secondary-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            transform: translateY(-2px);
+        }
+        
+        .modal-content-custom {
+            background: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        /* Map Styles */
+        .map-container {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.03);
+            height: 700px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: var(--darker-bg);
+        }
+        
+        /* Filters Section */
+        .filters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-group {
+            margin-bottom: 0;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 100px;
+            border: 1px solid;
+        }
+        .criticidade-baixa {
+            background-color: #198754; /* bootstrap success */
+            color: white;
+        }
+
+        .criticidade-media {
+            background-color: #ffc107; /* bootstrap warning */
+            color: #212529;
+        }
+
+        .criticidade-alta {
+            background-color: #dc3545; /* bootstrap danger */
+            color: white;
+        }
+
+        .criticidade-critica {
+            background-color: #000; /* preto intenso */
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }        
+        .status-pendente {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+        
+        .status-finalizada {
+            background-color: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .status-cancelada {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        /* Custom Marker Icons */
+        .marker-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .marker-pendente {
+            background-color: var(--warning-color);
+        }
+
+        .marker-finalizada {
+            background-color: var(--success-color);
+        }
+
+        .marker-cancelada {
+            background-color: var(--danger-color);
+        }
+
+        /* Cluster Marker Styles */
+        .marker-cluster {
+            background-clip: padding-box;
+            border-radius: 50%;
+        }
+        
+        .marker-cluster div {
+            width: 30px;
+            height: 30px;
+            margin-left: 5px;
+            margin-top: 5px;
+            text-align: center;
+            border-radius: 50%;
+            font: 12px "Poppins", sans-serif;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .marker-cluster-pendente {
+            background-color: rgba(255, 165, 0, 0.6);
+        }
+        
+        .marker-cluster-pendente div {
+            background-color: rgba(255, 165, 0, 0.8);
+            color: white;
+        }
+
+        .marker-cluster-finalizada {
+            background-color: rgba(75, 181, 67, 0.6);
+        }
+        
+        .marker-cluster-finalizada div {
+            background-color: rgba(75, 181, 67, 0.8);
+            color: white;
+        }
+
+        .marker-cluster-cancelada {
+            background-color: rgba(255, 82, 82, 0.6);
+        }
+        
+        .marker-cluster-cancelada div {
+            background-color: rgba(255, 82, 82, 0.8);
+            color: white;
+        }
+
+        .marker-cluster-mixed {
+            background-color: rgba(108, 99, 255, 0.6);
+        }
+        
+        .marker-cluster-mixed div {
+            background-color: rgba(108, 99, 255, 0.8);
+            color: white;
+        }
+        
+        /* Popup Styles */
+        .leaflet-popup-content {
+            margin: 0.75rem;
+            font-family: 'Poppins', sans-serif;
+            min-width: 200px;
+        }
+        
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+        
+        .popup-content {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .popup-footer {
+            margin-top: 0.75rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .popup-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--border-radius);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .popup-button:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Inspection Detail Modal */
+        .inspection-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .inspection-detail-item {
+            margin-bottom: 1rem;
+        }
+        
+        .inspection-detail-item strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .inspection-detail-item span {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        /* Badges */
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .filters-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-container {
+                height: 500px;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+ 
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="form-card">
+                    <div class="text-center mb-4">
+                        <h1 class="page-title">Mapa de Inspeções</h1>
+                        <p class="page-subtitle">Visualize todas as inspeções realizadas em suas localizações geográficas</p>
+                    </div>
+
+                    <!-- Filters Section -->
+                    <div class="filters-section">
+                        <div class="filter-group">
+                            <label for="statusFilter" class="filter-label">Status</label>
+                            <select id="statusFilter" class="form-select">
+                                <option value="all">Todos</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Finalizada">Finalizada</option>
+                                <option value="Cancelada">Cancelada</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="numeroInspecaoFilter" class="filter-label">Número Inspeção</label>
+                            <input type="text" id="numeroInspecaoFilter" class="form-control" placeholder="Filtrar por número">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="tagEquipamentoFilter" class="filter-label">Tag Equipamento</label>
+                            <input type="text" id="tagEquipamentoFilter" class="form-control" placeholder="Filtrar por tag">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="equipmentTypeFilter" class="filter-label">Tipo de Equipamento</label>
+                            <select id="equipmentTypeFilter" class="form-select">
+                                <option value="all">Todos</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="localizacaoFilter" class="filter-label">Localização</label>
+                            <input type="text" id="localizacaoFilter" class="form-control" placeholder="Filtrar por localização">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="responsavelFilter" class="filter-label">Responsável</label>
+                            <input type="text" id="responsavelFilter" class="form-control" placeholder="Filtrar por responsável">
+                        </div>
+                        
+                        <div class="filter-group d-flex align-items-end">
+                            <button id="applyFilters" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-filter me-2"></i> Aplicar Filtros
+                            </button>
+                        </div>
+                        
+                        <div class="filter-group d-flex align-items-end">
+                            <button id="resetFilters" class="btn btn-secondary-custom w-100">
+                                <i class="fas fa-undo me-2"></i> Limpar Filtros
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div class="map-container">
+                        <div id="map"></div>
+                        <div class="empty-state" id="emptyState" style="display: none;">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <h3>Nenhuma inspeção encontrada</h3>
+                            <p>Não há inspeções com localização para os filtros selecionados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                             class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspection Detail Modal -->
+    <div class="modal fade" id="inspectionModal" tabindex="-1" aria-labelledby="inspectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="inspectionModalLabel">Detalhes da Inspeção</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="inspection-detail-grid">
+                        <div class="inspection-detail-item">
+                            <strong>Número da Inspeção</strong>
+                            <span id="detail-inspection-number">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Tag do Equipamento</strong>
+                            <span id="detail-equipment-tag">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Tipo de Equipamento</strong>
+                            <span id="detail-equipment-type">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Localização</strong>
+                            <span id="detail-location">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Responsável</strong>
+                            <span id="detail-responsible">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Data de Registro</strong>
+                            <span id="detail-register-date">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Data de Validade</strong>
+                            <span id="detail-expiry-date">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Status</strong>
+                            <span id="detail-status" class="status-badge">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Observações</strong>
+                            <span id="detail-notes">-</span>
+                        </div>
+                        
+                        <div class="inspection-detail-item">
+                            <strong>Motivo da Ação</strong>
+                            <span id="detail-motivo-acao">-</span>
+                        </div>
+
+                        <div class="inspection-detail-item">
+                            <strong>Criticidade da Inspeção</strong>
+                            <span id="detail-criticidade">-</span>
+                        </div>
+
+                        <div class="inspection-detail-item">
+                            <strong>Status do Equipamento</strong>
+                            <span id="detail-status-equipamento">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <!-- Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/pt-br.min.js"></script>
+    
+    <script>
+        // Global variables
+        let map;
+        let markerCluster;
+        let currentMarkers = [];
+        
+        // Funções auxiliares para mostrar mensagens
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+        
+        // Format status with badge
+        function formatStatus(status) {
+            if (!status) return '-';
+            
+            const statusMap = {
+                'Pendente': 'status-pendente',
+                'Finalizada': 'status-finalizada',
+                'Cancelada': 'status-cancelada'
+            };
+            
+            const statusClass = statusMap[status] || '';
+            return `<span class="status-badge ${statusClass}">${status}</span>`;
+        }
+
+        function formatCriticidade(criticidade) {
+            if (!criticidade) return '-';
+
+            const map = {
+                'baixa': 'criticidade-baixa',
+                'media': 'criticidade-media',
+                'alta': 'criticidade-alta',
+                'critica': 'criticidade-critica'
+            };
+
+            const valor = criticidade.toLowerCase();
+            const classe = map[valor] || '';
+            const texto = valor.charAt(0).toUpperCase() + valor.slice(1);
+
+            return `<span class="status-badge text-capitalize ${classe}">${texto}</span>`;
+        }
+                
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            
+            // Verifica se a data está no formato 'dd-mm-YYYY HH:MM:SS'
+            if (dateString.match(/^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$/)) {
+                return moment(dateString, 'DD-MM-YYYY').format('DD/MM/YYYY');
+            }
+            
+            // Tenta outros formatos como fallback
+            return moment(dateString).isValid() ? moment(dateString).format('DD/MM/YYYY') : '-';
+        }
+        
+        // Load equipment types for filter
+        async function loadEquipmentTypes() {
+            try {
+                const response = await fetch('/api/equipamentos/tipos');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const select = document.getElementById('equipmentTypeFilter');
+                    
+                    data.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type;
+                        option.textContent = type;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar tipos de equipamento:', error);
+            }
+        }
+        
+        // Função para carregar inspeções no mapa
+        async function loadInspections(filters = {}) {
+            try {
+                // Mostrar indicador de carregamento
+                Swal.fire({
+                    title: 'Carregando...',
+                    html: 'Buscando inspeções no mapa',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+
+                // Construir parâmetros de consulta
+                const queryParams = new URLSearchParams();
+                
+                if (filters.status && filters.status !== 'all') {
+                    queryParams.append('status', filters.status);
+                }
+                
+                if (filters.tipo_equipamento && filters.tipo_equipamento !== 'all') {
+                    queryParams.append('tipo_equipamento', filters.tipo_equipamento);
+                }
+                
+                if (filters.data_inicio) {
+                    queryParams.append('data_inicio', filters.data_inicio);
+                }
+                
+                if (filters.data_fim) {
+                    queryParams.append('data_fim', filters.data_fim);
+                }
+                
+                if (filters.responsavel) {
+                    queryParams.append('responsavel', filters.responsavel);
+                }
+                
+                if (filters.localizacao) {
+                    queryParams.append('localizacao', filters.localizacao);
+                }
+                
+                if (filters.numero_inspecao) {
+                    queryParams.append('numero_inspecao', filters.numero_inspecao);
+                }
+                
+                if (filters.tag_equipamento) {
+                    queryParams.append('tag_equipamento', filters.tag_equipamento);
+                }
+
+                // Buscar dados do mapa
+                const response = await fetch(`/api/inspecoes/mapa?${queryParams.toString()}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Falha ao carregar inspeções para o mapa');
+                }
+                
+                const inspecoes = await response.json();
+                
+                // Limpar marcadores existentes
+                clearMarkers();
+                
+                // Processar cada inspeção com localização
+                let hasLocations = false;
+                
+                inspecoes.forEach(inspection => {
+                    if (inspection.latitude && inspection.longitude) {
+                        hasLocations = true;
+                        const marker = createMarker(inspection, {
+                            latitude: inspection.latitude,
+                            longitude: inspection.longitude
+                        });
+                        currentMarkers.push(marker);
+                    }
+                });
+                
+                // Adicionar todos os marcadores ao grupo de cluster de uma vez
+                if (currentMarkers.length > 0) {
+                    markerCluster.addLayers(currentMarkers);
+                    map.fitBounds(markerCluster.getBounds().pad(0.5));
+                    document.getElementById('emptyState').style.display = 'none';
+                } else {
+                    document.getElementById('emptyState').style.display = 'block';
+                }
+                
+                Swal.close();
+                
+            } catch (error) {
+                Swal.close();
+                console.error('Erro ao carregar inspeções no mapa:', error);
+                showAlert('Erro', error.message || 'Não foi possível carregar as inspeções no mapa.', 'error');
+            }
+        }
+
+        // Create custom marker icons
+        function createMarkerIcon(status) {
+            let className = 'marker-icon ';
+            let icon = 'fa-search';
+            
+            switch(status) {
+                case 'Pendente':
+                    className += 'marker-pendente';
+                    icon = 'fa-clock';
+                    break;
+                case 'Finalizada':
+                    className += 'marker-finalizada';
+                    icon = 'fa-check-circle';
+                    break;
+                case 'Cancelada':
+                    className += 'marker-cancelada';
+                    icon = 'fa-times-circle';
+                    break;
+                default:
+                    className += 'marker-pendente';
+            }
+            
+            return L.divIcon({
+                className: className,
+                html: `<i class="fas ${icon}"></i>`,
+                iconSize: [32, 32]
+            });
+        }
+        
+        // Função para criar marcador com popup
+        function createMarker(inspection, location) {
+            const marker = L.marker([location.latitude, location.longitude], {
+                icon: createMarkerIcon(inspection.status_inspecao),
+                status: inspection.status_inspecao,
+                inspection: inspection
+            });
+            
+            // Adicionar popup com informações da inspeção
+            marker.bindPopup(`
+                <div class="popup-title">
+                    Inspeção ${inspection.numero_inspecao || ''}
+                </div>
+                <div class="popup-content">
+                    <strong>Equipamento:</strong> ${inspection.tag_equipamento || '-'}<br>
+                    <strong>Tipo:</strong> ${inspection.tipo_equipamento || '-'}<br>
+                    <strong>Local:</strong> ${inspection.localizacao || '-'}<br>
+                    <strong>Status:</strong> ${formatStatus(inspection.status_inspecao)}<br>
+                    <strong>Data:</strong> ${inspection.data_registro}<br>
+                    <strong>Validade:</strong> ${inspection.data_validade_inspecao}                    
+                </div>
+                <div class="popup-footer">
+                    <button class="popup-button" onclick="viewInspectionDetails('${inspection.id}', event)">
+                        <i class="fas fa-eye"></i> Detalhes
+                    </button>
+                </div>
+            `);
+            
+            return marker;
+        }
+
+        // Função para carregar o mapa com os filtros atuais
+        function loadMapWithFilters() {
+            const filters = {
+                status: $('#statusFilter').val(),
+                tipo_equipamento: $('#equipmentTypeFilter').val(),
+                responsavel: $('#responsavelFilter').val(),
+                localizacao: $('#localizacaoFilter').val(),
+                numero_inspecao: $('#numeroInspecaoFilter').val(),
+                tag_equipamento: $('#tagEquipamentoFilter').val()
+            };
+            
+            loadInspections(filters);
+        }
+
+        // Inicializar o mapa
+        function initMap() {
+            // Coordenadas padrão (pode ser ajustado ou definido dinamicamente)
+            const defaultCoords = [-15.793889, -47.882778]; // Coordenadas de Brasília
+            
+            map = L.map('map').setView(defaultCoords, 13);
+            
+            // Adicionar camada de tile (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+            }).addTo(map);
+            
+            // Inicializar grupo de cluster de marcadores
+            markerCluster = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    const childMarkers = cluster.getAllChildMarkers();
+                    let statusCounts = {
+                        'Pendente': 0,
+                        'Finalizada': 0,
+                        'Cancelada': 0
+                    };
+                    
+                    // Contar marcadores por status
+                    childMarkers.forEach(marker => {
+                        const status = marker.options.status || 'Pendente';
+                        statusCounts[status]++;
+                    });
+                    
+                    // Determinar tipo de cluster
+                    let clusterType = 'mixed';
+                    if (statusCounts['Pendente'] === childMarkers.length) {
+                        clusterType = 'pendente';
+                    } else if (statusCounts['Finalizada'] === childMarkers.length) {
+                        clusterType = 'finalizada';
+                    } else if (statusCounts['Cancelada'] === childMarkers.length) {
+                        clusterType = 'cancelada';
+                    }
+                    
+                    // Criar ícone de cluster
+                    return L.divIcon({
+                        className: `marker-cluster marker-cluster-${clusterType}`,
+                        html: `<div>${childMarkers.length}</div>`,
+                        iconSize: L.point(40, 40)
+                    });
+                },
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                maxClusterRadius: 40
+            });
+            
+            map.addLayer(markerCluster);
+            
+            // Carregar inspeções iniciais
+            loadMapWithFilters();
+        }
+
+        // Load map with current filters
+        function loadMapWithFilters() {
+            const filters = {
+                status: $('#statusFilter').val(),
+                tipo_equipamento: $('#equipmentTypeFilter').val(),
+                responsavel: $('#responsavelFilter').val(),
+                localizacao: $('#localizacaoFilter').val(),
+                numero_inspecao: $('#numeroInspecaoFilter').val(),
+                tag_equipamento: $('#tagEquipamentoFilter').val()
+            };
+            
+            loadInspections(filters);
+        }
+
+        // Focus on marker on the map
+        function focusOnMarker(inspectionId, event) {
+            if (event) event.stopPropagation();
+            
+            const marker = currentMarkers.find(m => m.options.inspection.id == inspectionId);
+            if (marker) {
+                map.setView(marker.getLatLng(), 15);
+                marker.openPopup();
+            } else {
+                showAlert('Aviso', 'Esta inspeção não possui localização no mapa.', 'warning');
+            }
+        }
+     
+        // Clear all markers from the map
+        function clearMarkers() {
+            markerCluster.clearLayers();
+            currentMarkers = [];
+        }
+        
+        // View inspection details
+        async function viewInspectionDetails(inspectionId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            try {
+                Swal.fire({
+                    title: 'Carregando...',
+                    html: 'Buscando detalhes da inspeção',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+
+                const response = await fetch(`/api/inspecoes/${inspectionId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Falha ao carregar detalhes da inspeção');
+                }
+                
+                const inspection = await response.json();
+                Swal.close();
+                
+                // Update modal title
+                document.getElementById('inspectionModalLabel').textContent = 
+                    `Inspeção ${inspection.numero_inspecao || ''} - ${inspection.tag_equipamento || ''}`;
+                
+                // Update all fields
+                document.getElementById('detail-inspection-number').textContent = inspection.numero_inspecao || '-';
+                document.getElementById('detail-equipment-tag').textContent = inspection.tag_equipamento || '-';
+                document.getElementById('detail-equipment-type').textContent = inspection.tipo || '-';
+                document.getElementById('detail-location').textContent = inspection.localizacao || '-';
+                document.getElementById('detail-responsible').textContent = inspection.responsavel || '-';
+                document.getElementById('detail-register-date').textContent = inspection.data_registro || '-';
+                document.getElementById('detail-expiry-date').textContent = inspection.data_validade_inspecao || '-';
+                document.getElementById('detail-criticidade').innerHTML = formatCriticidade(inspection.criticidade_inspecao);
+                document.getElementById('detail-status').innerHTML = formatStatus(inspection.status_inspecao) || '-';
+                document.getElementById('detail-notes').textContent = inspection.observacoes || '-';
+                document.getElementById('detail-motivo-acao').textContent = inspection.motivo_acao || '-';
+                document.getElementById('detail-status-equipamento').textContent = inspection.status_equipamento || '-';
+                
+                // Show modal
+                const inspectionModal = new bootstrap.Modal(document.getElementById('inspectionModal'));
+                inspectionModal.show();
+                
+            } catch (error) {
+                Swal.close();
+                console.error('Erro ao carregar detalhes:', error);
+                showAlert('Erro', error.message || 'Não foi possível carregar os detalhes da inspeção.', 'error');
+            }
+        }
+
+        // Aplicar filtros quando o botão for clicado
+        $('#applyFilters').click(function() {
+            loadMapWithFilters();
+        });
+
+        // Resetar filtros
+        $('#resetFilters').click(function() {
+            $('.filters-section select').val('all');
+            $('.filters-section input[type="text"]').val('');
+            $('.filters-section input[type="date"]').val('');
+            loadMapWithFilters();
+        });
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadEquipmentTypes();
+            
+            // Logout function
+            document.getElementById('logoutButton').addEventListener('click', async function(event) {
+                event.preventDefault();
+                
+                const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+                
+                if (confirmed) {
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            window.location.href = '/login';
+                        } else {
+                            await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erro de rede:', error);
+                        await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                    }
+                }
+            });
+            
+            // Change profile picture
+            let cropper = null;
+            document.getElementById('changeProfilePicBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.addEventListener('change', function (event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const image = document.createElement('img');
+                        image.src = e.target.result;
+                        image.style = 'max-width: 100%; max-height: 400px;';
+                        image.id = 'cropper-img';
+
+                        const cropContainer = document.createElement('div');
+                        cropContainer.appendChild(image);
+
+                        Swal.fire({
+                            title: 'Corte sua imagem',
+                            html: cropContainer,
+                            showCancelButton: true,
+                            confirmButtonText: 'Salvar',
+                            background: 'var(--darker-bg)',
+                            color: 'var(--text-light)',
+                            customClass: {
+                                popup: 'rounded-xl p-2',
+                                confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                                cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                            },
+                            didOpen: () => {
+                                cropper = new Cropper(image, {
+                                    aspectRatio: 1,
+                                    viewMode: 1,
+                                    background: false,
+                                    autoCropArea: 1,
+                                    movable: true,
+                                    zoomable: true,
+                                    responsive: true
+                                });
+                            },
+                            preConfirm: () => {
+                                return new Promise((resolve, reject) => {
+                                    if (!cropper) {
+                                        reject('Cropper não inicializado.');
+                                        return;
+                                    }
+
+                                    const canvas = cropper.getCroppedCanvas({
+                                        width: 300,
+                                        height: 300
+                                    });
+
+                                    if (!canvas) {
+                                        reject('Erro ao gerar canvas.');
+                                        return;
+                                    }
+
+                                    canvas.toBlob(async (blob) => {
+                                        if (!blob) {
+                                            reject('Erro ao gerar imagem.');
+                                            return;
+                                        }
+
+                                        Swal.close(); // Fecha o modal de corte
+                                        await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                        Swal.fire({
+                                            title: 'Processando...',
+                                            html: 'Atualizando sua foto de perfil',
+                                            allowOutsideClick: false,
+                                            didOpen: () => Swal.showLoading(),
+                                            background: 'var(--darker-bg)',
+                                            color: 'var(--text-light)'
+                                        });
+
+                                        const formData = new FormData();
+                                        formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                        try {
+                                            const response = await fetch('/api/alterar_foto_perfil', {
+                                                method: 'POST',
+                                                body: formData
+                                            });
+
+                                            const data = await response.json();
+                                            Swal.close();
+
+                                            if (data.success) {
+                                                const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                                document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                    img.src = imgURL;
+                                                });
+                                                setTimeout(() => {
+                                                    location.reload();
+                                                }, 1000);
+                                                await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                            } else {
+                                                await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                            }
+                                        } catch (err) {
+                                            Swal.close();
+                                            console.error(err);
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+
+                                        resolve();
+                                    }, 'image/jpeg');
+                                });
+                            },
+                            willClose: () => {
+                                if (cropper) {
+                                    cropper.destroy();
+                                    cropper = null;
+                                }
+                            }
+                        });
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+
+                input.click();
+            });
+        });
+    </script>
+</body>
+</html>

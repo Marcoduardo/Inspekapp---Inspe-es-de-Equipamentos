@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>InspekApp - Configurações do Sistema</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/icons/favicon.ico') }}" type="image/x-icon">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        :root {
+            /* Cores principais */
+            --primary-color: #4a6bff;
+            --primary-dark: #3a56d4;
+            --primary-light: #6b84ff;
+            --secondary-color: #ff6b6b;
+            --secondary-dark: #e05555;
+            --accent-color: #00c8a0;
+            
+            /* Tons de cinza e fundo */
+            --dark-bg: #1a1a2e;
+            --darker-bg: #16213e;
+            --card-bg: #242445;
+            --card-hover: #2d2d5a;
+            --border-color: rgba(255, 255, 255, 0.1);
+            
+            /* Texto */
+            --text-light: #ffffff;
+            --text-muted: #b8b8b8;
+            --text-dark: #333333;
+            
+            /* Status */
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #17a2b8;
+            
+            /* Espaçamento e bordas */
+            --border-radius: 10px;
+            --border-radius-sm: 6px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --box-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --transition-fast: all 0.15s ease;
+        }
+    
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Poppins', 'Roboto', sans-serif;
+            line-height: 1.6;
+            padding-top: 70px;
+        }
+
+        /* Barra de navegação superior */
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            transition: var(--transition);
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: white;
+        }
+
+        .dropdown-menu {
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .dropdown-item {
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+        }
+
+        .dropdown-divider {
+            border-color: var(--border-color);
+        }
+
+        /* Conteúdo principal */
+        .main-container {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Cabeçalho da página */
+        .page-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Abas de navegação */
+        .nav-tabs-container {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .nav-tabs {
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 1px; /* Para a borda ativa */
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-muted);
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            white-space: nowrap;
+            position: relative;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--text-light);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: transparent;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .nav-tabs .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.4rem;
+            min-width: 18px;
+        }
+
+        /* Conteúdo das abas */
+        .tab-content {
+            padding: 1rem 0;
+        }
+
+        /* Cards de configuração */
+        .config-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow-sm);
+            transition: var(--transition);
+        }
+
+        .config-card:hover {
+            box-shadow: var(--box-shadow);
+            transform: translateY(-2px);
+        }
+
+        .config-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Formulários */
+        .form-label {
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        .form-check-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .form-check-input:indeterminate {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .input-group-text {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 107, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Mensagens do sistema */
+        .alert {
+            border-left: 4px solid;
+            border-radius: var(--border-radius-sm);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+        }
+
+        .alert-success {
+            background-color: rgba(75, 181, 67, 0.15);
+            color: var(--success-color);
+            border-left-color: var(--success-color);
+        }
+
+        .alert-danger {
+            background-color: rgba(255, 82, 82, 0.15);
+            color: var(--danger-color);
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 165, 0, 0.15);
+            color: var(--warning-color);
+            border-left-color: var(--warning-color);
+        }
+
+        .alert-info {
+            background-color: rgba(23, 162, 184, 0.15);
+            color: var(--info-color);
+            border-left-color: var(--info-color);
+        }
+
+        /* Seção de permissões */
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .permission-level {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-sm);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .permission-level:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .permission-level h3 {
+            font-size: 1.15rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Categorias de menu */
+        .menu-category {
+            margin-bottom: 1.25rem;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+
+        .menu-category-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.5rem 0;
+            font-weight: 500;
+        }
+
+        .menu-category-title i {
+            transition: var(--transition);
+        }
+
+        .menu-category-title.collapsed i.fa-chevron-up {
+            transform: rotate(180deg);
+        }
+
+        .menu-category-items {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+
+        .menu-item-actions {
+            margin-left: auto;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            padding: 0.25rem;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+            background: rgba(74, 107, 255, 0.1);
+        }
+
+        /* Lista de backups */
+        .backup-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 0.75rem;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .backup-item:hover {
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+
+        .backup-info {
+            flex: 1;
+        }
+
+        .backup-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .backup-details {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Tooltip */
+        .tooltip-icon {
+            color: var(--primary-color);
+            cursor: help;
+            margin-left: 0.25rem;
+        }
+
+        /* Modal */
+        .modal-content {
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem;
+        }
+
+        .modal-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 1.25rem;
+        }
+
+        .btn-close {
+            filter: invert(1);
+            opacity: 0.8;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* Perfil do usuário */
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.05);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .user-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-detail-label {
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-detail-value {
+            text-align: right;
+        }
+
+        .badge-access {
+            background: rgba(74, 107, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Corte de imagem */
+        #crop-container {
+            max-width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: var(--border-radius-sm);
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .permissions-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .main-container {
+                padding: 1.5rem;
+            }
+
+            .config-card {
+                padding: 1.25rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .permissions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .config-card {
+                padding: 1rem;
+            }
+
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .form-control, .form-select {
+                padding: 0.6rem 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegação superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Conteúdo principal -->
+    <div class="main-container">
+        <!-- Cabeçalho da página -->
+        <div class="page-header">
+            <h1 class="page-title">Configurações do Sistema</h1>
+            <p class="page-subtitle">Gerencie todas as configurações e preferências do sistema InspekApp</p>
+        </div>
+
+        <!-- Mensagens do sistema -->
+        <div id="message-container" class="alert alert-info" style="display: none;">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span id="message-text">Carregando configurações...</span>
+        </div>
+
+        <!-- Abas de navegação -->
+        <div class="nav-tabs-container">
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions" type="button" role="tab">
+                        <i class="fas fa-user-shield"></i> Permissões
+                        <span class="badge bg-primary rounded-pill" id="permissions-badge"></span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="prefixes-tab" data-bs-toggle="tab" data-bs-target="#prefixes" type="button" role="tab">
+                        <i class="fas fa-hashtag"></i> Prefixos
+                        <span class="badge bg-primary rounded-pill" id="prefixes-badge"></span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                        <i class="fas fa-cog"></i> Sistema
+                        <span class="badge bg-primary rounded-pill" id="system-badge"></span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="folders-tab" data-bs-toggle="tab" data-bs-target="#folders" type="button" role="tab">
+                        <i class="fas fa-folder"></i> Diretórios
+                        <span class="badge bg-primary rounded-pill" id="folders-badge"></span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="backups-tab" data-bs-toggle="tab" data-bs-target="#backups" type="button" role="tab">
+                        <i class="fas fa-database"></i> Backups
+                        <span class="badge bg-primary rounded-pill" id="backups-badge"></span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="auth-tab" data-bs-toggle="tab" data-bs-target="#auth" type="button" role="tab">
+                        <i class="fas fa-lock"></i> Autenticação
+                        <span class="badge bg-primary rounded-pill" id="auth-badge"></span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Conteúdo das abas -->
+        <div class="tab-content" id="settingsTabContent">
+            <!-- Configurações de Permissões -->
+            <div class="tab-pane fade show active" id="permissions" role="tabpanel">
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fas fa-user-lock"></i> Gerenciamento de Permissões
+                            </h2>
+                            <p class="section-description">Defina quais menus e funcionalidades cada nível de acesso pode visualizar e utilizar no sistema.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="permissions-grid">
+                        <!-- Administrador -->
+                        <div class="permission-level">
+                            <h3><i class="fas fa-user-crown"></i> Administrador</h3>
+                            <div class="permission-items">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="admin-all" checked disabled>
+                                    <label class="form-check-label" for="admin-all">Acesso completo a todos os menus e funcionalidades</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Operador -->
+                        <div class="permission-level">
+                            <h3><i class="fas fa-user-gear"></i> Operador</h3>
+                            <div class="permission-items" id="operator-permissions">
+                                <!-- Renderizado dinamicamente -->
+                            </div>
+                        </div>
+                        
+                        <!-- Somente Leitura -->
+                        <div class="permission-level">
+                            <h3><i class="fas fa-user-eye"></i> Somente Leitura</h3>
+                            <div class="permission-items" id="readonly-permissions">
+                                <!-- Renderizado dinamicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Prefixos -->
+            <div class="tab-pane fade" id="prefixes" role="tabpanel">
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fas fa-hashtag"></i> Prefixos do Sistema
+                            </h2>
+                            <p class="section-description">Configure os prefixos usados para identificação de itens no sistema.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inspection-prefix" class="form-label">
+                            Prefixo para Números de Inspeção
+                            <i class="fas fa-info-circle tooltip-icon" title="Define o prefixo usado ao gerar novos números de inspeção (ex: INS- para INS-00001)"></i>
+                        </label>
+                        <input type="text" class="form-control" id="inspection-prefix" maxlength="10">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações do Sistema -->
+            <div class="tab-pane fade" id="system" role="tabpanel">
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fas fa-server"></i> Configurações do Servidor
+                            </h2>
+                            <p class="section-description">Parâmetros de conexão e operação do servidor. Altere com cuidado.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="server-ip" class="form-label">Endereço IP do Servidor</label>
+                        <input type="text" class="form-control" id="server-ip">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="server-port" class="form-label">Porta</label>
+                        <input type="number" class="form-control" id="server-port" min="1024" max="65535">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="server-protocol" class="form-label">Protocolo</label>
+                        <select class="form-select" id="server-protocol">
+                            <option value="http">HTTP</option>
+                            <option value="https">HTTPS</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Diretórios -->
+            <div class="tab-pane fade" id="folders" role="tabpanel">
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fas fa-folder-open"></i> Diretórios do Sistema
+                            </h2>
+                            <p class="section-description">Configurações de pastas e armazenamento para diferentes tipos de arquivos.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="upload-folder" class="form-label">Diretório de upload de inspeções</label>
+                        <input type="text" class="form-control" id="upload-folder">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="perfil-folder" class="form-label">Diretório de fotos de perfil</label>
+                        <input type="text" class="form-control" id="perfil-folder">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pdf-template-path" class="form-label">Caminho do Modelo Word</label>
+                        <input type="text" class="form-control" id="pdf-template-path">
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="pdf-output-folder" class="form-label">Diretório de Saída</label>
+                        <input type="text" class="form-control" id="pdf-output-folder">
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="pdf-filename-prefix" class="form-label">Prefixo do Nome do Arquivo</label>
+                        <input type="text" class="form-control" id="pdf-filename-prefix">
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="auto-create-folders">
+                        <label class="form-check-label" for="auto-create-folders">
+                            Criar diretórios automaticamente se não existirem
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Backup -->
+            <div class="tab-pane fade" id="backups" role="tabpanel">
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fas fa-database"></i> Gerenciamento de Backups
+                            </h2>
+                            <p class="section-description">Crie e restaure backups das configurações do sistema para segurança.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button id="create-backup-btn" class="btn btn-primary me-2">
+                            <i class="fas fa-plus-circle me-1"></i> Criar Backup
+                        </button>
+                        <button id="refresh-backups-btn" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt me-1"></i> Atualizar
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <h5>Backups Disponíveis</h5>
+                        <div id="backups-list-container" class="mt-3">
+                            <!-- Renderizado dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações de Autenticação -->
+            <div class="tab-pane fade" id="auth" role="tabpanel">
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <div>
+                            <h2 class="section-title">
+                                <i class="fab fa-microsoft"></i> Azure AD OAuth
+                            </h2>
+                            <p class="section-description">Configurações de autenticação com Azure Active Directory para login único.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="oauth-azure-enabled">
+                        <label class="form-check-label" for="oauth-azure-enabled">
+                            Habilitar autenticação via Azure AD
+                        </label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="oauth-azure-client-id" class="form-label">Client ID</label>
+                        <input type="text" class="form-control" id="oauth-azure-client-id">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="oauth-azure-client-secret" class="form-label">Client Secret</label>
+                        <input type="password" class="form-control" id="oauth-azure-client-secret">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="oauth-azure-tenant-id" class="form-label">Tenant ID</label>
+                        <input type="text" class="form-control" id="oauth-azure-tenant-id">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="oauth-azure-scopes" class="form-label">Scopes</label>
+                        <input type="text" class="form-control" id="oauth-azure-scopes" value="openid email profile">
+                    </div>
+
+                    <button id="test-oauth-btn" class="btn btn-info">
+                        <i class="fas fa-plug me-1"></i> Testar Conexão
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="config-card mt-3">
+            <div class="d-flex justify-content-between">
+                <button id="reset-defaults" class="btn btn-secondary">
+                    <i class="fas fa-undo me-1"></i> Restaurar Padrões
+                </button>
+                <button id="save-settings" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Salvar Todas as Configurações
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Usuário -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-circle me-2"></i> Perfil do Usuário
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="profile-pic-container">
+                        <img id="modal-profile-pic" class="profile-pic" 
+                            src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                            alt="Foto de Perfil">
+                    </div>
+                    <div class="user-details">
+                        <div class="user-detail-item">
+                            <span class="user-detail-label">
+                                <i class="fas fa-user"></i> Nome:
+                            </span>
+                            <span class="user-detail-value">{{ current_user.nome }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <span class="user-detail-label">
+                                <i class="fas fa-envelope"></i> Email:
+                            </span>
+                            <span class="user-detail-value">{{ current_user.email }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <span class="user-detail-label">
+                                <i class="fas fa-id-card"></i> Matrícula:
+                            </span>
+                            <span class="user-detail-value">{{ current_user.matricula }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <span class="user-detail-label">
+                                <i class="fas fa-building"></i> Setor:
+                            </span>
+                            <span class="user-detail-value">{{ current_user.setor }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <span class="user-detail-label">
+                                <i class="fas fa-user-tag"></i> Usuário:
+                            </span>
+                            <span class="user-detail-value">{{ current_user.usuario }}</span>
+                        </div>
+                        <div class="user-detail-item">
+                            <span class="user-detail-label">
+                                <i class="fas fa-shield-alt"></i> Nível de Acesso:
+                            </span>
+                            <span class="user-detail-value">
+                                <span class="badge-access">{{ current_user.nivel_acesso }}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-1"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Backup -->
+    <div class="modal fade" id="backupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-database me-2"></i> Gerenciar Backups
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <button id="create-backup-modal-btn" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i> Criar Novo Backup
+                        </button>
+                    </div>
+                    
+                    <h5 class="mb-3">Backups Disponíveis</h5>
+                    <ul class="backup-list" id="backup-list">
+                        <!-- Renderizado dinamicamente -->
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle com Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Estado global da aplicação
+        const appState = {
+            config: null,
+            metadata: null,
+            modifiedSettings: new Set(),
+            backups: [],
+            debounceTimers: {},
+            currentActionsMenu: null,
+            currentPermissionLevel: null
+        };
+
+        // Definição de menus organizados por categorias
+        const SYSTEM_MENUS = {
+            inspecoes: {
+                name: 'Inspeções',
+                icon: 'fas fa-clipboard-check',
+                items: [
+                    { id: 'inspecao', name: 'Nova Inspeção', description: 'Iniciar uma nova inspeção' },
+                    { id: 'inspecoes_cadastrados', name: 'Histórico de Inspeções', description: 'Consultar inspeções anteriores' },
+                    { id: 'pendencias_inspecoes', name: 'Minhas Inspeções', description: 'Ver inspeções realizadas pelo usuário' },
+                    { id: 'mapas_inspecoes', name: 'Mapa de Inspeções', description: 'Ver o mapa inspeções do sistema' },                    
+                    { id: 'excluir_inspecao', name: 'Excluir', description: 'Remover uma inspeção existente' },
+                    { id: 'imprimir_inspecao', name: 'Imprimir', description: 'Gerar versão impressa da inspeção' },
+                    { id: 'alterar_status_inspecao', name: 'Alterar Status', description: 'Atualizar o status da inspeção' },
+                    { id: 'ver_anexos', name: 'Anexos', description: 'Visualizar arquivos anexados à inspeção' },
+                    { id: 'desativa_localizacao', name: 'Desativar Localização', description: 'Permite desativar a localização, durante a inspeção' }                    
+                ]
+            },
+            equipamentos: {
+                name: 'Equipamentos',
+                icon: 'fas fa-tools',
+                items: [
+                    { id: 'novo_equipamento', name: 'Cadastrar', description: 'Novo equipamento' },
+                    { id: 'equipamentos_cadastrados', name: 'Lista', description: 'Equipamentos cadastrados' },
+                    { id: 'gerar_codigo', name: 'Gerar Código', description: 'Gerar códigos de identificação' },
+                    { id: 'alterar_status_equipamento', name: 'Alterar Status', description: 'Atualizar status do equipamento' },
+                    { id: 'editar_equipamento', name: 'Editar', description: 'Alterar informações de um equipamento' },
+                    { id: 'excluir_equipamento', name: 'Excluir', description: 'Remover equipamento do sistema' }
+                ]
+            },
+            usuarios: {
+                name: 'Usuários',
+                icon: 'fas fa-users',
+                items: [
+                    { id: 'novo_usuario', name: 'Cadastrar', description: 'Novo usuário no sistema' },
+                    { id: 'usuarios_cadastrados', name: 'Lista', description: 'Usuários cadastrados (restrito)' },
+                    { id: 'editar_usuario', name: 'Editar', description: 'Editar dados de usuário' },
+                    { id: 'excluir_usuario', name: 'Excluir', description: 'Remover usuário' },
+                    { id: 'bloquear_usuario', name: 'Bloquear', description: 'Restringir acesso de usuário' },
+                    { id: 'desbloquear_usuario', name: 'Desbloquear', description: 'Restaurar acesso de usuário' }
+                ]
+            },
+            setores: {
+                name: 'Setores',
+                icon: 'fas fa-building',
+                items: [
+                    { id: 'novo_setor', name: 'Cadastrar', description: 'Novo setor' },
+                    { id: 'setores_cadastrados', name: 'Lista', description: 'Setores cadastrados' },
+                    { id: 'editar_setor', name: 'Editar', description: 'Editar informações do setor' },
+                    { id: 'excluir_setor', name: 'Excluir', description: 'Remover setor do sistema' }
+                ]
+            },
+            tipo_equipamento: {
+                name: 'Tipo de Equipamentos',
+                icon: 'fas fa-building',
+                items: [
+                    { id: 'novo_tipo_equipamento', name: 'Cadastrar', description: 'Novo Tipo de Equipamento' },
+                    { id: 'tipos_equipamentos_cadastrados', name: 'Lista', description: 'Tipo de Equipamentos cadastrados' },
+                    { id: 'editar_tipo_equipamento', name: 'Editar', description: 'Editar Tipo de Equipamentos' },
+                    { id: 'gerenciar_tipos_equipamentos', name: 'Desativar', description: 'Desativar Tipo de Equipamento' }
+                ]
+            },           
+            relatorios: {
+                name: 'Relatórios',
+                icon: 'fas fa-chart-bar',
+                items: [
+                    { id: 'relatorio_equipamentos', name: 'Equipamentos', description: 'Gerar relatórios de equipamentos' },
+                    { id: 'relatorio_inspecoes', name: 'Inspeções', description: 'Gerar relatórios de inspeções' }
+                ]
+            },
+            notificacoes: {
+                name: 'Notificações',
+                icon: 'fas fa-bell',
+                items: [
+                    { id: 'notificacoes', name: 'Inspeções', description: 'Alertas de inspeções pendentes' },
+                    { id: 'notificacoes_equipamentos', name: 'Equipamentos', description: 'Alertas de manutenção de equipamentos' }
+                ]
+            },
+            opcoes: {
+                name: 'Opções',
+                icon: 'fas fa-cog',
+                items: [
+                    { id: 'configuracoes', name: 'Sistema', description: 'Configurações gerais' },
+                    { id: 'logs_auditoria', name: 'Auditoria', description: 'Histórico de ações e alterações' },
+                    { id: 'visualizar_dashboards', name: 'Dashboards', description: 'Métricas e indicadores visuais' },
+                    { id: 'alterar_senha', name: 'Alteração de Senha', description: 'Permite que o usuário altere sua senha.' }            
+                ]
+            }
+        };
+
+        // Funções utilitárias
+        function showMessage(text, type = 'success', duration = 5000) {
+            const messageContainer = document.getElementById('message-container');
+            const messageText = document.getElementById('message-text');
+            
+            messageContainer.style.display = 'flex';
+            messageContainer.className = `alert alert-${type}`;
+            messageText.textContent = text;
+            
+            // Adicionar ícone apropriado
+            const icon = messageContainer.querySelector('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 
+                            type === 'warning' ? 'fas fa-exclamation-triangle' : 
+                            type === 'danger' ? 'fas fa-times-circle' : 
+                            type === 'info' ? 'fas fa-info-circle' : 'fas fa-circle-notch fa-spin';
+            
+            // Esconder após o tempo especificado
+            if (duration > 0) {
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, duration);
+            }
+        }
+
+        async function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)',
+                backdrop: 'rgba(0,0,0,0.7)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                backdrop: 'rgba(0,0,0,0.7)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Funções de renderização
+        function renderBackups() {
+            const container = document.getElementById('backups-list-container');
+            const modalList = document.getElementById('backup-list');
+            
+            if (appState.backups.length === 0) {
+                container.innerHTML = '<p class="text-muted fst-italic">Nenhum backup disponível</p>';
+                modalList.innerHTML = '<li class="text-muted fst-italic p-3">Nenhum backup disponível</li>';
+                return;
+            }
+            
+            // Renderizar na página principal
+            container.innerHTML = '';
+            appState.backups.forEach(backup => {
+                const backupElement = document.createElement('div');
+                backupElement.className = 'backup-item';
+                backupElement.innerHTML = `
+                    <div class="backup-info">
+                        <div class="backup-name">${backup.name}</div>
+                        <div class="backup-details">
+                            ${formatBytes(backup.size)} • ${formatDate(backup.modified)}
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-info restore-backup-btn" data-path="${backup.path}">
+                        <i class="fas fa-undo"></i> Restaurar
+                    </button>
+                `;
+                container.appendChild(backupElement);
+            });
+            
+            // Renderizar no modal
+            modalList.innerHTML = '';
+            appState.backups.forEach(backup => {
+                const backupElement = document.createElement('li');
+                backupElement.className = 'backup-item';
+                backupElement.innerHTML = `
+                    <div class="backup-info">
+                        <div class="backup-name">${backup.name}</div>
+                        <div class="backup-details">
+                            ${formatBytes(backup.size)} • ${formatDate(backup.modified)}
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-info restore-backup-btn" data-path="${backup.path}">
+                        <i class="fas fa-undo"></i> Restaurar
+                    </button>
+                `;
+                modalList.appendChild(backupElement);
+            });
+            
+            // Adicionar event listeners aos botões de restaurar
+            document.querySelectorAll('.restore-backup-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const backupPath = btn.getAttribute('data-path');
+                    await restoreBackup(backupPath);
+                    const backupModal = bootstrap.Modal.getInstance(document.getElementById('backupModal'));
+                    backupModal.hide();
+                });
+            });
+        }
+
+        function renderPermissions(permissionsConfig) {
+            const operatorContainer = document.getElementById('operator-permissions');
+            const readonlyContainer = document.getElementById('readonly-permissions');
+            
+            // Limpar containers
+            operatorContainer.innerHTML = '';
+            readonlyContainer.innerHTML = '';
+
+            // Adicionar cada categoria de menu
+            Object.entries(SYSTEM_MENUS).forEach(([categoryId, category]) => {
+                // Container do operador
+                const operatorCategory = createPermissionCategory(category, permissionsConfig?.OPERATOR_PERMISSIONS, 'operator');
+                operatorContainer.appendChild(operatorCategory);
+                
+                // Container de somente leitura (apenas algumas categorias)
+                if (['inspecoes', 'equipamentos', 'relatorios'].includes(categoryId)) {
+                    const readonlyCategory = createPermissionCategory(category, permissionsConfig?.READONLY_PERMISSIONS, 'readonly');
+                    readonlyContainer.appendChild(readonlyCategory);
+                }
+            });
+        }
+
+        function createPermissionCategory(category, permissions, prefix) {
+            const categoryElement = document.createElement('div');
+            categoryElement.className = 'menu-category';
+            
+            // Criar um ID seguro para a categoria (remover espaços e caracteres especiais)
+            const categoryId = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            
+            const categoryTitle = document.createElement('div');
+            categoryTitle.className = 'menu-category-title';
+            categoryTitle.setAttribute('data-bs-toggle', 'collapse');
+            categoryTitle.setAttribute('data-bs-target', `#${prefix}-${categoryId}-items`);
+            categoryTitle.setAttribute('aria-expanded', 'true');
+            
+            // Restante do código permanece o mesmo...
+            const allItemsChecked = category.items.every(item => 
+                permissions?.includes(item.id) ?? (prefix === 'operator')
+            );
+            
+            categoryTitle.innerHTML = `
+                <input type="checkbox" class="form-check-input category-checkbox" 
+                    id="${prefix}-${categoryId}-main" 
+                    data-category="${categoryId}"
+                    data-permission-type="${prefix === 'operator' ? 'OPERATOR_PERMISSIONS' : 'READONLY_PERMISSIONS'}"
+                    ${allItemsChecked ? 'checked' : ''}>
+                <i class="${category.icon}"></i> ${category.name}
+                <i class="fas fa-chevron-down ms-auto toggle-icon"></i>
+            `;
+            
+            const categoryItems = document.createElement('div');
+            categoryItems.className = 'menu-category-items collapse show';
+            categoryItems.id = `${prefix}-${categoryId}-items`;
+            
+            // Adicionar itens do menu
+            category.items.forEach(item => {
+                const isChecked = permissions?.includes(item.id) ?? (prefix === 'operator');
+                
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                
+                menuItem.innerHTML = `
+                    <input type="checkbox" class="form-check-input item-checkbox" id="${prefix}-${item.id}" 
+                        data-menu="${item.id}" 
+                        data-category="${category.name.toLowerCase()}"
+                        data-permission-type="${prefix === 'operator' ? 'OPERATOR_PERMISSIONS' : 'READONLY_PERMISSIONS'}"
+                        ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="${prefix}-${item.id}" title="${item.description}">
+                        ${item.name}
+                    </label>
+                `;
+                
+                // Adicionar event listener para o checkbox
+                const checkbox = menuItem.querySelector('input');
+                checkbox.addEventListener('change', function() {
+                    updatePermissionConfig(this);
+                    updateCategoryCheckbox(this.getAttribute('data-category'), this.getAttribute('data-permission-type'));
+                });
+                               
+                categoryItems.appendChild(menuItem);
+            });
+            
+            // Adicionar event listener para o checkbox da categoria
+            const categoryCheckbox = categoryTitle.querySelector('.category-checkbox');
+            categoryCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                const category = this.getAttribute('data-category');
+                const permissionType = this.getAttribute('data-permission-type');
+                
+                // Selecionar todos os checkboxes filhos desta categoria e permissionType
+                const childCheckboxes = categoryItems.querySelectorAll(`.item-checkbox[data-permission-type="${permissionType}"]`);
+                
+                childCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    // Disparar o evento change manualmente para atualizar o estado
+                    const event = new Event('change');
+                    checkbox.dispatchEvent(event);
+                });
+            });
+            
+            categoryElement.appendChild(categoryTitle);
+            categoryElement.appendChild(categoryItems);
+            
+            return categoryElement;
+        }
+
+        function updateCategoryCheckbox(category, permissionType) {
+            const categoryCheckbox = document.querySelector(`.category-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`);
+            if (!categoryCheckbox) return;
+            
+            // Verificar se todos os itens da categoria estão marcados
+            const allChecked = Array.from(document.querySelectorAll(`.item-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`))
+                .every(checkbox => checkbox.checked);
+            
+            // Verificar se algum item da categoria está marcado (para estado indeterminado)
+            const someChecked = Array.from(document.querySelectorAll(`.item-checkbox[data-category="${category}"][data-permission-type="${permissionType}"]`))
+                .some(checkbox => checkbox.checked);
+            
+            // Atualizar o checkbox da categoria
+            categoryCheckbox.checked = allChecked;
+            categoryCheckbox.indeterminate = someChecked && !allChecked;
+        }
+
+        function openActionsModal(menuId, menuName, permissionType) {
+            appState.currentActionsMenu = menuId;
+            appState.currentPermissionLevel = permissionType;
+            
+            // Criar modal dinamicamente
+            const modalHTML = `
+                <div class="modal fade" id="actionsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-cog me-2"></i> Ações: ${menuName}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Permissões disponíveis:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="action-view">
+                                        <label class="form-check-label" for="action-view">Visualizar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="action-edit">
+                                        <label class="form-check-label" for="action-edit">Editar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="action-delete">
+                                        <label class="form-check-label" for="action-delete">Excluir</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="action-export">
+                                        <label class="form-check-label" for="action-export">Exportar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="action-print">
+                                        <label class="form-check-label" for="action-print">Imprimir</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i> Cancelar
+                                </button>
+                                <button type="button" class="btn btn-primary" id="save-actions-btn">
+                                    <i class="fas fa-save me-1"></i> Salvar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar ao DOM
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Verificar ações atuais
+            const actionsConfig = appState.config?.PERMISSIONS?.ACTIONS || {};
+            const currentActions = actionsConfig[menuId]?.[permissionType] || ['view'];
+            
+            // Preencher checkboxes
+            document.getElementById('action-view').checked = currentActions.includes('view');
+            document.getElementById('action-edit').checked = currentActions.includes('edit');
+            document.getElementById('action-delete').checked = currentActions.includes('delete');
+            document.getElementById('action-export').checked = currentActions.includes('export');
+            document.getElementById('action-print').checked = currentActions.includes('print');
+            
+            // Mostrar modal
+            const actionsModal = new bootstrap.Modal(document.getElementById('actionsModal'));
+            actionsModal.show();
+            
+            // Configurar evento de salvar
+            document.getElementById('save-actions-btn').addEventListener('click', () => {
+                saveActionsConfig();
+                actionsModal.hide();
+            });
+            
+            // Remover modal do DOM quando fechado
+            document.getElementById('actionsModal').addEventListener('hidden.bs.modal', () => {
+                document.getElementById('actionsModal').remove();
+            });
+        }
+
+        function updateTabBadges() {
+            const tabs = {
+                'permissions': ['PERMISSIONS'],
+                'prefixes': ['INSPECTION_PREFIX'],
+                'system': ['SERVER_IP', 'SERVER_PORT', 'SERVER_PROTOCOL'],
+                'folders': ['UPLOAD_FOLDER', 'PERFIL_FOLDER', 'PDF_TEMPLATE_PATH', 
+                           'PDF_OUTPUT_FOLDER', 'PDF_FILENAME_PREFIX', 'AUTO_CREATE_FOLDERS'],
+                'auth': ['OAUTH_PROVIDERS'],
+                'backups': [] // Não tem configurações editáveis
+            };
+            
+            for (const [tabId, settings] of Object.entries(tabs)) {
+                const badge = document.getElementById(`${tabId}-badge`);
+                if (badge) {
+                    const modifiedCount = settings.filter(s => appState.modifiedSettings.has(s)).length;
+                    badge.textContent = modifiedCount > 0 ? modifiedCount : '';
+                    badge.style.display = modifiedCount > 0 ? 'flex' : 'none';
+                }
+            }
+        }
+
+        function updateConfigValue(key, value) {
+            if (!appState.config) return;
+            
+            // Atualizar valor no estado
+            appState.config[key] = value;
+            
+            // Marcar como modificado
+            appState.modifiedSettings.add(key);
+            updateTabBadges();
+        }
+
+        function updatePermissionConfig(checkbox) {
+            const menuId = checkbox.getAttribute('data-menu');
+            const permissionType = checkbox.getAttribute('data-permission-type');
+            const isChecked = checkbox.checked;
+            
+            // Garantir que temos o objeto de configuração
+            if (!appState.config.PERMISSIONS) {
+                appState.config.PERMISSIONS = {
+                    OPERATOR_PERMISSIONS: [],
+                    READONLY_PERMISSIONS: [],
+                    ACTIONS: {}
+                };
+            }
+            
+            // Atualizar o array de permissões
+            let permissionsArray = appState.config.PERMISSIONS[permissionType];
+            
+            if (isChecked) {
+                if (!permissionsArray.includes(menuId)) {
+                    permissionsArray.push(menuId);
+                }
+            } else {
+                appState.config.PERMISSIONS[permissionType] = permissionsArray.filter(id => id !== menuId);
+            }
+            
+            // Marcar como modificado
+            appState.modifiedSettings.add('PERMISSIONS');
+            updateTabBadges();
+        }
+
+        function saveActionsConfig() {
+            if (!appState.currentActionsMenu || !appState.currentPermissionLevel) return;
+            
+            // Coletar ações selecionadas
+            const actions = [];
+            if (document.getElementById('action-view').checked) actions.push('view');
+            if (document.getElementById('action-edit').checked) actions.push('edit');
+            if (document.getElementById('action-delete').checked) actions.push('delete');
+            if (document.getElementById('action-export').checked) actions.push('export');
+            if (document.getElementById('action-print').checked) actions.push('print');
+            
+            // Garantir que temos o objeto de configuração
+            if (!appState.config.PERMISSIONS) {
+                appState.config.PERMISSIONS = {
+                    OPERATOR_PERMISSIONS: [],
+                    READONLY_PERMISSIONS: [],
+                    ACTIONS: {}
+                };
+            }
+            
+            if (!appState.config.PERMISSIONS.ACTIONS) {
+                appState.config.PERMISSIONS.ACTIONS = {};
+            }
+            
+            if (!appState.config.PERMISSIONS.ACTIONS[appState.currentActionsMenu]) {
+                appState.config.PERMISSIONS.ACTIONS[appState.currentActionsMenu] = {};
+            }
+            
+            // Atualizar ações
+            appState.config.PERMISSIONS.ACTIONS[appState.currentActionsMenu][appState.currentPermissionLevel] = actions;
+            
+            // Marcar como modificado
+            appState.modifiedSettings.add('PERMISSIONS');
+            updateTabBadges();
+        }
+
+        function collectSettings() {
+            if (!appState.config) return null;
+            
+            const settings = {};
+            const modifiedSettings = {};
+
+            // Coletar configurações padrão modificadas
+            for (const key of appState.modifiedSettings) {
+                if (key !== 'OAUTH_PROVIDERS') { // Trataremos OAuth separadamente
+                    const element = document.getElementById(key.toLowerCase().replace(/_/g, '-'));
+                    if (element) {
+                        modifiedSettings[key] = element.type === 'checkbox' ? element.checked : 
+                                            element.type === 'number' ? parseInt(element.value) : 
+                                            element.value;
+                    }
+                }
+            }
+
+            // Coletar configurações de permissão se modificadas
+            if (appState.modifiedSettings.has('PERMISSIONS')) {
+                modifiedSettings.PERMISSIONS = appState.config.PERMISSIONS;
+            }
+
+            // Adicionar verificação para o prefixo de inspeção
+            const inspectionPrefixChanged = (
+                document.getElementById('inspection-prefix').value !== appState.config.INSPECTION_PREFIX
+            );
+            
+            if (inspectionPrefixChanged || appState.modifiedSettings.has('INSPECTION_PREFIX')) {
+                modifiedSettings.INSPECTION_PREFIX = document.getElementById('inspection-prefix').value;
+            }
+            
+            // Coletar configurações de OAuth se modificadas
+            const oauthChanged = (
+                document.getElementById('oauth-azure-enabled').checked !== appState.config.OAUTH_PROVIDERS?.azure?.enabled ||
+                document.getElementById('oauth-azure-client-id').value !== appState.config.OAUTH_PROVIDERS?.azure?.client_id ||
+                document.getElementById('oauth-azure-client-secret').value !== appState.config.OAUTH_PROVIDERS?.azure?.client_secret ||
+                document.getElementById('oauth-azure-tenant-id').value !== appState.config.OAUTH_PROVIDERS?.azure?.tenant_id ||
+                document.getElementById('oauth-azure-scopes').value !== appState.config.OAUTH_PROVIDERS?.azure?.scopes
+            );
+            
+            if (oauthChanged || appState.modifiedSettings.has('OAUTH_PROVIDERS')) {
+                modifiedSettings.OAUTH_PROVIDERS = {
+                    azure: {
+                        enabled: document.getElementById('oauth-azure-enabled').checked,
+                        client_id: document.getElementById('oauth-azure-client-id').value,
+                        client_secret: document.getElementById('oauth-azure-client-secret').value,
+                        tenant_id: document.getElementById('oauth-azure-tenant-id').value,
+                        scopes: document.getElementById('oauth-azure-scopes').value,
+                        authorize_params: {'response_type': 'code'}
+                    }
+                };
+            }
+            
+            // Só retornar configurações se houver modificações
+            if (Object.keys(modifiedSettings).length > 0) {
+                return modifiedSettings;
+            }
+            return null;
+        }
+
+        function updateUIWithSettings(settings) {
+            if (!settings || !appState.metadata) return;
+            
+            // Atualizar valores dos campos
+            for (const [key, data] of Object.entries(appState.metadata)) {
+                const element = document.getElementById(key.toLowerCase().replace(/_/g, '-'));
+                if (element) {
+                    const value = settings[key];
+                    if (element.type === 'checkbox') {
+                        element.checked = value;
+                    } else {
+                        element.value = value !== undefined ? value : '';
+                    }
+                }
+            }
+            
+            // Renderizar permissões
+            if (settings.PERMISSIONS) {
+                renderPermissions(settings.PERMISSIONS);
+            } else {
+                // Usar padrões se não existir configuração
+                renderPermissions({
+                    OPERATOR_PERMISSIONS: Object.values(SYSTEM_MENUS).flatMap(group => group.items.map(item => item.id)),
+                    READONLY_PERMISSIONS: [],
+                    ACTIONS: {}
+                });
+            }
+            
+            // Preencher o campo do prefixo de inspeção
+            document.getElementById('inspection-prefix').value = settings.INSPECTION_PREFIX || 'INS-';
+
+            // Configurações de OAuth Azure
+            const azureConfig = settings.OAUTH_PROVIDERS?.azure || {
+                enabled: false,
+                client_id: '',
+                client_secret: '',
+                tenant_id: '',
+                scopes: 'openid email profile'
+            };
+
+            document.getElementById('oauth-azure-enabled').checked = azureConfig.enabled;
+            document.getElementById('oauth-azure-client-id').value = azureConfig.client_id;
+            document.getElementById('oauth-azure-client-secret').value = azureConfig.client_secret;
+            document.getElementById('oauth-azure-tenant-id').value = azureConfig.tenant_id;
+            document.getElementById('oauth-azure-scopes').value = azureConfig.scopes;
+
+            // Atualizar badges das tabs
+            updateTabBadges();
+        }
+
+        // Funções de API
+        async function fetchConfig() {
+            try {
+                showMessage('Carregando configurações...', 'info', 0);
+                
+                const response = await fetch('/api/system/config');
+                if (!response.ok) throw new Error('Erro ao carregar configurações');
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    appState.config = data.config;
+                    appState.metadata = data.metadata;
+                    
+                    // Resetar modificações
+                    appState.modifiedSettings.clear();
+                    
+                    showMessage('Configurações carregadas com sucesso!', 'success');
+                    return true;
+                }
+                throw new Error(data.message || 'Erro desconhecido');
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function saveConfig(settings) {
+            try {
+                showMessage('Salvando configurações...', 'info', 0);
+                
+                const response = await fetch('/api/system/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao salvar configurações');
+                }
+                
+                // Atualizar estado com as configurações salvas
+                appState.config = data.config;
+                appState.modifiedSettings.clear();
+                
+                showMessage('Configurações salvas com sucesso!', 'success');
+                return data.config;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return null;
+            }
+        }
+
+        async function resetToDefaults() {
+            try {
+                const confirmed = await showConfirm(
+                    'Restaurar configurações padrão?',
+                    'Todas as suas configurações personalizadas serão perdidas. Deseja continuar?',
+                    'warning'
+                );
+                
+                if (!confirmed) return;
+
+                showMessage('Restaurando configurações padrão...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/reset', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao resetar configurações');
+                }
+                
+                // Recarregar configurações
+                await fetchConfig();
+                updateUIWithSettings(data.config);
+                
+                showMessage('Configurações resetadas para padrão!', 'success');
+                return data.config;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return null;
+            }
+        }
+
+        async function fetchBackups() {
+            try {
+                showMessage('Carregando backups...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/backups');
+                if (!response.ok) throw new Error('Erro ao carregar backups');
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    appState.backups = data.backups || [];
+                    renderBackups();
+                    showMessage('Backups carregados com sucesso!', 'success');
+                    return true;
+                }
+                throw new Error(data.message || 'Erro desconhecido');
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function createBackup() {
+            try {
+                const confirmed = await showConfirm(
+                    'Criar backup',
+                    'Deseja criar um novo backup das configurações atuais?',
+                    'question'
+                );
+                
+                if (!confirmed) return false;
+
+                showMessage('Criando backup...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/backup', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao criar backup');
+                }
+                
+                // Atualizar lista de backups
+                await fetchBackups();
+                
+                showMessage('Backup criado com sucesso!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function restoreBackup(backupPath) {
+            try {
+                const confirmed = await showConfirm(
+                    'Restaurar backup?',
+                    'Esta ação substituirá todas as configurações atuais. Deseja continuar?',
+                    'warning'
+                );
+                
+                if (!confirmed) return false;
+
+                showMessage('Restaurando backup...', 'info', 0);
+                
+                const response = await fetch('/api/system/config/restore', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ backup_file: backupPath })
+                });
+                
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Erro ao restaurar backup');
+                }
+                
+                // Recarregar configurações
+                await fetchConfig();
+                updateUIWithSettings(data.config);
+                
+                showMessage('Backup restaurado com sucesso!', 'success');
+                return true;
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        async function testAzureConnection() {
+            try {
+                showMessage('Testando conexão com Azure AD...', 'info', 0);
+                
+                // Coletar configurações atuais
+                const azureConfig = {
+                    enabled: document.getElementById('oauth-azure-enabled').checked,
+                    client_id: document.getElementById('oauth-azure-client-id').value,
+                    client_secret: document.getElementById('oauth-azure-client-secret').value,
+                    tenant_id: document.getElementById('oauth-azure-tenant-id').value,
+                    scopes: document.getElementById('oauth-azure-scopes').value
+                };
+
+                // Verificar campos obrigatórios
+                if (!azureConfig.client_id || !azureConfig.client_secret || !azureConfig.tenant_id) {
+                    throw new Error('Preencha todos os campos obrigatórios (Client ID, Client Secret e Tenant ID)');
+                }
+
+                const response = await fetch('/auth/test-azure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(azureConfig)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    showMessage('Conexão com Azure AD bem-sucedida!', 'success');
+                    return true;
+                } else {
+                    throw new Error(data.message || 'Falha ao testar conexão');
+                }
+            } catch (error) {
+                showMessage(error.message, 'danger');
+                return false;
+            }
+        }
+
+        // Configuração de Event Listeners
+        function setupEventListeners() {
+            
+            // Configurar listeners para campos editáveis com debounce
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('change', function() {
+                    const key = this.id.toUpperCase().replace(/-/g, '_');
+                    
+                    // Limpar timer anterior se existir
+                    if (appState.debounceTimers[key]) {
+                        clearTimeout(appState.debounceTimers[key]);
+                    }
+                    
+                    // Configurar novo timer
+                    appState.debounceTimers[key] = setTimeout(() => {
+                        // Determinar o valor com base no tipo do elemento
+                        let value;
+                        if (this.type === 'checkbox') {
+                            value = this.checked;
+                        } else if (this.type === 'number') {
+                            value = parseInt(this.value);
+                        } else {
+                            value = this.value;
+                        }
+                        
+                        updateConfigValue(key, value);
+                    }, 300);
+                });
+            });
+            
+            // Salvar configurações
+            document.getElementById('save-settings').addEventListener('click', async function() {
+                const settings = collectSettings();
+                if (settings && Object.keys(settings).length > 0) {
+                    await saveConfig(settings);
+                } else {
+                    showMessage('Nenhuma alteração para salvar', 'info');
+                }
+            });
+            
+            // Restaurar padrões
+            document.getElementById('reset-defaults').addEventListener('click', resetToDefaults);
+            
+            // Gerenciar backups
+            document.getElementById('create-backup-btn').addEventListener('click', createBackup);
+            document.getElementById('refresh-backups-btn').addEventListener('click', fetchBackups);
+            document.getElementById('create-backup-modal-btn').addEventListener('click', createBackup);
+
+            // Configurações de autenticação
+            document.getElementById('test-oauth-btn').addEventListener('click', testAzureConnection);
+
+        }
+
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Inicialização da aplicação
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Carregar configurações iniciais
+            await fetchConfig();
+            await fetchBackups();
+            updateUIWithSettings(appState.config);
+            
+            // Configurar listeners de eventos
+            setupEventListeners();
+            
+            // Inicializar tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    placement: 'top',
+                    trigger: 'hover'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+ngrok config add-authtoken 2uK4W985wRC7kA4sNVK2fCnct8i_2iQ4nj5DBibLpc2kTowxd
+
+ngrok http 5000 
+
+ngrok http --url=discrete-infinitely-dassie.ngrok-free.app 5000
+
+https://discrete-infinitely-dassie.ngrok-free.app/

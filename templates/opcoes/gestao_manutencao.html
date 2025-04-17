@@ -1,0 +1,3368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Manutenção</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6c63ff;
+            --secondary-color: #4a42e6;
+            --dark-bg: #242445;
+            --darker-bg: #1a1a2e;
+            --text-light: #f1f1f1;
+            --text-muted: #b8b8b8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+        }
+        .card-body {
+            flex: 1 1 auto;
+            padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
+            color: #fff;
+        }        
+        body {
+            background-color: var(--darker-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Estilos para a seção de anexos da inspeção */
+        .file-preview-section-header {
+            padding: 8px 12px;
+            background-color: rgba(108, 99, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+            margin: 10px 0;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .file-preview-item.inspecao-anexo {
+            border-left: 3px solid var(--primary-color);
+            background-color: rgba(108, 99, 255, 0.05);
+        }
+
+        .file-preview-item.inspecao-anexo .file-preview-source {
+            font-size: 0.8em;
+            color: var(--primary-color);
+            font-style: italic;
+        }
+
+        .file-preview-item.inspecao-anexo .file-preview-view {
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .file-preview-item.inspecao-anexo .file-preview-view:hover {
+            background-color: rgba(108, 99, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Estilos para os anexos */
+        .attachments-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .attachment-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .attachment-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .attachment-preview {
+            width: 100%;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .attachment-name {
+            padding: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+        /* Media Preview Modal Styles */
+        #mediaPreviewModal .modal-dialog {
+            max-width: 90%;
+        }
+
+        #mediaPreviewModal .modal-body {
+            padding: 0;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        #mediaPreviewImage, 
+        #mediaPreviewVideo, 
+        #mediaPreviewPdf {
+            margin: 0 auto;
+            display: block;
+        }
+        .attachment-actions {
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-delete-attachment {
+            padding: 0.15rem 0.3rem;
+            font-size: 0.7rem;
+        }
+
+        .media-modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 15px;
+        }
+
+        .media-modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .media-modal-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }        
+        .navbar-custom {
+            background-color: var(--dark-bg);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-primary-custom {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary-custom:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-secondary-custom {
+            background-color: var(--dark-bg);
+            border-color: var(--text-muted);
+            color: var(--text-light);
+        }
+        
+        .btn-secondary-custom:hover {
+            background-color: var(--darker-bg);
+            border-color: var(--text-light);
+        }
+        
+        .card {
+            background-color: var(--dark-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-card {
+            height: 100%;
+        }
+        
+        .table-dark-custom {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+        }
+        
+        .table-dark-custom th {
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .table-dark-custom td, .table-dark-custom th {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .table-dark-custom tbody tr:hover {
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .user-avatar-xs {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 8px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .page-title {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .view-switcher {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .view-btn {
+            background-color: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .view-btn.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .view-btn:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .kpi-card {
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .kpi-card.risco-card {
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .kpi-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .trend-up {
+            color: var(--success-color);
+            margin-right: 4px;
+        }
+        
+        .trend-down {
+            color: var(--danger-color);
+            margin-right: 4px;
+        }
+        
+        .priority-alta {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .priority-média {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .priority-baixa {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .status-aberto {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .status-em-andamento {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .status-concluído {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .deadline-overdue {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .deadline-warning {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .deadline-ok {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .risk-meter {
+            position: relative;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 8px 0;
+        }
+        
+        .risk-meter-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #4BB543, #FFA500, #FF5252);
+        }
+        
+        .risk-meter-indicator {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 14px;
+            background-color: white;
+            transform: translateX(-50%);
+        }
+        
+        .risk-value {
+            font-size: 0.8rem;
+            text-align: right;
+            color: var(--text-muted);
+        }
+        
+        .equipamento-criticidade {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .criticidade-high {
+            background-color: var(--danger-color);
+        }
+        
+        .criticidade-medium {
+            background-color: var(--warning-color);
+        }
+        
+        .criticidade-low {
+            background-color: var(--success-color);
+        }
+        
+        .kanban-container {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+        
+        .kanban-column {
+            min-width: 300px;
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 12px;
+            flex: 1;
+        }
+        
+        .kanban-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .kanban-column-title {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .kanban-column-count {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .kanban-list {
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .kanban-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .kanban-card.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .kanban-card.high-risk {
+            border-left: 3px solid var(--danger-color);
+        }
+        
+        .kanban-card.medium-risk {
+            border-left: 3px solid var(--warning-color);
+        }
+        
+        .kanban-card.low-risk {
+            border-left: 3px solid var(--success-color);
+        }
+        
+        .kanban-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .kanban-card-id {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .kanban-card-priority {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .kanban-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .kanban-card-equipamento {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .kanban-card-descricao {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: -webkit-box;
+            line-clamp: 1;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .kanban-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        
+        .kanban-card-responsavel {
+            display: flex;
+            align-items: center;
+        }
+        
+        .kanban-card-deadline {
+            text-align: right;
+        }
+        
+        .deadline-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .deadline-value {
+            font-weight: 600;
+        }
+        
+        .modal-content-custom {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-close-white {
+            filter: invert(1);
+        }
+        
+        .dropdown-menu-dark {
+            background-color: var(--dark-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dropdown-item {
+            color: var(--text-light);
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(108, 99, 255, 0.2);
+            color: var(--text-light);
+        }
+        
+        .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-color);
+            color: var(--text-light);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+        }
+        
+        .fc-theme-standard .fc-scrollgrid {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .fc-theme-standard td, .fc-theme-standard th {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+        
+        .fc .fc-button {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .fc .fc-button:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .fc .fc-button-primary:disabled {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            opacity: 0.5;
+        }
+        
+        .fc .fc-toolbar-title {
+            color: var(--text-light);
+        }
+        
+        .fc .fc-col-header-cell-cushion {
+            color: var(--text-light);
+        }
+        
+        .fc .fc-daygrid-day-number {
+            color: var(--text-light);
+        }
+        
+        .fc .fc-event {
+            cursor: pointer;
+        }
+        
+        .ticket-modal {
+            max-width: 800px;
+        }
+        
+        .ticket-modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+        }
+        
+        .ticket-modal-title {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .ticket-modal-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 4px 0 0;
+        }
+        
+        .ticket-modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .ticket-modal-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .ticket-modal-section-title i {
+            margin-right: 8px;
+        }
+        
+        .ticket-modal-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .ticket-modal-info-item {
+            margin-bottom: 12px;
+        }
+        
+        .ticket-modal-info-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .ticket-modal-info-value {
+            font-weight: 500;
+        }
+        
+        .ticket-modal-risk {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #4BB543, #FFA500, #FF5252);
+            margin: 12px 0;
+            position: relative;
+        }
+        
+        .ticket-modal-risk.high {
+            background: var(--danger-color);
+        }
+        
+        .ticket-modal-risk.medium {
+            background: var(--warning-color);
+        }
+        
+        .ticket-modal-risk.low {
+            background: var(--success-color);
+        }
+        
+        .risk-score {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .risk-score.high {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .risk-score.medium {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: var(--warning-color);
+        }
+        
+        .risk-score.low {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--success-color);
+        }
+        
+        .ticket-modal-descricao {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .ticket-modal-anexos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .ticket-modal-anexo {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: calc(50% - 6px);
+        }
+        
+        .ticket-modal-anexo-icon {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        .ticket-modal-anexo-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .ticket-modal-anexo-nome {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ticket-modal-anexo-detalhes {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .ticket-modal-anexo-acoes {
+            margin-left: 8px;
+        }
+        
+        .ticket-modal-historico {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .ticket-modal-historico-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .ticket-modal-historico-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ticket-modal-historico-data {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .ticket-modal-historico-usuario {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .ticket-modal-historico-alteracao {
+            font-size: 0.85rem;
+            margin-left: 8px;
+            padding-left: 8px;
+            border-left: 2px solid var(--primary-color);
+        }
+        
+        .ticket-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 16px;
+        }
+        
+        .new-ticket-modal {
+            max-width: 700px;
+        }
+        
+        .new-ticket-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .new-ticket-form .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .new-ticket-form .form-group.full-width {
+            grid-column: span 2;
+        }
+        
+        .new-ticket-form label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: block;
+        }
+        
+        .new-ticket-form .form-control, .new-ticket-form .form-select {
+            width: 100%;
+        }
+        
+        .new-ticket-form .form-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 165, 0, 0.2);
+            border-color: rgba(255, 165, 0, 0.3);
+            color: var(--warning-color);
+        }
+        
+        .alert-info {
+            background-color: rgba(108, 99, 255, 0.2);
+            border-color: rgba(108, 99, 255, 0.3);
+            color: var(--primary-color);
+        }
+        
+        .file-upload-container {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-container:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+        
+        .file-upload-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .file-upload-text {
+            margin-bottom: 10px;
+        }
+        
+        .file-upload-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .file-preview-container {
+            margin-top: 16px;
+        }
+        
+        .file-preview-item {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+        }
+        
+        .file-preview-icon {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .file-preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .file-preview-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-preview-size {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .file-preview-remove {
+            margin-left: 10px;
+            color: var(--danger-color);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .new-ticket-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .new-ticket-form .form-group.full-width {
+                grid-column: span 1;
+            }
+            
+            .ticket-modal-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ticket-modal-anexo {
+                width: 100%;
+            }
+            
+            .kanban-column {
+                min-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+                <button id="btn-novo-ticket" class="btn btn-primary-custom me-2">
+                    <i class="fas fa-plus-circle me-1"></i> Nova Manutenção
+                </button>               
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-5 pt-5">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="page-title mb-1">
+                        <i class="fas fa-tools me-2"></i> Gestão de Manutenção
+                    </h2>
+                    <p class="page-subtitle mb-0">
+                        Monitoramento e gestão de ordens de manutenção preventiva e corretiva
+                    </p>
+                </div>
+                <div class="view-switcher">
+                    <button class="view-btn active" data-view="dashboard">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </button>
+                    <button class="view-btn" data-view="kanban">
+                        <i class="fas fa-table-columns"></i> Kanban
+                    </button>
+                    <button class="view-btn" data-view="list">
+                        <i class="fas fa-list"></i> Lista
+                    </button>
+                </div>
+            </div>
+            
+            <!-- KPI Grid -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Total de Manutenções</div>
+                    <div class="kpi-value" id="kpi-total">0</div>
+                    <div class="kpi-trend">
+                        <i class="fas fa-arrow-up trend-up" id="kpi-total-trend"></i>
+                        <span id="kpi-total-change">0% em relação ao mês passado</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-title">Em Andamento</div>
+                    <div class="kpi-value" id="kpi-andamento">0</div>
+                    <div class="kpi-trend">
+                        <i class="fas fa-arrow-up trend-up" id="kpi-andamento-trend"></i>
+                        <span id="kpi-andamento-change">0% em relação ao mês passado</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-title">Concluídas</div>
+                    <div class="kpi-value" id="kpi-concluidas">0</div>
+                    <div class="kpi-trend">
+                        <i class="fas fa-arrow-up trend-up" id="kpi-concluidas-trend"></i>
+                        <span id="kpi-concluidas-change">0% em relação ao mês passado</span>
+                    </div>
+                </div>
+                
+                <div class="kpi-card risco-card">
+                    <div class="risco-indicator"></div>
+                    <div class="risco-value">ALTO RISCO</div>
+                    <div class="kpi-title">Manutenções em Risco</div>
+                    <div class="kpi-value" id="kpi-risco">0</div>
+                    <div class="kpi-trend">
+                        <i class="fas fa-arrow-up trend-up" id="kpi-risco-trend"></i>
+                        <span id="kpi-risco-change">0% em relação ao mês passado</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card chart-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Distribuição por Prioridade</h5>
+                            <canvas id="priorityChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card chart-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Tempo Médio de Resolução</h5>
+                            <canvas id="resolutionTimeChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div id="dashboard-view">
+            <!-- Risk Analysis Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-exclamation-triangle me-2"></i> Análise de Risco</span>
+                                <button class="btn btn-sm btn-primary-custom" id="btn-refresh-risk">
+                                    <i class="fas fa-sync-alt me-1"></i> Atualizar
+                                </button>
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-dark-custom table-hover" id="risk-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket</th>
+                                            <th>Equipamento</th>
+                                            <th>Prioridade</th>
+                                            <th>Status</th>
+                                            <th>Prazo</th>
+                                            <th>Nível de Risco</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kanban View -->
+        <div id="kanban-view" style="display: none;">
+            <div class="kanban-container">
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <h5 class="kanban-column-title">Aberto</h5>
+                        <span class="kanban-column-count" id="count-aberto">0</span>
+                    </div>
+                    <div class="kanban-list" id="kanban-aberto" data-status="Aberto"></div>
+                </div>
+                
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <h5 class="kanban-column-title">Em Andamento</h5>
+                        <span class="kanban-column-count" id="count-andamento">0</span>
+                    </div>
+                    <div class="kanban-list" id="kanban-andamento" data-status="Em andamento"></div>
+                </div>
+                
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <h5 class="kanban-column-title">Concluído</h5>
+                        <span class="kanban-column-count" id="count-concluido">0</span>
+                    </div>
+                    <div class="kanban-list" id="kanban-concluido" data-status="Concluído"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- List View -->
+        <div id="list-view" style="display: none;">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">Lista de Manutenções</h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-secondary-custom btn-sm" id="btn-export-excel">
+                                <i class="fas fa-file-excel me-1"></i> Excel
+                            </button>
+                            <button class="btn btn-secondary-custom btn-sm" id="btn-export-pdf">
+                                <i class="fas fa-file-pdf me-1"></i> PDF
+                            </button>
+                            <button class="btn btn-secondary-custom btn-sm" id="btn-refresh-list">
+                                <i class="fas fa-sync-alt me-1"></i> Atualizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Equipamento</label>
+                            <select class="form-select" id="filter-equipamento">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="filter-status">
+                                <option value="">Todos</option>
+                                <option value="Aberto">Aberto</option>
+                                <option value="Em andamento">Em andamento</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Prioridade</label>
+                            <select class="form-select" id="filter-prioridade">
+                                <option value="">Todos</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Média">Média</option>
+                                <option value="Baixa">Baixa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="filter-tipo">
+                                <option value="">Todos</option>
+                                <option value="Preventiva">Preventiva</option>
+                                <option value="Corretiva">Corretiva</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Período</label>
+                            <input type="text" class="form-control" id="filter-periodo" placeholder="Selecione um período">
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark-custom table-hover" id="manutencoes-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Equipamento</th>
+                                    <th>Tipo</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Responsável</th>
+                                    <th>Data Abertura</th>
+                                    <th>Prazo</th>
+                                    <th>Risco</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <nav aria-label="Page navigation" class="mt-3">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <!-- Filled by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                             class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Details Modal -->
+    <div class="modal fade" id="ticketModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title ticket-modal-title" id="ticketModalTitle">Detalhes do Ticket</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="ticket-modal-header">
+                        <h6 class="ticket-modal-subtitle" id="ticketModalSubtitle"></h6>
+                        <div class="ticket-modal-risk" id="ticket-risk-indicator"></div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Nível de risco: <span class="risk-score" id="ticket-risk-score">0</span>/10</span>
+                            <span class="badge bg-primary" id="ticket-status-badge">Aberto</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-modal-section">
+                        <h6 class="ticket-modal-section-title"><i class="fas fa-info-circle"></i> Informações Básicas</h6>
+                        <div class="ticket-modal-info-grid">
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Equipamento</div>
+                                <div class="ticket-modal-info-value" id="ticket-equipamento"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Tipo de Manutenção</div>
+                                <div class="ticket-modal-info-value" id="ticket-tipo"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Prioridade</div>
+                                <div class="ticket-modal-info-value" id="ticket-prioridade"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Responsável</div>
+                                <div class="ticket-modal-info-value" id="ticket-responsavel"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Data de Abertura</div>
+                                <div class="ticket-modal-info-value" id="ticket-data-abertura"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Prazo</div>
+                                <div class="ticket-modal-info-value" id="ticket-prazo"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-modal-section">
+                        <h6 class="ticket-modal-section-title"><i class="fas fa-file-alt"></i> Descrição</h6>
+                        <div class="ticket-modal-descricao" id="ticket-descricao"></div>
+                    </div>
+                    
+                    <div class="ticket-modal-section">
+                        <h6 class="ticket-modal-section-title"><i class="fas fa-paperclip"></i> Anexos</h6>
+                        <div class="ticket-modal-anexos" id="ticket-anexos">
+                            <div class="text-muted">Nenhum anexo encontrado</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-modal-section">
+                        <h6 class="ticket-modal-section-title"><i class="fas fa-history"></i> Histórico de Alterações</h6>
+                        <div class="ticket-modal-historico" id="ticket-historico">
+                            <div class="text-muted">Nenhuma alteração registrada</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-modal-section">
+                        <h6 class="ticket-modal-section-title"><i class="fas fa-chart-line"></i> Fatores de Risco</h6>
+                        <div class="ticket-modal-info-grid">
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Prioridade</div>
+                                <div class="ticket-modal-info-value" id="risk-factor-priority"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Criticidade do Equipamento</div>
+                                <div class="ticket-modal-info-value" id="risk-factor-criticidade"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Tempo Restante</div>
+                                <div class="ticket-modal-info-value" id="risk-factor-time"></div>
+                            </div>
+                            <div class="ticket-modal-info-item">
+                                <div class="ticket-modal-info-label">Tipo de Manutenção</div>
+                                <div class="ticket-modal-info-value" id="risk-factor-type"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div class="modal fade" id="newTicketModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title">Criar Novo Ticket de Manutenção</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newTicketForm">
+                        <div class="new-ticket-form">
+                            <div class="form-group">
+                                <label for="equipamentoSelect">Equipamento *</label>
+                                <select class="form-select" id="equipamentoSelect" required>
+                                    <option value="">Selecione um equipamento</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tipoManutencao">Tipo de Manutenção *</label>
+                                <select class="form-select" id="tipoManutencao" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="Preventiva">Preventiva</option>
+                                    <option value="Corretiva">Corretiva</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dataLimite">Data Limite *</label>
+                                <input type="date" class="form-control" id="dataLimite" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="prioridade">Prioridade</label>
+                                <select class="form-select" id="prioridade">
+                                    <option value="">Calcular automaticamente</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Média">Média</option>
+                                    <option value="Baixa">Baixa</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="responsavel">Responsável</label>
+                                <select class="form-select" id="responsavel">
+                                    <option value="">Não atribuir</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="inspecaoRelacionada">Inspeção Relacionada</label>
+                                <select class="form-select" id="inspecaoRelacionada">
+                                    <option value="">Nenhuma</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="descricao">Descrição *</label>
+                                <textarea class="form-control" id="descricao" rows="3" required></textarea>
+                            </div>
+                            
+                            <div class="form-group full-width" id="risk-warning" style="display: none;">
+                                <div class="alert alert-warning" id="risk-warning-text"></div>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label>Anexos</label>
+                                <div class="file-upload-container" id="file-upload-dropzone">
+                                    <div class="file-upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="file-upload-text">
+                                        Arraste e solte arquivos aqui ou clique para selecionar
+                                    </div>
+                                    <div class="file-upload-hint">
+                                        Formatos suportados: PDF, JPG, PNG, DOC, XLS (Tamanho máximo: 10MB)
+                                    </div>
+                                    <input type="file" id="file-upload-input" multiple style="display: none;">
+                                </div>
+                                <div class="file-preview-container" id="file-preview-container"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary-custom" id="btn-salvar-ticket">
+                        <i class="fas fa-save me-2"></i> Salvar Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Preview Modal -->
+    <div class="modal fade" id="mediaPreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="mediaPreviewTitle">Visualização</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                    <img id="mediaPreviewImage" src="" class="img-fluid" style="max-height: 70vh; display: none;">
+                    <video id="mediaPreviewVideo" controls class="img-fluid" style="max-height: 70vh; display: none;"></video>
+                    <iframe id="mediaPreviewPdf" class="w-100" style="height: 70vh; display: none;"></iframe>
+                    <div id="mediaPreviewUnsupported" class="text-center" style="display: none;">
+                        <i class="fas fa-file-alt fa-5x mb-3 text-muted"></i>
+                        <p>Visualização não disponível para este tipo de arquivo</p>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <a id="mediaDownloadLink" href="#" class="btn btn-primary-custom" download>
+                        <i class="fas fa-download me-2"></i> Baixar
+                    </a>
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- SheetJS (for Excel export) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- jsPDF (for PDF export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Cropper.js (for image cropping) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    
+    <!-- Custom JS -->
+    <script>
+        // Variáveis globais
+        let currentView = 'dashboard';
+        let manutencoesData = [];
+        let equipamentosList = [];
+        let usuariosList = [];
+        let inspecoesList = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let chartsInitialized = false;
+        let priorityChart, resolutionTimeChart;
+        let usuariosLoadAttempts = 0;
+        const MAX_USUARIOS_LOAD_ATTEMPTS = 5;
+        let isLoading = false;
+        let selectedFiles = [];
+
+        // Classe ApiService ajustada para os endpoints do backend
+        class ApiService {
+            static async get(url) {
+                try {
+                    const response = await fetch(url, { credentials: 'include' });
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            window.location.href = '/login';
+                            return null;
+                        }
+                        throw new Error(`Erro HTTP: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro na requisição GET para ${url}:`, error);
+                    throw error;
+                }
+            }
+
+            static async post(url, data, options = {}) {
+                try {
+                    const isFormData = data instanceof FormData;
+                    const config = {
+                        method: 'POST',
+                        credentials: 'include',
+                        ...options
+                    };
+
+                    // Não definir Content-Type para FormData - o browser fará isso automaticamente
+                    if (!isFormData) {
+                        config.headers = {
+                            'Content-Type': 'application/json',
+                            ...options.headers
+                        };
+                        config.body = JSON.stringify(data);
+                    } else {
+                        config.body = data;
+                        // Deixe o browser definir o Content-Type com o boundary correto
+                    }
+
+                    const response = await fetch(url, config);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro na requisição POST para ${url}:`, error);
+                    throw error;
+                }
+            }
+
+            static async put(url, data, options = {}) {
+                try {
+                    const isFormData = data instanceof FormData;
+                    const config = {
+                        method: 'PUT',
+                        credentials: 'include',
+                        ...options
+                    };
+
+                    if (!isFormData) {
+                        config.headers = {
+                            'Content-Type': 'application/json',
+                            ...options.headers
+                        };
+                        config.body = JSON.stringify(data);
+                    } else {
+                        config.body = data;
+                    }
+
+                    const response = await fetch(url, config);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro na requisição PUT para ${url}:`, error);
+                    throw error;
+                }
+            }
+
+            static async delete(url) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro na requisição DELETE para ${url}:`, error);
+                    throw error;
+                }
+            }
+
+            static async uploadFiles(url, files) {
+                try {
+                    const formData = new FormData();
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('anexos', files[i]);
+                    }
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro no upload de arquivos para ${url}:`, error);
+                    throw error;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Inicializar a aplicação
+                await initApp();
+
+                // Configurar event listeners
+                setupEventListeners();
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                showError('Falha ao inicializar a aplicação');
+            }
+        });
+
+        async function initApp() {
+            isLoading = true;
+            showLoadingIndicator();
+            
+            try {
+                initCharts();
+                
+                await Promise.all([
+                    loadEquipamentos(),
+                    loadUsuarios(),
+                    loadInspecoes()
+                ]);
+                
+                await loadManutencoes();
+                
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                showError('Falha ao carregar dados iniciais');
+            } finally {
+                isLoading = false;
+                hideLoadingIndicator();
+            }
+        }
+
+        function showLoadingIndicator() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-overlay';
+            loadingDiv.style.position = 'fixed';
+            loadingDiv.style.top = '0';
+            loadingDiv.style.left = '0';
+            loadingDiv.style.width = '100%';
+            loadingDiv.style.height = '100%';
+            loadingDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            loadingDiv.style.display = 'flex';
+            loadingDiv.style.justifyContent = 'center';
+            loadingDiv.style.alignItems = 'center';
+            loadingDiv.style.zIndex = '9999';
+            loadingDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-3">Carregando dados...</p>
+                </div>`;
+            document.body.appendChild(loadingDiv);
+        }
+
+        function hideLoadingIndicator() {
+            const loadingDiv = document.getElementById('loading-overlay');
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // Função loadManutencoes ajustada
+        async function loadManutencoes(filters = {}) {
+            try {
+                isLoading = true;
+                showLoadingIndicator();
+                
+                // Converter filtros para query string
+                const params = new URLSearchParams(filters).toString();
+                const response = await ApiService.get(`/api/manutencao/tickets?${params}`);
+                
+                if (!response || !Array.isArray(response.data)) {
+                    console.error('Estrutura de dados inválida:', response);
+                    manutencoesData = [];
+                    return;
+                }
+                
+                manutencoesData = response.data.map(ticket => ({
+                    id: ticket.id,
+                    ticket_id: ticket.ticket_id,
+                    equipamento: {
+                        id: ticket.equipamento?.id || 0,
+                        tag: ticket.equipamento?.tag || 'N/A',
+                        nome: ticket.equipamento?.nome || 'Desconhecido',
+                        localizacao: ticket.equipamento?.localizacao || 'N/A',
+                        criticidade: ticket.equipamento?.criticidade || 0
+                    },
+                    tipo_manutencao: ticket.tipo_manutencao || 'Manutenção',
+                    prioridade: ticket.prioridade || 'Média',
+                    status: ticket.status || 'Aberto',
+                    responsavel: ticket.responsavel || null,
+                    data_abertura: ticket.data_abertura || new Date().toISOString(),
+                    data_limite: ticket.data_limite || '',
+                    dias_restantes: ticket.dias_restantes || 0,
+                    descricao: ticket.descricao || '',
+                    anexos: ticket.anexos || [],
+                    historico: ticket.historico || [],
+                    risco: ticket.risco || 0
+                }));
+                
+                updateUI();
+            } catch (error) {
+                console.error('Erro ao carregar manutenções:', error);
+                showError('Falha ao carregar dados de manutenção');
+                throw error;
+            } finally {
+                isLoading = false;
+                hideLoadingIndicator();
+            }
+        }
+
+        // Função para carregar equipamentos ajustada
+        async function loadEquipamentos() {
+            try {
+                const response = await ApiService.get('/api/listar_equipamentos_cadastrados');
+                equipamentosList = response.data || [];
+                
+                const equipamentoSelect = document.getElementById('equipamentoSelect');
+                const filterEquipamento = document.getElementById('filter-equipamento');
+                
+                // Limpar selects antes de preencher
+                equipamentoSelect.innerHTML = '<option value="">Selecione um equipamento</option>';
+                filterEquipamento.innerHTML = '<option value="">Todos</option>';
+                
+                equipamentosList.forEach(equipamento => {
+                    const tag = equipamento.tag_equipamento || 'Sem TAG';
+                    const tipo = equipamento.tipo || equipamento.modelo || 'Sem nome';
+
+                    const option = document.createElement('option');
+                    option.value = equipamento.id;
+                    option.textContent = `${tag} - ${tipo}`;
+                    
+                    equipamentoSelect.appendChild(option.cloneNode(true));
+                    filterEquipamento.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar equipamentos:', error);
+                showError('Falha ao carregar lista de equipamentos');
+                throw error;
+            }
+        }
+
+        async function loadUsuarios() {
+            try {
+                const data = await ApiService.get('/api/listar_usuarios_cadastrados');
+                
+                if (!data.success || !Array.isArray(data.data)) {
+                    throw new Error('Formato de dados inválido');
+                }
+
+                usuariosList = data.data;
+
+                // Atualizar selects de usuários
+                updateUserSelects();
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                
+                // Tentar novamente se não tiver atingido o limite máximo
+                usuariosLoadAttempts++;
+                if (usuariosLoadAttempts < MAX_USUARIOS_LOAD_ATTEMPTS) {
+                    console.log(`Tentando carregar usuários novamente (tentativa ${usuariosLoadAttempts + 1})`);
+                    setTimeout(loadUsuarios, 2000);
+                } else {
+                    showError('Falha ao carregar lista de usuários');
+                }
+            }
+        }
+
+        function updateUserSelects() {
+            const userSelects = [
+                { id: 'responsavel', placeholder: 'Não atribuir' },
+                { id: 'ticket-responsavel', placeholder: 'Não atribuído' }
+            ];
+
+            if (!Array.isArray(usuariosList)) {
+                console.error('usuariosList não está definido ou não é uma lista.');
+                return;
+            }
+
+            userSelects.forEach(selectConfig => {
+                const element = document.getElementById(selectConfig.id);
+
+                element.innerHTML = `<option value="">${selectConfig.placeholder}</option>`;
+
+                usuariosList.forEach(usuario => {
+                    const optionText = usuario.nome_completo || usuario.matricula || `Usuário ${usuario.id}`;
+                    const option = new Option(optionText, usuario.id);
+                    element.appendChild(option);
+                });
+            });
+        }
+        
+        async function loadInspecoes() {
+            try {
+                const data = await ApiService.get('/api/inspecoes/mapa');
+                inspecoesList = data || [];
+                
+                // Preencher select de inspeções
+                const inspecaoSelect = document.getElementById('inspecaoRelacionada');
+                if (inspecaoSelect) {
+                    inspecaoSelect.innerHTML = '<option value="">Nenhuma</option>';
+                    
+                    inspecoesList.forEach(inspecao => {
+                        const option = document.createElement('option');
+                        option.value = inspecao.id;
+                        option.textContent = `${inspecao.numero_inspecao || 'Sem número'} - ${inspecao.tag_equipamento || 'Sem tag'} (${inspecao.status_inspecao || 'Sem status'})`;
+                        inspecaoSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar inspeções:', error);
+                showError('Falha ao carregar lista de inspeções');
+                throw error;
+            }
+        }
+        
+        function updateKPIs() {
+            // Calcular métricas
+            const total = manutencoesData.length;
+            const emAndamento = manutencoesData.filter(m => m.status === 'Em andamento').length;
+            const concluidas = manutencoesData.filter(m => m.status === 'Concluído').length;
+            const emRisco = manutencoesData.filter(m => 
+                m.status !== 'Concluído' && 
+                (m.dias_restantes < 0 || m.prioridade === 'Alta')
+            ).length;
+            
+            // Atualizar elementos
+            updateKPIElement('kpi-total', total);
+            updateKPIElement('kpi-andamento', emAndamento);
+            updateKPIElement('kpi-concluidas', concluidas);
+            updateKPIElement('kpi-risco', emRisco);
+            
+            // Atualizar contadores do Kanban
+            updateKPIElement('count-aberto', manutencoesData.filter(m => m.status === 'Aberto').length);
+            updateKPIElement('count-andamento', emAndamento);
+            updateKPIElement('count-concluido', concluidas);
+        }
+        
+        function updateKPIElement(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                
+                // Animar a mudança de valor
+                element.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                }, 300);
+            }
+        }
+        
+        function updateRiskTable() {
+            const tableBody = document.getElementById('risk-table')?.querySelector('tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (manutencoesData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Nenhuma manutenção encontrada
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            // Filtrar e ordenar por risco
+            const highRiskTickets = manutencoesData
+                .filter(m => m.status !== 'Concluído')
+                .sort((a, b) => b.risco - a.risco)
+                .slice(0, 10);
+                
+            highRiskTickets.forEach(ticket => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${ticket.ticket_id}</td>
+                    <td>${ticket.equipamento.tag}</td>
+                    <td><span class="priority-${ticket.prioridade.toLowerCase()}">${ticket.prioridade}</span></td>
+                    <td><span class="status-${ticket.status.replace(' ', '-').toLowerCase()}">${ticket.status}</span></td>
+                    <td class="${getDeadlineClass(ticket.data_limite, ticket.dias_restantes)}">
+                        ${ticket.data_limite} (${ticket.dias_restantes} dias)
+                    </td>
+                    <td>
+                        <div class="risk-meter">
+                            <div class="risk-meter-fill" style="width: ${ticket.risco * 10}%"></div>
+                            <div class="risk-meter-indicator" style="left: ${ticket.risco * 10}%"></div>
+                        </div>
+                        <div class="risk-value">${ticket.risco}/10</div>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary-custom btn-view-ticket" data-id="${ticket.id}">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    </td>`;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function updateKanbanView() {
+            const kanbanAberto = document.getElementById('kanban-aberto');
+            const kanbanAndamento = document.getElementById('kanban-andamento');
+            const kanbanConcluido = document.getElementById('kanban-concluido');
+            
+            if (!kanbanAberto || !kanbanAndamento || !kanbanConcluido) return;
+            
+            // Limpar colunas
+            kanbanAberto.innerHTML = '';
+            kanbanAndamento.innerHTML = '';
+            kanbanConcluido.innerHTML = '';
+            
+            // Agrupar por status
+            const ticketsByStatus = {
+                'Aberto': kanbanAberto,
+                'Em andamento': kanbanAndamento,
+                'Concluído': kanbanConcluido
+            };
+            
+            // Preencher cada coluna
+            Object.entries(ticketsByStatus).forEach(([status, container]) => {
+                manutencoesData
+                    .filter(m => m.status === status)
+                    .forEach(m => {
+                        container.appendChild(createKanbanCardElement(m));
+                    });
+            });
+            
+            // Inicializar drag and drop
+            initDragAndDrop();
+        }
+        
+        function createKanbanCardElement(ticket) {
+            const riskClass = getRiskClass(ticket.risco);
+            const criticidadeClass = getCriticidadeClass(ticket.equipamento.criticidade);
+            
+            const card = document.createElement('div');
+            card.className = `kanban-card ${riskClass}`;
+            card.dataset.id = ticket.id;
+            card.draggable = true;
+            card.innerHTML = `
+                <div class="kanban-card-header">
+                    <span class="kanban-card-id">${ticket.ticket_id}</span>
+                    <span class="kanban-card-priority priority-${ticket.prioridade.toLowerCase()}">
+                        ${ticket.prioridade}
+                    </span>
+                </div>
+                <h6 class="kanban-card-title">${ticket.tipo_manutencao}</h6>
+                <div class="kanban-card-equipamento">
+                    <span class="equipamento-criticidade ${criticidadeClass}"></span>
+                    <span>${ticket.equipamento.tag}</span>
+                </div>
+                <p class="kanban-card-descricao">${ticket.descricao.substring(0, 100)}${ticket.descricao.length > 100 ? '...' : ''}</p>
+                
+                <div class="risk-meter">
+                    <div class="risk-meter-fill" style="width: ${ticket.risco * 10}%"></div>
+                    <div class="risk-meter-indicator" style="left: ${ticket.risco * 10}%"></div>
+                </div>
+                <div class="risk-value">Nível de risco: ${ticket.risco}/10</div>
+                
+                <div class="kanban-card-footer">
+                    <div class="kanban-card-responsavel">
+                        ${ticket.responsavel ? `
+                            <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                                 class="user-avatar-xs" alt="${ticket.responsavel.nome}">
+                            <span>${ticket.responsavel.nome}</span>
+                        ` : '<span>Não atribuído</span>'}
+                    </div>
+                    <div class="kanban-card-deadline">
+                        <div class="deadline-label">Prazo</div>
+                        <div class="deadline-value ${getDeadlineClass(ticket.data_limite, ticket.dias_restantes)}">
+                            ${ticket.dias_restantes} dias
+                        </div>
+                    </div>
+                </div>`;
+            
+            return card;
+        }
+        
+        function getRiskClass(risco) {
+            if (risco >= 3) return 'high-risk';
+            if (risco >= 2) return 'medium-risk';
+            return 'low-risk';
+        }
+        
+        function getCriticidadeClass(criticidade) {
+            if (criticidade >= 3) return 'criticidade-high';
+            if (criticidade >= 2) return 'criticidade-medium';
+            return 'criticidade-low';
+        }
+        
+        function getDeadlineClass(dataLimite, diasRestantes) {
+            if (!dataLimite) return '';
+            if (diasRestantes < 0) return 'deadline-overdue';
+            if (diasRestantes < 3) return 'deadline-warning';
+            return 'deadline-ok';
+        }
+        
+        function initDragAndDrop() {
+            const kanbanCards = document.querySelectorAll('.kanban-card');
+            const kanbanLists = document.querySelectorAll('.kanban-list');
+            
+            kanbanCards.forEach(card => {
+                card.addEventListener('dragstart', () => {
+                    card.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+            });
+            
+            kanbanLists.forEach(list => {
+                list.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const draggingCard = document.querySelector('.dragging');
+                    const afterElement = getDragAfterElement(list, e.clientY);
+                    
+                    if (afterElement) {
+                        list.insertBefore(draggingCard, afterElement);
+                    } else {
+                        list.appendChild(draggingCard);
+                    }
+                });
+                
+                list.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    const card = document.querySelector('.dragging');
+                    const newStatus = list.dataset.status;
+                    const cardId = card.dataset.id;
+                    
+                    try {
+                        // Usar o novo endpoint PUT
+                        await ApiService.put(`/api/manutencao/tickets/${cardId}`, { status: newStatus });
+                        await loadManutencoes();
+                        showSuccess('Status atualizado com sucesso!');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 400);
+                    } catch (error) {
+                        console.error('Erro ao atualizar status:', error);
+                        showError(error.response?.data?.error || error.message || 'Erro ao atualizar status. Por favor, tente novamente.');
+                        await loadManutencoes(); // Revert view to server state
+                    }
+                });
+            });
+        }
+        
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.kanban-card:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+        
+        function updateListView() {
+            const tableBody = document.getElementById('manutencoes-table')?.querySelector('tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            const filteredData = applyListViewFilters();
+            const paginatedData = paginateData(filteredData);
+            
+            if (paginatedData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center py-4">
+                            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                            <h5>Nenhuma manutenção encontrada</h5>
+                            <p class="text-muted">Ajuste os filtros ou crie uma nova manutenção</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            paginatedData.forEach(ticket => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${ticket.ticket_id}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="equipamento-criticidade ${getCriticidadeClass(ticket.equipamento.criticidade)}"></span>
+                            ${ticket.equipamento.tag}
+                        </div>
+                    </td>
+                    <td>${ticket.tipo_manutencao}</td>
+                    <td><span class="priority-${ticket.prioridade.toLowerCase()}">${ticket.prioridade}</span></td>
+                    <td><span class="status-${ticket.status.replace(' ', '-').toLowerCase()}">${ticket.status}</span></td>
+                    <td>${ticket.responsavel ? ticket.responsavel.nome : 'Não atribuído'}</td>
+                    <td>${ticket.data_abertura}</td>
+                    <td class="${getDeadlineClass(ticket.data_limite, ticket.dias_restantes)}">
+                        ${ticket.data_limite}
+                    </td>
+                    <td>
+                        <div class="risk-meter">
+                            <div class="risk-meter-fill" style="width: ${ticket.risco * 10}%"></div>
+                            <div class="risk-meter-indicator" style="left: ${ticket.risco * 10}%"></div>
+                        </div>
+                        <div class="risk-value">${ticket.risco}/10</div>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary-custom btn-view-ticket" data-id="${ticket.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>`;
+                tableBody.appendChild(row);
+            });
+            
+            updatePagination(filteredData.length);
+        }
+        
+        function applyListViewFilters() {
+            const equipamentoFilter = document.getElementById('filter-equipamento')?.value;
+            const statusFilter = document.getElementById('filter-status')?.value;
+            const prioridadeFilter = document.getElementById('filter-prioridade')?.value;
+            const tipoFilter = document.getElementById('filter-tipo')?.value;
+            const periodoFilter = document.getElementById('filter-periodo')?.value;
+            
+            return manutencoesData.filter(ticket => {
+                let matches = true;
+                
+                if (equipamentoFilter && ticket.equipamento.id != equipamentoFilter) matches = false;
+                if (statusFilter && ticket.status !== statusFilter) matches = false;
+                if (prioridadeFilter && ticket.prioridade !== prioridadeFilter) matches = false;
+                if (tipoFilter && ticket.tipo_manutencao !== tipoFilter) matches = false;
+                
+                // TODO: Implementar filtro por período
+                
+                return matches;
+            });
+        }
+        
+        function paginateData(data) {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            return data.slice(start, end);
+        }
+        
+        function updatePagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            if (!pagination) return;
+            
+            pagination.innerHTML = '';
+            
+            // Botão Anterior
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+            prevLi.addEventListener('click', e => {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateListView();
+                }
+            });
+            pagination.appendChild(prevLi);
+            
+            // Páginas
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // Primeira página se necessário
+            if (startPage > 1) {
+                const firstLi = document.createElement('li');
+                firstLi.className = 'page-item';
+                firstLi.innerHTML = `<a class="page-link" href="#">1</a>`;
+                firstLi.addEventListener('click', e => {
+                    e.preventDefault();
+                    currentPage = 1;
+                    updateListView();
+                });
+                pagination.appendChild(firstLi);
+                
+                if (startPage > 2) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(ellipsisLi);
+                }
+            }
+            
+            // Páginas visíveis
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                pageLi.addEventListener('click', e => {
+                    e.preventDefault();
+                    currentPage = i;
+                    updateListView();
+                });
+                pagination.appendChild(pageLi);
+            }
+            
+            // Última página se necessário
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(ellipsisLi);
+                }
+                
+                const lastLi = document.createElement('li');
+                lastLi.className = 'page-item';
+                lastLi.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
+                lastLi.addEventListener('click', e => {
+                    e.preventDefault();
+                    currentPage = totalPages;
+                    updateListView();
+                });
+                pagination.appendChild(lastLi);
+            }
+            
+            // Botão Próximo
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+            nextLi.addEventListener('click', e => {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateListView();
+                }
+            });
+            pagination.appendChild(nextLi);
+        }
+        
+        function initCharts() {
+            if (chartsInitialized) return;
+            
+            const ctx1 = document.getElementById('priorityChart')?.getContext('2d');
+            const ctx2 = document.getElementById('resolutionTimeChart')?.getContext('2d');
+            
+            if (!ctx1 || !ctx2) {
+                console.warn('Elementos do gráfico não encontrados - tentando novamente...');
+                setTimeout(initCharts, 500);
+                return;
+            }
+
+            priorityChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Alta', 'Média', 'Baixa'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 82, 82, 0.8)',
+                            'rgba(255, 165, 0, 0.8)',
+                            'rgba(76, 175, 80, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#F1F1F1'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            resolutionTimeChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Alta', 'Média', 'Baixa'],
+                    datasets: [{
+                        label: 'Horas',
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 82, 82, 0.8)',
+                            'rgba(255, 165, 0, 0.8)',
+                            'rgba(76, 175, 80, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Horas',
+                                color: '#F1F1F1'
+                            },
+                            ticks: {
+                                color: '#F1F1F1'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Prioridade',
+                                color: '#F1F1F1'
+                            },
+                            ticks: {
+                                color: '#F1F1F1'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Tempo médio: ${context.raw.toFixed(2)} horas`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            chartsInitialized = true;
+        }
+        
+        function updateCharts() {
+            if (!chartsInitialized) {
+                initCharts();
+                return;
+            }
+            
+            // Atualizar gráfico de prioridades
+            const priorityCounts = {
+                alta: manutencoesData.filter(m => m.prioridade === 'Alta').length,
+                media: manutencoesData.filter(m => m.prioridade === 'Média').length,
+                baixa: manutencoesData.filter(m => m.prioridade === 'Baixa').length
+            };
+
+            priorityChart.data.datasets[0].data = [
+                priorityCounts.alta,
+                priorityCounts.media,
+                priorityCounts.baixa
+            ];
+            priorityChart.update();
+
+            // Atualizar gráfico de tempo de resolução
+            const completed = manutencoesData.filter(m => m.status === 'Concluído');
+
+            const resolutionTimes = {
+                alta: completed.filter(m => m.prioridade === 'Alta').reduce((sum, m) => sum + (m.tempo_resolucao || 0), 0),
+                media: completed.filter(m => m.prioridade === 'Média').reduce((sum, m) => sum + (m.tempo_resolucao || 0), 0),
+                baixa: completed.filter(m => m.prioridade === 'Baixa').reduce((sum, m) => sum + (m.tempo_resolucao || 0), 0)
+            };
+
+            const count = {
+                alta: Math.max(completed.filter(m => m.prioridade === 'Alta').length, 1),
+                media: Math.max(completed.filter(m => m.prioridade === 'Média').length, 1),
+                baixa: Math.max(completed.filter(m => m.prioridade === 'Baixa').length, 1)
+            };
+
+            resolutionTimeChart.data.datasets[0].data = [
+                resolutionTimes.alta / count.alta,
+                resolutionTimes.media / count.media,
+                resolutionTimes.baixa / count.baixa
+            ];
+            resolutionTimeChart.update();
+        }
+    
+        function showTicketDetails(ticketId) {
+            fetch(`/api/manutencoes_detalhes/${ticketId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Falha ao buscar dados da manutenção');
+                    return response.json();
+                })
+                .then(ticket => {
+                    if (!ticket) {
+                        showError('Ticket não encontrado');
+                        return;
+                    }
+
+                    // Atualizar informações básicas
+                    document.getElementById('ticketModalTitle').textContent = `Ticket ${ticket.ticket_id}`;
+                    document.getElementById('ticketModalSubtitle').textContent = `${ticket.tipo_manutencao} - ${ticket.equipamento?.tag || 'Equipamento desconhecido'}`;
+                    document.getElementById('ticket-equipamento').textContent = `${ticket.equipamento?.tag || 'N/A'} (${ticket.equipamento?.nome || 'N/A'}) - ${ticket.equipamento?.localizacao || 'N/A'}`;
+                    document.getElementById('ticket-tipo').textContent = ticket.tipo_manutencao || 'N/A';
+                    document.getElementById('ticket-prioridade').textContent = ticket.prioridade || 'N/A';
+                    document.getElementById('ticket-responsavel').textContent = ticket.responsavel?.nome || 'Não atribuído';
+                    document.getElementById('ticket-data-abertura').textContent = ticket.data_abertura || 'N/A';
+                    document.getElementById('ticket-prazo').textContent = `${ticket.data_limite || 'N/A'} (${ticket.dias_restantes ?? '?'} dias restantes)`;
+                    document.getElementById('ticket-descricao').textContent = ticket.descricao || 'Sem descrição.';
+
+                    // Atualizar status
+                    const statusBadge = document.getElementById('ticket-status-badge');
+                    statusBadge.textContent = ticket.status || 'N/A';
+                    statusBadge.className = 'badge ' + (
+                        ticket.status === 'Aberto' ? 'bg-danger' :
+                        ticket.status === 'Em andamento' ? 'bg-warning' : 'bg-success'
+                    );
+
+                    // Atualizar risco
+                    updateRiskIndicator(ticket);
+
+                    // Buscar e mostrar anexos
+                    fetchAnexosManutencao(ticketId);
+
+                    // Atualizar histórico
+                    const historicoContainer = document.getElementById('ticket-historico');
+                    historicoContainer.innerHTML = '';
+
+                    if (ticket.historico?.length > 0) {
+                        ticket.historico.forEach(item => {
+                            const historicoItem = document.createElement('div');
+                            historicoItem.className = 'ticket-modal-historico-item';
+
+                            let alteracoesHTML = '';
+                            for (const [campo, dados] of Object.entries(item.alteracoes || {})) {
+                                alteracoesHTML += `
+                                    <div class="ticket-modal-historico-alteracao">
+                                        <strong>${campo}:</strong> de "${dados.de}" para "${dados.para}"
+                                    </div>`;
+                            }
+
+                            historicoItem.innerHTML = `
+                                <div class="ticket-modal-historico-data">${new Date(item.data).toLocaleString()}</div>
+                                <div class="ticket-modal-historico-usuario">${item.usuario}</div>
+                                ${alteracoesHTML}`;
+
+                            historicoContainer.appendChild(historicoItem);
+                        });
+                    } else {
+                        historicoContainer.innerHTML = '<div class="text-muted">Nenhuma alteração registrada</div>';
+                    }
+
+                    // Mostrar modal
+                    const ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+                    ticketModal.show();
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar detalhes do ticket:', error);
+                    showError('Erro ao carregar os detalhes do ticket.');
+                });
+        }
+
+        function fetchAnexosManutencao(manutencaoId) {
+            const anexosContainer = document.getElementById('ticket-anexos');
+            if (!anexosContainer) return;
+
+            anexosContainer.innerHTML = '<div class="text-center py-2"><i class="fas fa-spinner fa-spin me-2"></i> Carregando anexos...</div>';
+
+            fetch(`/api/manutencao/${manutencaoId}/anexos`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro ao carregar anexos');
+                    return response.json();
+                })
+                .then(anexos => {
+                    anexosContainer.innerHTML = '';
+
+                    if (anexos.length === 0) {
+                        anexosContainer.innerHTML = '<div class="text-muted">Nenhum anexo encontrado</div>';
+                        return;
+                    }
+
+                    // Criar container para os cards de anexo
+                    const attachmentsContainer = document.createElement('div');
+                    attachmentsContainer.className = 'attachments-container';
+                    
+                    anexos.forEach(anexo => {
+                        const fileType = getFileType(anexo.url || anexo.nome);
+                        const attachmentCard = document.createElement('div');
+                        attachmentCard.className = 'attachment-card';
+                        
+                        let previewContent = '';
+                        
+                        if (fileType === 'image') {
+                            previewContent = `
+                                <div class="attachment-preview" style="background-image: url('${anexo.url}')" 
+                                    onclick="openMediaModal('${anexo.url}', 'image', '${anexo.nome || 'Anexo'}')"></div>
+                            `;
+                        } else if (fileType === 'video') {
+                            previewContent = `
+                                <div class="attachment-preview d-flex align-items-center justify-content-center bg-secondary" 
+                                    onclick="openMediaModal('${anexo.url}', 'video', '${anexo.nome || 'Vídeo'}')">
+                                    <i class="fas fa-play text-white"></i>
+                                </div>
+                            `;
+                        } else if (fileType === 'pdf') {
+                            previewContent = `
+                                <div class="attachment-preview d-flex align-items-center justify-content-center bg-danger" 
+                                    onclick="openMediaModal('${anexo.url}', 'pdf', '${anexo.nome || 'Documento'}')">
+                                    <i class="fas fa-file-pdf text-white"></i>
+                                </div>
+                            `;
+                        } else {
+                            previewContent = `
+                                <div class="attachment-preview d-flex align-items-center justify-content-center bg-primary" 
+                                    onclick="window.open('${anexo.url}', '_blank')">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                            `;
+                        }
+                                            
+                        attachmentCard.innerHTML = `
+                            ${previewContent}
+                            <div class="attachment-name">${anexo.nome || 'Anexo'}</div>
+                            <div class="attachment-actions">
+                                <button class="btn btn-sm btn-danger btn-delete-attachment" data-id="${anexo.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        
+                        attachmentsContainer.appendChild(attachmentCard);
+                    });
+
+                    anexosContainer.appendChild(attachmentsContainer);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar anexos:', error);
+                    anexosContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Erro ao carregar anexos: ${error.message}
+                        </div>
+                    `;
+                });
+        }
+
+        // Função melhorada para detectar tipos de arquivo
+        function getFileType(filename) {
+            if (!filename) return 'other';
+            
+            const ext = filename.split('.').pop().toLowerCase();
+            
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+            const videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+            const pdfExtensions = ['pdf'];
+            const documentExtensions = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+            
+            if (imageExtensions.includes(ext)) return 'image';
+            if (videoExtensions.includes(ext)) return 'video';
+            if (pdfExtensions.includes(ext)) return 'pdf';
+            if (documentExtensions.includes(ext)) return 'document';
+            
+            return 'other';
+        }
+
+        // Função para abrir o modal de visualização
+        function openMediaModal(url, type, title = 'Anexo') {
+            const modal = new bootstrap.Modal(document.getElementById('mediaPreviewModal'));
+            const modalTitle = document.getElementById('mediaPreviewTitle');
+            const imageElement = document.getElementById('mediaPreviewImage');
+            const videoElement = document.getElementById('mediaPreviewVideo');
+            const pdfElement = document.getElementById('mediaPreviewPdf');
+            const unsupportedElement = document.getElementById('mediaPreviewUnsupported');
+            const downloadLink = document.getElementById('mediaDownloadLink');
+
+            // Esconder todos os elementos
+            imageElement.style.display = 'none';
+            videoElement.style.display = 'none';
+            pdfElement.style.display = 'none';
+            unsupportedElement.style.display = 'none';
+
+            // Configurar título e link de download
+            modalTitle.textContent = title;
+            downloadLink.href = url;
+            downloadLink.download = title;
+
+            // Mostrar o elemento correto baseado no tipo
+            if (type === 'image') {
+                imageElement.src = url;
+                imageElement.style.display = 'block';
+            } else if (type === 'video') {
+                videoElement.src = url;
+                videoElement.style.display = 'block';
+            } else if (type === 'pdf') {
+                pdfElement.src = url;
+                pdfElement.style.display = 'block';
+            } else {
+                unsupportedElement.style.display = 'block';
+            }
+
+            modal.show();
+        }
+
+        // Função para download de arquivo
+        function downloadFile(url, filename = '') {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename || url.split('/').pop() || 'anexo';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function updateRiskIndicator(ticket) {
+            const risco = ticket.risco || 0;
+            const riskIndicator = document.getElementById('ticket-risk-indicator');
+            const riskScore = document.getElementById('ticket-risk-score');
+            
+            if (riskScore) {
+                riskScore.textContent = risco;
+                riskScore.className = 'risk-score ';
+                if (risco >= 3) riskScore.classList.add('high');
+                else if (risco >= 2) riskScore.classList.add('medium');
+                else riskScore.classList.add('low');
+            }
+            
+            if (riskIndicator) {
+                riskIndicator.className = 'ticket-modal-risk ';
+                if (risco >= 3) riskIndicator.classList.add('high');
+                else if (risco >= 2) riskIndicator.classList.add('medium');
+                else riskIndicator.classList.add('low');
+            }
+
+            // Preencher fatores de risco
+            document.getElementById('risk-factor-priority').textContent = ticket.prioridade || 'Média';
+            document.getElementById('risk-factor-criticidade').textContent = ticket.equipamento?.criticidade || 0;
+            document.getElementById('risk-factor-time').textContent = ticket.dias_restantes ? `${ticket.dias_restantes} dias` : 'N/A';
+            document.getElementById('risk-factor-type').textContent = ticket.tipo_manutencao || 'N/A';
+        }
+        
+        function getFileIcon(mimeType) {
+            if (!mimeType) return 'fa-file';
+            
+            if (mimeType.includes('image')) return 'fa-file-image';
+            if (mimeType.includes('pdf')) return 'fa-file-pdf';
+            if (mimeType.includes('word')) return 'fa-file-word';
+            if (mimeType.includes('excel')) return 'fa-file-excel';
+            if (mimeType.includes('powerpoint')) return 'fa-file-powerpoint';
+            if (mimeType.includes('zip') || mimeType.includes('compressed')) return 'fa-file-archive';
+            
+            return 'fa-file';
+        }
+        
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function setupEventListeners() {
+            // 1. Alternar entre views
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelector('.view-btn.active').classList.remove('active');
+                    this.classList.add('active');
+                    currentView = this.dataset.view;
+                    updateUI();
+                });
+            });
+            
+            // 2. Botão novo ticket
+            document.getElementById('btn-novo-ticket').addEventListener('click', function() {
+                const newTicketModal = new bootstrap.Modal(document.getElementById('newTicketModal'));
+                newTicketModal.show();
+            });
+            
+            // 3. Delegar eventos para elementos dinâmicos
+            document.addEventListener('click', handleDynamicElementsClick);
+
+            // 4. Filtros da lista
+            document.querySelectorAll('#filter-equipamento, #filter-status, #filter-prioridade, #filter-tipo').forEach(filter => {
+                filter.addEventListener('change', () => {
+                    currentPage = 1;
+                    updateListView();
+                });
+            });
+
+            // 6. Cálculo de risco ao selecionar equipamento
+            document.getElementById('equipamentoSelect')?.addEventListener('change', updateRiskWarning);
+            
+            // 7. Upload de arquivos
+            setupFileUpload();
+            
+            // 8. Formulário de novo ticket
+            document.getElementById('btn-salvar-ticket').addEventListener('click', createNewTicket);
+        }
+
+        function handleDynamicElementsClick(e) {
+            // Botões ver ticket
+            const viewTicketBtn = e.target.closest('.btn-view-ticket');
+            if (viewTicketBtn) {
+                const ticketId = viewTicketBtn.dataset.id;
+                if (ticketId) showTicketDetails(ticketId);
+                return;
+            }
+
+            const deleteBtn = e.target.closest('.btn-delete-attachment');
+            if (deleteBtn) {
+                const anexoId = deleteBtn.dataset.id;
+                deleteAttachment(anexoId);
+                return;
+            }
+
+            // Botões exportar
+            if (e.target.closest('#btn-export-excel')) {
+                exportToExcel();
+                return;
+            }
+
+            if (e.target.closest('#btn-export-pdf')) {
+                exportToPDF();
+                return;
+            }
+
+            // Botão atualizar análise de risco
+            if (e.target.closest('#btn-refresh-risk') || e.target.closest('#btn-refresh-list')) {
+                loadManutencoes().then(() => showSuccess('Dados atualizados com sucesso'));
+                return;
+            }
+        }
+
+        function updateRiskWarning() {
+            const equipamentoId = this.value;
+            const equipamento = equipamentosList.find(e => e.id == equipamentoId);
+            const warningDiv = document.getElementById('risk-warning');
+            const warningText = document.getElementById('risk-warning-text');
+
+            if (!warningDiv || !warningText) return;
+
+            if (equipamento) {
+                if (equipamento.criticidade >= 3) {
+                    warningDiv.style.display = 'block';
+                    warningText.textContent = 'Este equipamento possui criticidade ALTA. A manutenção será classificada como de alto risco.';
+                    warningDiv.className = 'alert alert-warning';
+                } else if (equipamento.criticidade >= 2) {
+                    warningDiv.style.display = 'block';
+                    warningText.textContent = 'Este equipamento possui criticidade MÉDIA. Considere priorizar esta manutenção.';
+                    warningDiv.className = 'alert alert-info';
+                } else {
+                    warningDiv.style.display = 'none';
+                }
+            } else {
+                warningDiv.style.display = 'none';
+            }
+        }
+        
+        function setupFileUpload() {
+            const dropzone = document.getElementById('file-upload-dropzone');
+            const fileInput = document.getElementById('file-upload-input');
+            const previewContainer = document.getElementById('file-preview-container');
+            
+            if (!dropzone || !fileInput || !previewContainer) return;
+            
+            // Click no dropzone
+            dropzone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Arrastar arquivos
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'var(--primary-color)';
+                dropzone.style.backgroundColor = 'rgba(108, 99, 255, 0.1)';
+            });
+            
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                dropzone.style.backgroundColor = '';
+            });
+            
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                dropzone.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            
+            // Selecionar arquivos
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    handleFiles(fileInput.files);
+                }
+            });
+        }
+        
+        function handleFiles(files) {
+            const previewContainer = document.getElementById('file-preview-container');
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Verificar tamanho máximo (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showError(`O arquivo ${file.name} excede o tamanho máximo de 10MB`);
+                    continue;
+                }
+                
+                // Verificar tipo de arquivo
+                const allowedTypes = [
+                    'application/pdf',
+                    'image/jpeg',
+                    'image/png',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/zip'
+                ];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    showError(`Tipo de arquivo não suportado: ${file.name}`);
+                    continue;
+                }
+                
+                // Adicionar à lista de arquivos selecionados
+                selectedFiles.push(file);
+                
+                // Criar preview
+                const previewItem = document.createElement('div');
+                previewItem.className = 'file-preview-item';
+                previewItem.dataset.name = file.name;
+                
+                const fileIcon = getFileIcon(file.type);
+                const fileSize = formatFileSize(file.size);
+                
+                previewItem.innerHTML = `
+                    <div class="file-preview-icon">
+                        <i class="fas ${fileIcon}"></i>
+                    </div>
+                    <div class="file-preview-info">
+                        <div class="file-preview-name">${file.name}</div>
+                        <div class="file-preview-size">${fileSize}</div>
+                    </div>
+                    <div class="file-preview-remove">
+                        <i class="fas fa-times"></i>
+                    </div>`;
+                
+                previewContainer.appendChild(previewItem);
+                
+                // Adicionar evento para remover arquivo
+                previewItem.querySelector('.file-preview-remove').addEventListener('click', () => {
+                    selectedFiles = selectedFiles.filter(f => f.name !== file.name);
+                    previewItem.remove();
+                });
+            }
+        }
+        
+        async function createNewTicket() {
+            const form = document.getElementById('newTicketForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                showError('Preencha todos os campos obrigatórios');
+                return;
+            }
+            
+            // Coletar dados do formulário
+            const formData = new FormData();
+            formData.append('equipamento_id', document.getElementById('equipamentoSelect').value);
+            formData.append('tipo', document.getElementById('tipoManutencao').value);
+            formData.append('data_limite', document.getElementById('dataLimite').value);
+            formData.append('descricao', document.getElementById('descricao').value); // Campo correto
+            
+            // Campos opcionais
+            const prioridade = document.getElementById('prioridade').value;
+            const responsavel = document.getElementById('responsavel').value;
+            // Campos opcionais
+            const inspecaoRelacionada = document.getElementById('inspecaoRelacionada').value;
+
+            if (prioridade) formData.append('prioridade', prioridade);
+            if (responsavel) formData.append('responsavel_id', responsavel);
+            if (inspecaoRelacionada) formData.append('inspecao_id', inspecaoRelacionada);
+            
+            // Adicionar arquivos
+            for (let i = 0; i < selectedFiles.length; i++) {
+                formData.append('anexos', selectedFiles[i]);
+            }
+            
+            try {
+                showLoadingIndicator();
+                const response = await ApiService.post('/api/manutencao/tickets', formData);
+                
+                if (response.success) {
+                    showSuccess(`Ticket ${response.ticket_id} criado com sucesso!`);
+                    form.reset();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    showError(response.error || 'Erro ao criar ticket');
+                }
+            } catch (error) {
+                console.error('Erro ao criar ticket:', error);
+                showError(error.message || 'Erro ao criar ticket');
+            } finally {
+                hideLoadingIndicator();
+            }
+        }
+
+        async function deleteAttachment(anexoId) {
+            try {
+                const confirm = await Swal.fire({
+                    title: 'Confirmar exclusão',
+                    text: 'Tem certeza que deseja excluir este anexo?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sim, excluir',
+                    cancelButtonText: 'Cancelar',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+                
+                if (confirm.isConfirmed) {
+                    showLoadingIndicator();
+                    const response = await ApiService.delete(`/api/manutencao/anexo/${anexoId}`);
+                    
+                    if (response.success) {
+                        showSuccess('Anexo excluído com sucesso');
+                        
+                        // Recarregar os detalhes do ticket
+                        const ticketModal = bootstrap.Modal.getInstance(document.getElementById('ticketModal'));
+                        if (ticketModal) {
+                            const ticketId = document.querySelector('.btn-view-ticket.active')?.dataset.id;
+                            if (ticketId) {
+                                await loadManutencoes();
+                                showTicketDetails(ticketId);
+                            }
+                        }
+                    } else {
+                        showError(response.error || 'Erro ao excluir anexo');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao excluir anexo:', error);
+                showError(error.message || 'Erro ao excluir anexo');
+            } finally {
+                hideLoadingIndicator();
+            }
+        }
+        
+        function exportToExcel() {
+            const filteredData = applyListViewFilters();
+            const headers = [
+                'Ticket ID', 'Equipamento', 'Tipo', 'Prioridade', 'Status', 
+                'Responsável', 'Data Abertura', 'Prazo', 'Dias Restantes', 'Risco'
+            ];
+            
+            const data = filteredData.map(ticket => [
+                ticket.ticket_id,
+                ticket.equipamento.tag,
+                ticket.tipo_manutencao,
+                ticket.prioridade,
+                ticket.status,
+                ticket.responsavel ? ticket.responsavel.nome : 'Não atribuído',
+                ticket.data_abertura,
+                ticket.data_limite,
+                ticket.dias_restantes,
+                ticket.risco
+            ]);
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+            XLSX.utils.book_append_sheet(wb, ws, 'Manutenções');
+            XLSX.writeFile(wb, 'manutencoes.xlsx');
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(18);
+            doc.text('Relatório de Manutenções', 105, 15, { align: 'center' });
+            
+            // Data de emissão
+            doc.setFontSize(10);
+            doc.text(`Emitido em: ${new Date().toLocaleDateString()}`, 105, 25, { align: 'center' });
+            
+            // Dados
+            const headers = [
+                {title: "Ticket", dataKey: "ticket"},
+                {title: "Equipamento", dataKey: "equipamento"},
+                {title: "Prioridade", dataKey: "prioridade"},
+                {title: "Status", dataKey: "status"},
+                {title: "Prazo", dataKey: "prazo"}
+            ];
+            
+            const filteredData = applyListViewFilters().map(ticket => ({
+                ticket: ticket.ticket_id,
+                equipamento: ticket.equipamento.tag,
+                prioridade: ticket.prioridade,
+                status: ticket.status,
+                prazo: ticket.data_limite
+            }));
+            
+            doc.autoTable({
+                head: [headers.map(h => h.title)],
+                body: filteredData.map(item => headers.map(h => item[h.dataKey])),
+                startY: 30,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [108, 99, 255],
+                    textColor: 255
+                },
+                alternateRowStyles: {
+                    fillColor: [240, 240, 240]
+                },
+                margin: { top: 30 }
+            });
+            
+            // Rodapé
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(10);
+                doc.text(`Página ${i} de ${pageCount}`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
+            }
+            
+            doc.save('manutencoes.pdf');
+        }
+        
+        function updateUI() {
+            // Esconder todas as views
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('kanban-view').style.display = 'none';
+            document.getElementById('list-view').style.display = 'none';
+            
+            // Mostrar view ativa
+            document.getElementById(`${currentView}-view`).style.display = 'block';
+            
+            updateKPIs();
+            
+            switch(currentView) {
+                case 'dashboard':
+                    updateRiskTable();
+                    updateCharts();
+                    break;
+                case 'kanban':
+                    updateKanbanView();
+                    break;
+                case 'list':
+                    updateListView();
+                    break;
+            }
+        }
+        
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso',
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: '#242445',
+                color: '#F1F1F1'
+            });
+        }
+        
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+                background: '#242445',
+                color: '#F1F1F1'
+            });
+        }
+        
+        function showAlert(title, text, icon) {
+            return Swal.fire({
+                title,
+                text,
+                icon,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            });
+        }
+        
+        function showConfirm(title, text) {
+            return Swal.fire({
+                title,
+                text,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then(result => result.isConfirmed);
+        }
+        
+        // Função para alterar foto de perfil
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!file.type.match('image.*')) {
+                    showError('Por favor, selecione um arquivo de imagem');
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('A imagem deve ter no máximo 5MB');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const image = new Image();
+                    image.src = e.target.result;
+                    
+                    image.onload = function() {
+                        const cropperContainer = document.createElement('div');
+                        cropperContainer.style.maxWidth = '100%';
+                        cropperContainer.style.maxHeight = '400px';
+                        cropperContainer.style.overflow = 'hidden';
+                        
+                        const cropperImage = document.createElement('img');
+                        cropperImage.src = e.target.result;
+                        cropperImage.style.maxWidth = '100%';
+                        cropperContainer.appendChild(cropperImage);
+                        
+                        Swal.fire({
+                            title: 'Ajuste a foto',
+                            html: cropperContainer,
+                            showCancelButton: true,
+                            confirmButtonText: 'Salvar',
+                            cancelButtonText: 'Cancelar',
+                            background: 'var(--darker-bg)',
+                            color: 'var(--text-light)',
+                            didOpen: () => {
+                                const cropper = new Cropper(cropperImage, {
+                                    aspectRatio: 1,
+                                    viewMode: 1,
+                                    autoCropArea: 0.8
+                                });
+                                
+                                // Sobrescrever o botão de confirmação para retornar a imagem cortada
+                                Swal.getConfirmButton().addEventListener('click', async function() {
+                                    const canvas = cropper.getCroppedCanvas({
+                                        width: 300,
+                                        height: 300
+                                    });
+                                    
+                                    if (canvas) {
+                                        canvas.toBlob(async (blob) => {
+                                            try {
+                                                const formData = new FormData();
+                                                formData.append('foto_perfil', blob, 'perfil.jpg');
+                                                
+                                                showLoadingIndicator();
+                                                
+                                                const response = await fetch('/api/alterar_foto_perfil', {
+                                                    method: 'POST',
+                                                    body: formData,
+                                                    credentials: 'include'
+                                                });
+                                                
+                                                const data = await response.json();
+                                                
+                                                if (data.success) {
+                                                    // Atualizar a foto em todos os lugares
+                                                    document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                        img.src = data.foto_perfil_url + '?' + new Date().getTime();
+                                                    });
+                                                    
+                                                    showSuccess('Foto de perfil atualizada com sucesso!');
+                                                } else {
+                                                    showError(data.error || 'Erro ao atualizar foto de perfil');
+                                                }
+                                            } catch (error) {
+                                                console.error('Erro ao atualizar foto:', error);
+                                                showError('Erro ao atualizar foto de perfil');
+                                            } finally {
+                                                hideLoadingIndicator();
+                                                Swal.close();
+                                            }
+                                        }, 'image/jpeg', 0.9);
+                                    }
+                                });
+                            }
+                        });
+                    };
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            input.click();
+        });
+        
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const confirm = await showConfirm('Confirmar logout', 'Deseja realmente sair do sistema?');
+            if (confirm) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        showError('Erro ao fazer logout');
+                    }
+                } catch (error) {
+                    console.error('Erro ao fazer logout:', error);
+                    showError('Erro ao fazer logout');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

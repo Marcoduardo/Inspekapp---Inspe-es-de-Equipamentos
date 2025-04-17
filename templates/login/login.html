@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InspekApp - Login</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --primary-light: #A5A2FF;
+            --secondary-color: #FF6584;
+            --secondary-dark: #E04D6D;
+            --accent-color: #00C9A7;
+            --dark-bg: #121212;
+            --darker-bg: #1E1E1E;
+            --card-bg: #242424;
+            --card-hover: #2D2D2D;
+            --text-light: #F5F5F5;
+            --text-muted: #B0B0B0;
+            --text-dark: #333333;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --info-color: #2196F3;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --box-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Melhorias para os placeholders */
+        .form-control::placeholder,
+        .form-select::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Melhorias nos inputs */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        /* Melhorias nos botões */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        /* Background Animation */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 15s infinite linear;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-color);
+            top: 20%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+
+        .circle-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary-color);
+            top: 60%;
+            left: 30%;
+            animation-duration: 25s;
+            animation-delay: 5s;
+        }
+
+        .circle-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--accent-color);
+            top: 30%;
+            left: 70%;
+            animation-duration: 15s;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(50px, 50px);
+            }
+            50% {
+                transform: translate(0, 100px);
+            }
+            75% {
+                transform: translate(-50px, 50px);
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* Login Card */
+        .login-card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            padding: 2rem;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: pulse 8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0.2;
+            }
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(108, 99, 255, 0.5));
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Login Form */
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+        }
+
+
+        .input-group-text {
+            background-color: transparent;
+            border: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            z-index: 4;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .form-control:focus ~ .input-group-text {
+            color: var(--primary-color);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 5;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-azure {
+            background: #0078d4;
+            color: white;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .btn-azure:hover {
+            background: #106ebe;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 120, 212, 0.4);
+        }
+
+        /* Links */
+        .forgot-password {
+            color: var(--primary-light);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .forgot-password:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .register-link {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .register-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 0.5rem;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .welcome-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .welcome-content {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transform: translateY(20px);
+            transition: transform 0.5s ease;
+        }
+
+        .welcome-screen.active .welcome-content {
+            transform: translateY(0);
+        }
+
+        .welcome-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1.5rem;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 0 20px rgba(108, 99, 255, 0.5);
+            animation: pulseAvatar 2s infinite;
+        }
+
+        @keyframes pulseAvatar {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(108, 99, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(108, 99, 255, 0.8);
+            }
+        }
+
+        .welcome-message {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-text {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            width: 0;
+            transition: width 3s linear;
+        }
+
+        .welcome-screen.active .progress {
+            width: 100%;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 576px) {
+            .login-card {
+                margin: 1rem;
+            }
+
+            .login-header {
+                padding: 1.5rem;
+            }
+
+            .login-body {
+                padding: 1.5rem;
+            }
+
+            .login-logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .login-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+        <!-- Header -->
+        <div class="login-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/7928/7928650.png" alt="Logo InspekApp" class="login-logo">
+            <h1 class="login-title">InspekApp</h1>
+            <p class="login-subtitle">Sistema de Gestão de Inspeções</p>
+        </div>
+
+        <!-- Body -->
+        <div class="login-body">
+            <h2 class="form-title">Faça seu login</h2>
+            <p class="form-subtitle">Entre com suas credenciais para acessar o sistema</p>
+
+            <form id="loginForm">
+                <!-- Username Input -->
+                <div class="mb-3 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="usuario" name="usuario" placeholder="Usuário ou E-mail" required>
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div class="mb-3 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="senha" placeholder="Senha" required>
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Lembrar-me</label>
+                    </div>
+                    <a href="/senhas/reset_password" class="forgot-password">Esqueci minha senha</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary-custom w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i> Entrar
+                </button>
+
+                <!-- Divider -->
+                <div class="divider">ou</div>
+
+                <!-- Azure Login Button -->
+                <button type="button" class="btn btn-azure w-100 mb-3" id="azureLoginBtn">
+                    <i class="fab fa-microsoft me-2"></i> Autenticação Integrada Azure
+                </button>
+
+                <!-- Register Link -->
+                <p class="register-link">
+                    Não tem uma conta? <a href="/novo_usuario_login">Crie uma agora</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <img src="" alt="Foto do usuário" class="welcome-avatar" id="welcomeAvatar">
+            <h1 class="welcome-message" id="welcomeMessage">Bem-vindo!</h1>
+            <p class="welcome-text">Redirecionando para o painel principal...</p>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // Funções para os modais
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Função para salvar credenciais no localStorage
+        function saveCredentials(username, password) {
+            const credentials = {
+                username: username,
+                password: password,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('savedCredentials', JSON.stringify(credentials));
+        }
+
+        // Função para limpar credenciais salvas
+        function clearSavedCredentials() {
+            localStorage.removeItem('savedCredentials');
+        }
+
+        // Função para carregar credenciais salvas
+        function loadSavedCredentials() {
+            const savedCredentials = localStorage.getItem('savedCredentials');
+            if (savedCredentials) {
+                try {
+                    const credentials = JSON.parse(savedCredentials);
+                    
+                    // Verificar se as credenciais não estão muito antigas (opcional)
+                    const oneWeek = 7 * 24 * 60 * 60 * 1000; // 1 semana em milissegundos
+                    if (new Date().getTime() - credentials.timestamp < oneWeek) {
+                        document.getElementById('usuario').value = credentials.username;
+                        document.getElementById('password').value = credentials.password;
+                        document.getElementById('remember').checked = true;
+                        return true;
+                    } else {
+                        // Credenciais muito antigas, remover
+                        clearSavedCredentials();
+                    }
+                } catch (e) {
+                    console.error('Erro ao carregar credenciais:', e);
+                    clearSavedCredentials();
+                }
+            }
+            return false;
+        }
+
+        // Mostrar/ocultar senha
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        // Autenticação Azure
+        document.getElementById('azureLoginBtn').addEventListener('click', function() {
+            window.location.href = "/auth/azure";
+        });
+
+        // Formulário de login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const inputs = form.querySelectorAll('input[required]');
+            let isValid = true;
+
+            // Validação dos campos
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                    
+                    // Adiciona um pequeno efeito de shake para indicar erro
+                    input.animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(-5px)' },
+                        { transform: 'translateX(5px)' },
+                        { transform: 'translateX(0)' }
+                    ], {
+                        duration: 300,
+                        iterations: 2
+                    });
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                showAlert('Campos obrigatórios', 'Por favor, preencha todos os campos obrigatórios.', 'error');
+                return;
+            }
+
+            // Verificar se o checkbox "Lembrar-me" está marcado
+            const rememberMe = document.getElementById('remember').checked;
+            const username = document.getElementById('usuario').value;
+            const password = document.getElementById('password').value;
+
+            if (rememberMe) {
+                // Salvar credenciais
+                saveCredentials(username, password);
+            } else {
+                // Se o usuário desmarcou o checkbox, limpar credenciais salvas
+                clearSavedCredentials();
+            }
+
+            // Mostrar loading
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processando...';
+            submitButton.disabled = true;
+
+            const formData = new FormData(form);
+            
+            fetch('/login', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(async response => {
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    // Se a resposta não estiver OK, lança um erro com a mensagem da API
+                    throw new Error(data.error || 'Erro desconhecido ao fazer login');
+                }
+                
+                return data;
+            })
+            .then(data => {
+                // Verifica se há redirecionamento para redefinição de senha
+                if (data.redirect && data.redirect.includes('reset_senha')) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                
+                // Mostrar tela de boas-vindas
+                const welcomeScreen = document.getElementById('welcomeScreen');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const welcomeAvatar = document.getElementById('welcomeAvatar');
+                
+                // Usar dados do servidor ou padrão
+                const username = data.nome || formData.get('usuario').split('@')[0] || 'Usuário';
+                welcomeMessage.textContent = `Bem-vindo, ${username}!`;
+                
+                // Usar foto do servidor ou padrão
+                welcomeAvatar.src = data.foto_perfil || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                
+                // Mostrar tela de boas-vindas
+                welcomeScreen.classList.add('active');
+                
+                // Redirecionar após 3 segundos
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/index';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                
+                // Restaurar botão
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
+                
+                // Mostrar mensagem de erro
+                showAlert('Erro no login', error.message || 'Ocorreu um erro ao tentar fazer login. Por favor, tente novamente.', 'error');
+            });
+        });
+
+        // Função para mostrar tela de boas-vindas (pode ser usada também para o login Azure)
+        function showWelcomeScreen(name, avatar) {
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const welcomeAvatar = document.getElementById('welcomeAvatar');
+            
+            welcomeMessage.textContent = `Bem-vindo, ${name || 'Usuário'}!`;
+            welcomeAvatar.src = avatar || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+            welcomeScreen.classList.add('active');
+        }
+
+        // Carregar credenciais salvas, se existirem
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedCredentials();
+            
+            // Limpar credenciais se o usuário mudar manualmente
+            document.getElementById('usuario').addEventListener('input', function() {
+                if (document.getElementById('remember').checked) {
+                    document.getElementById('remember').checked = false;
+                    clearSavedCredentials();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Edição de Tipo de Equipamento</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+        /* Melhorias para os placeholders */
+        .form-control::placeholder,
+        .form-select::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Melhorias nos inputs */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        /* Melhorias na área de upload */
+        .file-upload label {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .file-upload label:hover {
+            background-color: rgba(108, 99, 255, 0.1) !important;
+            border-color: var(--primary-color);
+        }
+
+        /* Melhorias nos botões */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }        
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .form-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .form-control[readonly] {
+            background-color: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #e04d6d);
+            color: white;
+        }
+        
+        .btn-secondary-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .btn-secondary-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .modal-content-custom {
+            background: var(--darker-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* Checklist Styles */
+        .checklist-container {
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+        }
+        
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checklist-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        .checklist-items {
+            margin-top: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            margin-bottom: 0.75rem;
+        }
+        
+        .checklist-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .checklist-item-actions button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .checklist-item-actions button:hover {
+            color: var(--primary-color);
+        }
+        
+        .add-item-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary-color);
+            border: 1px dashed var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+        
+        .add-item-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Status Toggle */
+        .status-toggle {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-toggle label {
+            font-weight: 500;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Hide number input arrows */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            appearance: var(--text-light);
+            -moz-appearance: textfield;
+        }
+        
+        @media (max-width: 768px) {
+            .form-title {
+                font-size: 1.8rem;
+            }
+            
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .user-name {
+                display: none;
+            }
+
+            .checklist-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .checklist-item-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+ 
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-card">
+                    <div class="text-center mb-4">
+                        <h1 class="form-title">Edição de Tipo de Equipamento</h1>
+                        <p class="text-muted">Atualize os dados do tipo de equipamento e seu checklist</p>
+                    </div>
+
+                    <form id="tipo-equipamento-form" method="POST" onsubmit="validateFormTipoEquipamento(event)">
+                        <div class="row g-3">
+                            <!-- Nome do Tipo -->
+                            <div class="col-md-12">
+                                <label for="nome" class="form-label">Nome do Tipo <span class="text-danger">*</span></label>
+                                <input type="text" id="nome" name="nome" class="form-control" 
+                                       value="{{ tipo.nome }}" required>
+                                <div class="invalid-feedback" id="nome-error"></div>
+                            </div>
+
+                            <!-- Validade da Inspeção -->
+                            <div class="col-md-12">
+                                <label for="validade_inspecao" class="form-label">Validade da Inspeção (dias) <span class="text-danger">*</span></label>
+                                <input type="number" id="validade_inspecao" name="validade_inspecao" class="form-control" 
+                                       placeholder="Ex: 30, 90, 180, 365" min="1" value="{{ tipo.validade_inspecao }}" required>
+                                <div class="invalid-feedback" id="validade_inspecao-error"></div>
+                            </div>
+
+                            <!-- Descrição -->
+                            <div class="col-md-12">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea id="descricao" name="descricao" class="form-control" 
+                                       placeholder="Descreva as características deste tipo de equipamento" rows="3">{{ tipo.descricao }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Status Toggle -->
+                        <div class="status-toggle mt-3">
+                            <label for="status" class="form-label">Status:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="status" name="status" {% if tipo.status %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                            <span id="status-label">{% if tipo.status %}Ativo{% else %}Inativo{% endif %}</span>
+                        </div>
+
+                        <!-- Checklist Section -->
+                        <div class="checklist-container mt-4">
+                            <div class="checklist-header">
+                                <h3 class="checklist-title">Itens do Checklist de Inspeção</h3>
+                                <button type="button" class="btn btn-primary-custom btn-sm" id="add-checklist-item">
+                                    <i class="fas fa-plus me-1"></i> Adicionar Item
+                                </button>
+                            </div>
+                            
+                            <div class="checklist-items" id="checklist-items-container">
+                                <!-- Itens serão preenchidos pelo JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Form Buttons -->
+                        <div class="col-12 mt-4 text-center">
+                            <button type="submit" class="btn btn-primary-custom btn-lg me-3">
+                                <i class="fas fa-save me-2"></i> Salvar Alterações
+                            </button>
+                            <button type="button" class="btn btn-secondary-custom btn-lg" onclick="window.location.href='/tipos_equipamentos_cadastrados'">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ Dados do checklist escondidos para o JS -->
+        <div id="checklists-data" style="display:none;">{{ checklists_json|safe }}</div>
+    </main>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                             class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let checklistIndex = 0;
+
+        function addChecklistItem(data = {}) {
+            const container = document.getElementById('checklist-items-container');
+
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('checklist-item', 'align-items-center', 'p-3', 'mb-2', 'bg-dark', 'rounded');
+
+            itemDiv.innerHTML = `
+                <input type="hidden" name="checklist_items[${checklistIndex}][id]" value="${data.id || ''}">
+                <input type="text" name="checklist_items[${checklistIndex}][nome_item]" 
+                       class="form-control" placeholder="Descrição do item" 
+                       value="${data.nome_item || ''}" required>
+                <div class="checkbox-container ms-3">
+                    <input type="checkbox" id="obrigatorio-${checklistIndex}" 
+                           name="checklist_items[${checklistIndex}][obrigatorio]" 
+                           ${data.obrigatorio ? 'checked' : ''} class="form-check-input">
+                    <label for="obrigatorio-${checklistIndex}" class="form-check-label ms-2">Obrigatório</label>
+                </div>
+                <div class="checklist-item-actions ms-3">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn" onclick="this.parentElement.parentElement.remove(); renumberItems()">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(itemDiv);
+            checklistIndex++;
+        }
+
+        // Função para renumerar os itens após remoção ou reordenação
+        function renumberItems() {
+            const items = document.querySelectorAll('#checklist-items-container .checklist-item');
+            items.forEach((item, index) => {
+                const inputs = item.querySelectorAll('input[name^="checklist_items"]');
+                inputs.forEach(input => {
+                    const name = input.name.replace(/\[\d+\]/, `[${index}]`);
+                    input.name = name;
+                });
+                
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.id = `obrigatorio-${index}`;
+                    item.querySelector('label').htmlFor = `obrigatorio-${index}`;
+                }
+            });
+            checklistIndex = items.length;
+        }
+
+        // Funções auxiliares para mostrar mensagens
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Configuração do cropper para alteração de foto de perfil
+        let cropper = null;
+        
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+        // Evento para o toggle de status
+        document.getElementById('status').addEventListener('change', function() {
+            document.getElementById('status-label').textContent = this.checked ? 'Ativo' : 'Inativo';
+        });
+
+        // Evento para adicionar novo item ao checklist
+        document.getElementById('add-checklist-item').addEventListener('click', function() {
+            addChecklistItem();
+        });
+
+        // Função para validar o formulário
+        async function validateFormTipoEquipamento(event) {
+            event.preventDefault();
+            
+            // Limpa mensagens de erro anteriores
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            
+            // Validação básica do formulário
+            const nomeTipo = document.getElementById('nome').value.trim();
+            if (!nomeTipo) {
+                document.getElementById('nome').classList.add('is-invalid');
+                document.getElementById('nome-error').textContent = 'O nome do tipo de equipamento é obrigatório.';
+                return;
+            }
+
+            // Valida validade da inspeção
+            const validadeInspecao = document.getElementById('validade_inspecao').value;
+            if (!validadeInspecao || isNaN(validadeInspecao) || parseInt(validadeInspecao) <= 0) {
+                document.getElementById('validade_inspecao').classList.add('is-invalid');
+                document.getElementById('validade_inspecao-error').textContent = 'A validade da inspeção deve ser um número positivo de dias.';
+                return;
+            }            
+            
+            // Valida itens do checklist
+            const checklistItems = document.querySelectorAll('#checklist-items-container input[type="text"]');
+            let hasEmptyItems = false;
+            
+            checklistItems.forEach(item => {
+                if (!item.value.trim()) {
+                    item.classList.add('is-invalid');
+                    hasEmptyItems = true;
+                }
+            });
+            
+            if (hasEmptyItems) {
+                await showAlert('Erro', 'Todos os itens do checklist devem ter uma descrição.', 'error');
+                return;
+            }
+            
+            // Mostra loading
+            Swal.fire({
+                title: 'Processando...',
+                html: 'Atualizando tipo de equipamento',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            });
+            
+            try {
+                const formData = new FormData(document.getElementById('tipo-equipamento-form'));
+                
+                // Adiciona o status do toggle
+                formData.append('status', document.getElementById('status').checked ? 'on' : 'off');
+                
+                // Converter checklist items para um array JSON
+                const checklistItemsData = [];
+                const items = document.querySelectorAll('#checklist-items-container .checklist-item');
+                
+                items.forEach((item, index) => {
+                    const nomeItem = item.querySelector('input[type="text"]').value;
+                    const obrigatorio = item.querySelector('input[type="checkbox"]').checked;
+                    
+                    checklistItemsData.push({
+                        nome_item: nomeItem,
+                        obrigatorio: obrigatorio,
+                        ordem: index + 1
+                    });
+                });
+                
+                // Adiciona os itens ao formData
+                formData.append('checklist_items', JSON.stringify(checklistItemsData));
+                
+                const response = await fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    // Trata erros de validação do backend
+                    if (data.missing_fields) {
+                        data.missing_fields.forEach(field => {
+                            const inputElement = document.getElementById(field);
+                            const errorElement = document.getElementById(`${field}-error`);
+                            if (inputElement && errorElement) {
+                                inputElement.classList.add('is-invalid');
+                                errorElement.textContent = data.errors && data.errors[field] ? data.errors[field][0] : 'Campo obrigatório';
+                            }
+                        });
+                        throw new Error('Preencha todos os campos obrigatórios.');
+                    }
+                    throw new Error(data.error || 'Erro ao atualizar tipo de equipamento');
+                }
+                
+                await Swal.fire({
+                    title: 'Sucesso!',
+                    text: data.success,
+                    icon: 'success',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)',
+                    confirmButtonColor: 'var(--primary-color)'
+                });
+                
+                // Redireciona se especificado na resposta
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+                
+            } catch (error) {
+                console.error('Erro na atualização:', error);
+                
+                let errorMessage = error.message;
+                if (errorMessage.includes('<!doctype html>')) {
+                    errorMessage = 'Erro no servidor. Por favor, tente novamente.';
+                }
+
+                Swal.fire({
+                    title: 'Erro',
+                    text: errorMessage,
+                    icon: 'error',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)',
+                    confirmButtonColor: 'var(--primary-color)'
+                });
+            }
+        }
+
+        // Carrega os itens do checklist existentes quando a página é carregada
+        document.addEventListener('DOMContentLoaded', function () {
+            const checklistRaw = document.getElementById('checklists-data').textContent;
+            let checklists = [];
+            try {
+                checklists = JSON.parse(checklistRaw);
+            } catch (e) {
+                console.error('Erro ao carregar os dados do checklist:', e);
+            }
+
+            if (checklists.length === 0) {
+                addChecklistItem(); // Adiciona um item vazio
+            } else {
+                checklists.forEach(item => {
+                    addChecklistItem(item);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

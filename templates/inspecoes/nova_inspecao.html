@@ -1,0 +1,2702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Nova Inspeção</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas JS -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    
+    <!-- Corte de imagens -->   
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    
+    <!-- CSS Customizado -->
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #2a2a4a;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 8px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .bg-dark {
+            --bs-bg-opacity: 1;
+            background-color: var(--bs-bg-opacity) !important;
+            color: #fff;
+        }      
+        .card-body {
+            flex: 1 1 auto;
+            padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
+            color: #fff;
+        }
+
+        /* Estilos para badges de criticidade */
+        .badge-criticidade {
+            font-size: 0.8rem;
+            padding: 0.35em 0.65em;
+            border-radius: 50rem;
+        }
+
+        .bg-baixa {
+            background-color: var(--success-color) !important;
+        }
+
+        .bg-media {
+            background-color: var(--warning-color) !important;
+            color: #000 !important;
+        }
+
+        .bg-alta {
+            background-color: var(--danger-color) !important;
+        }
+
+        .bg-critica {
+            background-color: #6c757d !important;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            box-shadow: var(--box-shadow);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        /* Melhorias para os placeholders */
+        .form-control::placeholder,
+        .form-select::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
+        }
+
+        /* Melhorias nos inputs */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(47 47 78) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+            color: #fff !important;
+        }
+
+        /* Melhorias na área de upload */
+        .file-upload label {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .file-upload label:hover {
+            background-color: rgba(108, 99, 255, 0.1) !important;
+            border-color: var(--primary-color);
+        }
+
+        /* Melhorias nos botões */
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Melhorias no checklist */
+        .inspection-item {
+            transition: all 0.2s ease;
+        }
+
+        .inspection-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Melhorias nos alerts */
+        .alert {
+            border: none;
+        }
+
+        .alert-info {
+            background-color: rgba(13, 110, 253, 0.2);
+            color: #b6d4fe;
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffecb5;
+        }
+
+        /* Melhorias nos file previews */
+        .file-preview-item {
+            transition: var(--transition);
+        }
+
+        .file-preview-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-preview-item-remove {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .file-preview-item:hover .file-preview-item-remove {
+            opacity: 1;
+        }
+        /* Card Principal */
+        .main-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+        }
+        .file-preview-item {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            margin: 0.25rem;
+            display: inline-flex;
+            overflow: hidden;
+        }
+
+        .file-preview-item .fa-file-alt {
+            color: #6c757d;
+        }
+
+        .file-preview-item small {
+            font-size: 0.7rem;
+        }
+        .form-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;            
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Itens de Inspeção */
+        .inspection-item {
+            background-color: var(--card-bg);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .inspection-item.checked {
+            background-color: var(--success-color);
+            color: white;
+            border-color: #3a9a34;
+        }
+
+        .inspection-item.obrigatorio {
+            border-left: 3px solid var(--danger-color);
+        }
+
+        .inspection-item.obrigatorio.checked {
+            border-left: 3px solid var(--success-color);
+        }
+
+        .check-icon {
+            margin-left: auto;
+            display: none;
+        }
+
+        .inspection-item.checked .check-icon {
+            display: block;
+        }
+
+        .obrigatorio-icon {
+            color: var(--danger-color);
+        }
+
+        /* Preview de Fotos */
+        .file-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .file-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-preview-item-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--danger-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        /* Botão de Submit */
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        /* Modais Customizadas */
+        .modal-custom {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content-custom {
+            background-color: var(--darker-bg);
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .modal-header-custom {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title-custom {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .btn-close-custom {
+            color: var(--text-muted);
+            background: none;
+            font-size: 1.5rem;
+        }
+
+        /* Tabelas */
+        .table-custom {
+            color: var(--text-light);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-custom td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+            color: #fff;
+            background-color: #222c48;
+        }
+
+        .table-custom th {
+            background-color: rgba(108, 99, 255, 0.1);
+            color: var(--primary-color);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-custom tr:hover td {
+            background-color: rgba(108, 99, 255, 0.05);
+        }
+
+        .text-muted {
+            --bs-text-opacity: 1;
+            color: #fff !important;
+        }
+
+        /* Scanner */
+        .scanner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .scanner-video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+
+        /* Animação para itens obrigatórios */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+
+        .inspection-item.obrigatorio:not(.checked) {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .form-title {
+                font-size: 1.5rem;
+            }
+            
+            .btn-nav-custom span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center ms-auto">
+                <button class="btn btn-outline-light me-2" onclick="window.location.href='/'">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </button>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil" class="user-avatar me-2">
+                    <span class="d-none d-lg-inline user-name">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><h6 class="dropdown-header">Perfil do Usuário</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userModal">
+                            <i class="fas fa-user-circle me-2"></i> Meu Perfil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="changeProfilePicBtn">
+                            <i class="fas fa-camera me-2"></i> Alterar Foto
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fas fa-sign-out-alt me-2"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5 mb-4">
+        <div class="card main-card mb-4">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h1 class="form-title mb-2">InspekApp - Inspeção de Equipamentos</h1>
+                    <p class="text-muted">Registro de inspeção de equipamentos</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center mb-4">
+                                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
+                                <div>{{ message }}</div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" id="inspecaoForm" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <input type="hidden" name="equipamento_id" id="equipamento_id">
+                    <input type="hidden" name="numero_inspecao" id="numero_inspecao">
+                    <input type="hidden" name="status_inspecao" id="status_inspecao" value="Pendente">
+                    <input type="hidden" name="motivo" id="motivo" value="">
+                    <input type="hidden" name="data_encerramento_inspecao" id="data_encerramento_inspecao" value="">                    
+                    <input type="hidden" name="tipo_equipamento_id" id="tipo_equipamento_id">
+            
+                    <div class="row g-3 mb-4">
+                        
+                        <!-- Equipment Information -->
+                        <div class="col-md-6">
+                            <label for="equipamento_codigo_barras" class="form-label">Equipamento <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="text" id="equipamento_codigo_barras" name="equipamento_codigo_barras" 
+                                       class="form-control" placeholder="Selecione ou escaneie o equipamento" 
+                                       readonly onclick="abrirModalEquipamento()" required>
+                                <button class="btn btn-outline-primary" type="button" onclick="abrirLeitorQRCode()">
+                                    <i class="fas fa-barcode"></i> Camera
+                                </button>                                
+                            </div>
+                            <div class="invalid-feedback">
+                                Por favor, selecione ou escaneie o equipamento.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="tipo_equipamento" class="form-label">Tipo do Equipamento <span class="text-danger">*</span></label>
+                            <input type="text" id="tipo_equipamento" name="tipo_equipamento" 
+                                   class="form-control bg-dark text-white" placeholder="Tipo do equipamento" required readonly>
+                            <div class="invalid-feedback">
+                                Tipo de equipamento é obrigatório.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6" id="classe_equipamento_group" style="display: none;">
+                            <label for="classe_equipamento" class="form-label">Classe do Extintor</label>
+                            <input type="text" id="classe_equipamento" name="classe_equipamento" 
+                                   class="form-control bg-dark text-white" placeholder="Classe do extintor" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="localizacao_equipamento" class="form-label">Localização <span class="text-danger">*</span></label>
+                            <input type="text" id="localizacao_equipamento" name="localizacao_equipamento" 
+                                   class="form-control bg-dark text-white" placeholder="Localização do equipamento" required readonly>
+                            <div class="invalid-feedback">
+                                Localização do equipamento é obrigatória.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="status_equipamento" class="form-label">Status do Equipamento <span class="text-danger">*</span></label>
+                            <input type="text" id="status_equipamento" name="status_equipamento" 
+                                   class="form-control bg-dark text-white" placeholder="Status do equipamento" required readonly>
+                            <div class="invalid-feedback">
+                                Status do equipamento é obrigatório.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="responsavel" class="form-label">Responsável <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="text" id="responsavel" name="responsavel" 
+                                       class="form-control bg-dark text-white" 
+                                       value="{{ current_user.nome }}" placeholder="Responsável pela inspeção" 
+                                       required readonly {% if current_user.nivel_acesso in ['Administrador'] %} onclick="abrirModalResponsavel()" {% endif %}>
+                                {% if current_user.nivel_acesso in ['Administrador'] %}
+                                <button class="btn btn-outline-primary" type="button" onclick="abrirModalResponsavel()">
+                                    <i class="fas fa-user-tie"></i> Selecionar
+                                </button>                                 
+                                {% endif %}
+                            </div>
+                            <div class="invalid-feedback">
+                                Responsável pela inspeção é obrigatório.
+                            </div>
+                        </div>
+
+                        <!-- Criticidade da Inspeção -->
+                        <div class="col-md-6">
+                            <label for="criticidade_inspecao" class="form-label">Criticidade da Inspeção</label>
+                            <div class="input-group">
+                                <select id="criticidade_inspecao" name="criticidade_inspecao" class="form-select bg-dark text-white">
+                                    <option value="baixa">Baixa</option>
+                                    <option value="media">Média</option>
+                                    <option value="alta">Alta</option>
+                                    <option value="critica">Crítica</option>
+                                </select>
+                            </div>
+                            <small class="text-muted">A criticidade é calculada automaticamente com base nos itens verificados</small>
+                        </div>
+
+                    </div>
+
+                    <!-- Inspection Items Section -->
+                    <div class="mb-4">
+                        <h5 class="mb-3 d-flex align-items-center">
+                            <span class="me-2">Itens da Inspeção</span>
+                            <span id="checklist-status-badge" class="badge bg-secondary ms-auto"></span>
+                        </h5>
+                        <div id="checklist-container" class="row g-2">
+                            <!-- Os itens do checklist serão renderizados aqui dinamicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Observations Section -->
+                    <div class="mb-4">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea id="observacoes" name="observacoes" class="form-control bg-dark text-white" rows="4" 
+                                  placeholder="Adicione quaisquer observações relevantes..."></textarea>
+                    </div>
+
+                    {% if 'desativa_localizacao' in allowed_menus %}
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="compartilharLocalizacao" name="compartilharLocalizacao" checked>
+                        <label class="form-check-label" for="compartilharLocalizacao">
+                            Compartilhar minha localização durante a inspeção
+                        </label>
+                    </div>
+                    {% endif %}
+
+                    <!-- Photos Section - ÁREA MELHORADA --> 
+                    <div class="mb-4">
+                        <label for="fotos" class="form-label">Arquivos da Inspeção <span class="text-danger">*</span></label>
+                        <div class="file-upload">
+                            <input type="file" id="fotos" name="fotos" class="d-none" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp4,.mov,.avi" required>
+                            <label for="fotos" class="d-block border-2 border-dashed rounded-3 p-4 text-center cursor-pointer bg-dark bg-opacity-50">
+                                <i class="fas fa-cloud-upload-alt fa-2x mb-2 text-primary"></i>
+                                <div>
+                                    <strong class="d-block">Arraste e solte arquivos aqui</strong>
+                                    <small class="text-muted">ou clique para selecionar</small>
+                                </div>
+                                <small class="d-block mt-2 text-muted">Formatos suportados: JPG, PNG, PDF, DOC, XLS, MP4</small>
+                            </label>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('fotos').click()">
+                                    <i class="fas fa-folder-open me-1"></i> Selecionar Arquivos
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="openCamera()">
+                                    <i class="fas fa-camera me-1"></i> Usar Câmera
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                Pelo menos um arquivo é obrigatório.
+                            </div>
+                        </div>
+                        <div class="file-preview d-flex flex-wrap gap-3 mt-3" id="file-preview"></div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-submit btn-lg px-4" id="submitBtn">
+                            <i class="fas fa-check-circle me-2"></i> Registrar Inspeção
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- QR Code Scanner Modal -->
+    <div class="modal fade modal-custom" id="scanner-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title modal-title-custom">Escanear QR Code</h5>
+                    <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Close" onclick="fecharLeitorQRCode()"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="scanner-container">
+                        <video id="scanner-video" class="scanner-video w-100 mb-3"></video>
+                        <p class="text-center mb-3" id="scanner-message">Posicione o código QR dentro da área de leitura</p>
+                        <button type="button" class="btn btn-secondary w-100" onclick="fecharLeitorQRCode()">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Selection Modal -->
+    <div class="modal fade modal-custom" id="modalEquipamento" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title modal-title-custom">Selecionar Equipamento</h5>
+                    <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Close" onclick="fecharModal('modalEquipamento')"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="modalEquipamentoSearch" class="form-control bg-dark text-white mb-3" 
+                           placeholder="Pesquisar por tag ou localização..." oninput="filtrarEquipamentos()">
+                    <div class="table-responsive">
+                        <table id="modalEquipamentoTable" class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Tag</th>
+                                    <th>Tipo</th> 
+                                    <th>Classe</th>                                                
+                                    <th>Localização</th>                    
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Equipment data will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     
+    <!-- Responsible Selection Modal -->
+    <div class="modal fade modal-custom" id="modalResponsavel" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title modal-title-custom">Selecionar Responsável</h5>
+                    <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Close" onclick="fecharModal('modalResponsavel')"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="modalResponsavelSearch" class="form-control bg-dark text-white mb-3" 
+                           placeholder="Pesquisar por nome ou matrícula..." oninput="filtrarResponsaveis()">
+                    <div class="table-responsive">
+                        <table id="modalResponsavelTable" class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Matrícula</th>
+                                    <th>Setor</th>
+                                    <th>Nível de Acesso</th>                        
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Responsible data will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Records Modal -->
+    <div class="modal fade modal-custom" id="modalRegistrosExistentes" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title modal-title-custom">Registros de Inspeções Existentes</h5>
+                    <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Close" onclick="fecharModalRegistrosExistentes()"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Últimos 15 registros:</p>
+                    <input type="text" id="filtroRegistros" class="form-control bg-dark text-white mb-3" 
+                           placeholder="Pesquisar Tipo ou Localização..." oninput="filtrarRegistros()">
+                    <div class="table-responsive">
+                        <table id="tabelaRegistrosExistentes" class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>                       
+                                    <th>Tipo</th>
+                                    <th>Classe</th>                        
+                                    <th>Localização</th>
+                                    <th>Data Inspeção</th>
+                                    <th>Data Validade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Records data will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <button type="button" class="btn btn-primary" onclick="escolherOpcao('sobrescrever')">
+                            <i class="fas fa-sync-alt me-2"></i> Sobrescrever Todos
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="escolherOpcao('cancelar')">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="escolherOpcao('ignorar')">
+                            <i class="fas fa-forward me-2"></i> Ignorar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="userModalLabel">Perfil do Usuário</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                             class="rounded-circle border border-primary border-3" width="120" height="120" alt="Foto de Perfil">
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user me-2"></i> Nome:</span>
+                                <span id="modal-user-name">{{ current_user.nome }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-envelope me-2"></i> Email:</span>
+                                <span id="modal-user-email">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-id-card me-2"></i> Matrícula:</span>
+                                <span id="modal-user-matricula">{{ current_user.matricula }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-building me-2"></i> Setor:</span>
+                                <span id="modal-user-setor">{{ current_user.setor }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-tag me-2"></i> Usuário:</span>
+                                <span id="modal-user-username">{{ current_user.usuario }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item bg-transparent text-white border-secondary">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-shield-alt me-2"></i> Nível de Acesso:</span>
+                                <span class="badge bg-primary" id="modal-user-access">{{ current_user.nivel_acesso }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-primary-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Status Alert -->
+    <div id="location-status" class="alert alert-info d-flex align-items-center d-none position-fixed bottom-0 end-0 m-3">
+        <i class="fas fa-map-marker-alt me-2"></i>
+        <span id="location-text">Localização será registrada com sua inspeção</span>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- CropperJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
+    <!-- Script principal -->
+    <script>
+        // Inicializa tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Inicializa modais
+        const scannerModal = new bootstrap.Modal(document.getElementById('scanner-modal'));
+        const equipamentoModal = new bootstrap.Modal(document.getElementById('modalEquipamento'));
+        const responsavelModal = new bootstrap.Modal(document.getElementById('modalResponsavel'));
+        const registrosModal = new bootstrap.Modal(document.getElementById('modalRegistrosExistentes'));
+
+        let lastLocationData = null;
+        let cropper = null;
+        let codeReader = null;
+        let scannerActive = false;
+        let responsaveisCarregados = false;
+        let equipamentosCarregados = false;
+
+        const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.pdf'];
+        
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Validação do formulário
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', async function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+            const tipoEquipamento = document.getElementById('tipo_equipamento');
+            const classeEquipamentoGroup = document.getElementById('classe_equipamento_group');
+            const checklistContainer = document.getElementById('checklist-container');
+
+            // 1. Função para gerenciar a visibilidade do campo Classe
+            function toggleClasseField() {
+                const isExtintor = tipoEquipamento.value === 'Extintor';
+                classeEquipamentoGroup.style.display = isExtintor ? 'block' : 'none';
+                
+                // Atualiza a obrigatoriedade do campo
+                const classeInput = document.getElementById('classe_equipamento');
+                if (classeInput) {
+                    classeInput.required = isExtintor;
+                }
+            }
+
+            // Configuração inicial
+            function setupInitialState() {
+                // Configura o campo Tipo
+                if (tipoEquipamento.value) {
+                    toggleClasseField();
+                }
+                
+                // Adiciona event listeners - MODIFICADO PARA CARREGAR CHECKLIST
+                tipoEquipamento.addEventListener('change', async function() {
+                    toggleClasseField();
+                    const tipoId = document.getElementById('tipo_equipamento_id').value;
+                    if (tipoId) {
+                        await renderizarChecklist(tipoId);
+                    }
+                    await verificarStatusChecklist();
+                });
+
+                // Atualize o event listener do checklist para chamar verificarStatusChecklist
+                checklistContainer.addEventListener('click', function(e) {
+                    const item = e.target.closest('.inspection-item');
+                    if (item) {
+                        item.classList.toggle('checked');
+                        const itemName = item.getAttribute('data-item');
+                        const isChecked = item.classList.contains('checked');
+                        updateInspectionForm(itemName, isChecked);
+                        
+                        // Feedback visual para itens obrigatórios
+                        if (item.getAttribute('data-obrigatorio') === 'true') {
+                            item.style.borderLeft = isChecked ? '3px solid var(--success-color)' 
+                                                            : '3px solid var(--danger-color)';
+                        }
+                        
+                        // Verifica o status do checklist após cada alteração
+                        verificarStatusChecklist();
+                    }
+                });
+            }
+
+            // Inicialização
+            try {
+                setupInitialState();
+                setupFileDrop();
+
+                // Se já houver um tipo selecionado (recarregamento de página)
+                if (tipoEquipamento.value) {
+                    const tipoId = document.getElementById('tipo_equipamento_id').value;
+                    if (tipoId) {
+                        await renderizarChecklist(tipoId);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                checklistContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erro ao carregar checklist. Recarregue a página.
+                    </div>
+                `;
+            }
+        });
+
+        // Melhor drag and drop para arquivos
+        function setupFileDrop() {
+            const dropArea = document.querySelector('.file-upload label');
+            
+            // Previne o comportamento padrão
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            // Destaca a área de drop
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            // Manipula o drop
+            dropArea.addEventListener('drop', handleDrop, false);
+        }
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight() {
+            document.querySelector('.file-upload label').classList.add('bg-primary');
+            document.querySelector('.file-upload label').style.borderColor = 'var(--primary-color)';
+        }
+
+        function unhighlight() {
+            document.querySelector('.file-upload label').classList.remove('bg-primary');
+            document.querySelector('.file-upload label').style.borderColor = '';
+        }
+
+        // Mova a função updateInspectionForm para fora do DOMContentLoaded
+        function updateInspectionForm(itemName, isChecked) {
+            // Remove inputs existentes com o mesmo nome
+            document.querySelectorAll(`input[name="inspecao[${itemName}]"]`).forEach(input => input.remove());
+            
+            // Cria novo campo oculto apenas se o item estiver marcado
+            if (isChecked) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `inspecao[${itemName}]`;
+                input.value = '1';
+                document.getElementById('inspecaoForm').appendChild(input);
+            }
+            
+            verificarStatusChecklist();
+            calcularCriticidade(); // Adiciona esta linha para calcular automaticamente
+        }
+
+        // Adicione esta função para verificar pendências ao selecionar equipamento
+        async function verificarPendenciasEquipamento(equipamentoId) {
+            try {
+                const response = await fetch(`/api/inspecoes_pendentes/${equipamentoId}`);
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                if (data.pendencias && data.pendencias.length > 0) {
+                    showPendingItemsAlert(data.pendencias);
+                }
+            } catch (error) {
+                console.error('Erro ao verificar pendências:', error);
+            }
+        }
+
+        // Adicione esta função para mostrar o alerta de itens pendentes
+        async function showPendingItemsAlert(itensPendentes) {
+            if (itensPendentes && itensPendentes.length > 0) {
+                const itensLista = itensPendentes.map(item => `• ${item}`).join('<br>');
+                
+                await Swal.fire({
+                    title: 'Inspeção Pendente Encontrada',
+                    html: `Durante a última inspeção, ficaram pendentes os itens:<br><br>${itensLista}`,
+                    icon: 'warning',
+                    confirmButtonText: 'Entendi',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)',
+                    confirmButtonColor: 'var(--primary-color)',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                });
+            }
+        }
+
+        async function carregarChecklist(tipoEquipamentoId) {
+            try {
+                if (!tipoEquipamentoId) {
+                    throw new Error('ID do tipo de equipamento não fornecido');
+                }
+
+                const response = await fetch(`/api/checklist_tipo/${tipoEquipamentoId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                       
+                if (!Array.isArray(data)) {
+                    throw new Error('Resposta da API inválida - esperado array');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Erro ao carregar checklist:', error);
+                throw error;
+            }
+        }
+
+        // Função melhorada para renderizar o checklist
+        async function renderizarChecklist(tipoEquipamentoId) {
+            const checklistContainer = document.getElementById('checklist-container');
+            
+            try {
+                checklistContainer.innerHTML = '<div class="col-12 text-center py-3 text-muted">Carregando itens do checklist...</div>';
+                
+                if (!tipoEquipamentoId) {
+                    checklistContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            O equipamento selecionado não está associado a um tipo válido
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const response = await fetch(`/api/checklist_tipo/${tipoEquipamentoId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar checklist: ${response.statusText}`);
+                }
+                
+                const itensChecklist = await response.json();
+                
+                if (!itensChecklist || itensChecklist.length === 0) {
+                    checklistContainer.innerHTML = '<div class="col-12 text-center py-3 text-muted">Nenhum item de checklist cadastrado para este tipo de equipamento</div>';
+                    return;
+                }
+                
+                checklistContainer.innerHTML = '';
+                
+                // Ordena os itens pela ordem definida no banco
+                itensChecklist.sort((a, b) => a.ordem - b.ordem);
+                
+                itensChecklist.forEach(item => {
+                    const itemElement = criarItemChecklist(item);
+                    checklistContainer.appendChild(itemElement);
+                });
+                
+            } catch (error) {
+                console.error('Erro ao renderizar checklist:', error);
+                checklistContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${error.message || 'Erro ao carregar checklist'}
+                    </div>
+                `;
+            }
+        }
+
+        function criarItemChecklist(item) {
+            const div = document.createElement('div');
+            div.className = 'inspection-item col-md-6';
+            div.setAttribute('data-item', item.nome_item);
+            div.setAttribute('data-obrigatorio', item.obrigatorio);
+            
+            // Conteúdo do item
+            const content = document.createElement('span');
+            content.textContent = item.nome_item;
+            
+            // Adiciona ícone de obrigatório se necessário
+            if (item.obrigatorio) {
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-exclamation-circle obrigatorio-icon';
+                icon.title = 'Item obrigatório';
+                div.appendChild(icon);
+            }
+            
+            div.appendChild(content);
+            
+            // Cria o ícone de check (sempre presente, visibilidade controlada por CSS)
+            const checkIcon = document.createElement('i');
+            checkIcon.className = 'fas fa-check check-icon';
+            div.appendChild(checkIcon);
+            
+            return div;
+        }
+
+        async function updateFormFields(equipamento) {
+            const checklistContainer = document.getElementById('checklist-container'); // Definindo a variável aqui
+            
+            try {
+                
+                // Preenche os campos básicos
+                document.getElementById('equipamento_id').value = equipamento.id;
+                document.getElementById('equipamento_codigo_barras').value = equipamento.codigo_barras || '';
+                document.getElementById('tipo_equipamento').value = equipamento.tipo;
+                
+                // Verifica se há erro na resposta da API
+                if (equipamento.error) {
+                    console.error(equipamento.error);
+                    checklistContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            ${equipamento.error}
+                        </div>
+                    `;
+                    document.getElementById('tipo_equipamento_id').value = '';
+                    return;
+                }
+                
+                document.getElementById('tipo_equipamento_id').value = equipamento.tipo_id || '';
+                document.getElementById('classe_equipamento').value = equipamento.classe || '';
+                document.getElementById('localizacao_equipamento').value = equipamento.localizacao;
+                document.getElementById('status_equipamento').value = equipamento.status;
+
+                // Carrega o checklist apenas se tiver tipo_id
+                if (equipamento.tipo_id) {
+                    await renderizarChecklist(equipamento.tipo_id);
+                } else {
+                    console.error('Tipo de equipamento não encontrado ou sem ID');
+                    checklistContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Tipo de equipamento não configurado corretamente no sistema
+                        </div>
+                    `;
+                }
+
+                // Verifica se há pendências para este equipamento
+                await verificarPendenciasEquipamento(equipamento.id);
+
+
+            } catch (error) {
+                console.error('Erro ao atualizar campos:', error);
+                 
+                Swal.fire({
+                    title: 'Erro',
+                    text: 'Não foi possível carregar as informações completas do equipamento.',
+                    icon: 'error'
+                });
+                throw error;
+            }
+        }
+
+        // Função para verificar o status do checklist
+        async function verificarStatusChecklist() {
+            const tipoEquipamentoId = document.getElementById('tipo_equipamento_id').value;
+            const statusInspecao = document.getElementById('status_inspecao');
+            const motivo = document.getElementById('motivo');
+            const statusBadge = document.getElementById('checklist-status-badge');
+            const dataEncerramentoField = document.getElementById('data_encerramento_inspecao'); // Adicione este campo no seu HTML
+
+            if (!tipoEquipamentoId) {
+                statusInspecao.value = "Pendente";
+                motivo.value = "Tipo de equipamento não selecionado";
+                statusBadge.textContent = "Não iniciado";
+                statusBadge.className = "badge bg-secondary";
+                dataEncerramentoField.value = ''; // Limpa a data se houver
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/checklist_tipo/${tipoEquipamentoId}`);
+                const itensChecklist = await response.json();
+
+                if (!Array.isArray(itensChecklist) || itensChecklist.length === 0) {
+                    statusInspecao.value = "Finalizada";
+                    motivo.value = "Nenhum item do checklist encontrado.";
+                    statusBadge.textContent = "Sem itens";
+                    statusBadge.className = "badge bg-secondary";
+                    // Define a data atual quando não há itens (inspeção automaticamente finalizada)
+                    dataEncerramentoField.value = new Date().toISOString().split('T')[0];
+                    return;
+                }
+
+                const itensObrigatorios = itensChecklist.filter(item => item.obrigatorio);
+                const itensPendentes = [];
+                const itensObrigatoriosPendentes = [];
+
+                for (const item of itensChecklist) {
+                    const itemElement = document.querySelector(`.inspection-item[data-item="${item.nome_item}"]`);
+                    if (!itemElement || !itemElement.classList.contains('checked')) {
+                        itensPendentes.push(item.nome_item);
+                        if (item.obrigatorio) {
+                            itensObrigatoriosPendentes.push(item.nome_item);
+                        }
+                    }
+                }
+
+                // Atualiza os status baseando-se nos itens pendentes
+                if (itensPendentes.length === 0) {
+                    statusInspecao.value = "Finalizada";
+                    motivo.value = "Todos os itens do checklist foram verificados.";
+                    statusBadge.textContent = "Completo";
+                    statusBadge.className = "badge bg-success";
+                    // Define a data atual quando todos os itens estão verificados
+                    dataEncerramentoField.value = new Date().toISOString().split('T')[0];
+                } else if (itensObrigatoriosPendentes.length > 0) {
+                    statusInspecao.value = "Pendente";
+                    motivo.value = itensObrigatoriosPendentes.length > 3 ? 
+                        `${itensObrigatoriosPendentes.length} itens obrigatórios pendentes` : 
+                        `Itens obrigatórios pendentes: ${itensObrigatoriosPendentes.join(', ')}`;
+                    statusBadge.textContent = `${itensChecklist.length - itensPendentes.length}/${itensChecklist.length}`;
+                    statusBadge.className = "badge bg-danger";
+                    dataEncerramentoField.value = ''; // Limpa a data se houver
+                } else {
+                    statusInspecao.value = "Pendente";
+                    motivo.value = itensPendentes.length > 3 ? 
+                        `${itensPendentes.length} itens pendentes` : 
+                        `Itens pendentes: ${itensPendentes.join(', ')}`;
+                    statusBadge.textContent = `${itensChecklist.length - itensPendentes.length}/${itensChecklist.length}`;
+                    statusBadge.className = "badge bg-warning";
+                    dataEncerramentoField.value = ''; // Limpa a data se houver
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status do checklist:', error);
+                statusInspecao.value = "Pendente";
+                motivo.value = "Erro ao verificar checklist";
+                statusBadge.textContent = "Erro";
+                statusBadge.className = "badge bg-danger";
+                dataEncerramentoField.value = ''; // Limpa a data se houver
+            }
+        }
+
+        // Função para calcular a criticidade da inspeção com cálculo ponderado
+        async function calcularCriticidade() {
+            const tipoEquipamentoId = document.getElementById('tipo_equipamento_id').value;
+            const criticidadeSelect = document.getElementById('criticidade_inspecao');
+
+            if (!tipoEquipamentoId) {
+                await showAlert('Atenção', 'Selecione um equipamento primeiro para calcular a criticidade.', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/checklist_tipo/${tipoEquipamentoId}`);
+                const itensChecklist = await response.json();
+
+                if (!Array.isArray(itensChecklist) || itensChecklist.length === 0) {
+                    criticidadeSelect.value = 'baixa';
+                    return;
+                }
+
+                // Identifica itens obrigatórios e os itens marcados como verificados
+                const itensObrigatorios = itensChecklist.filter(item => item.obrigatorio);
+                const totalObrigatorios = itensObrigatorios.length;
+                const totalNaoObrigatorios = itensChecklist.length - totalObrigatorios;
+
+                const itensVerificados = Array.from(document.querySelectorAll('.inspection-item.checked'));
+                const obrigatoriosVerificados = itensVerificados.filter(item =>
+                    itensObrigatorios.some(ob => ob.nome_item === item.getAttribute('data-item'))
+                ).length;
+                const naoObrigatoriosVerificados = itensVerificados.length - obrigatoriosVerificados;
+
+                // Cálculo das taxas de conclusão (com proteções para divisão por zero)
+                const obrigatorioRate = totalObrigatorios === 0 ? 1 : obrigatoriosVerificados / totalObrigatorios;
+                const naoObrigatorioRate = totalNaoObrigatorios === 0 ? 1 : naoObrigatoriosVerificados / totalNaoObrigatorios;
+
+                // Cálculo ponderado: itens obrigatórios recebem peso maior (70%), itens não obrigatórios 30%
+                const finalScore = (obrigatorioRate * 0.7) + (naoObrigatorioRate * 0.3);
+
+                // Definição dos níveis de criticidade com base no score final
+                let criticidade = 'baixa';
+                if (finalScore < 0.5) {
+                    criticidade = 'critica';
+                } else if (finalScore < 0.75) {
+                    criticidade = 'alta';
+                } else if (finalScore < 0.90) {
+                    criticidade = 'media';
+                }
+
+                criticidadeSelect.value = criticidade;
+
+                // Atualização visual: badge com cor associada à criticidade
+                const colors = {
+                    baixa: 'success',
+                    media: 'warning',
+                    alta: 'danger',
+                    critica: 'dark'
+                };
+
+                const badgeText = criticidade.charAt(0).toUpperCase() + criticidade.slice(1);
+                const criticidadeBadge = document.createElement('span');
+                criticidadeBadge.className = `badge bg-${colors[criticidade]} ms-2`;
+                criticidadeBadge.textContent = badgeText;
+
+                // Insere ou substitui o badge existente
+                const inputGroup = criticidadeSelect.closest('.input-group');
+                if (inputGroup) {
+                    const existingBadge = inputGroup.querySelector('.badge');
+                    if (existingBadge) existingBadge.remove();
+                    inputGroup.appendChild(criticidadeBadge);
+                }
+            } catch (error) {
+                console.error('Erro ao calcular criticidade:', error);
+                await showAlert('Erro', 'Não foi possível calcular a criticidade.', 'error');
+            }
+        }
+
+        // Função melhorada para gerar número de inspeção
+        async function gerarNumeroInspecao() {
+            try {
+                // Verifica se já existe um número gerado
+                const numeroExistente = document.getElementById('numero_inspecao').value;
+                if (numeroExistente) {
+                    return numeroExistente;
+                }
+
+                const response = await fetch('/api/gerar_numero_inspecao', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na requisição: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.numero_inspecao) {
+                    throw new Error('Resposta da API não contém número de inspeção');
+                }
+
+                document.getElementById('numero_inspecao').value = data.numero_inspecao;
+                return data.numero_inspecao;
+                
+            } catch (error) {
+                console.error('Erro ao gerar número de inspeção:', error);
+                
+                // Tenta gerar um número local como fallback
+                const fallbackNumber = 'INS-' + Date.now();
+                document.getElementById('numero_inspecao').value = fallbackNumber;
+                console.warn(`Usando número de fallback: ${fallbackNumber}`);
+                
+                return fallbackNumber;
+            }
+        }
+
+        // Função de validação completa e otimizada com confirmação para itens obrigatórios não marcados
+        async function validateInspectionForm() {
+            // Lista de campos obrigatórios
+            const requiredFields = [
+                {id: 'equipamento_codigo_barras', message: 'Por favor, selecione ou escaneie o equipamento.'},
+                {id: 'tipo_equipamento', message: 'Tipo de equipamento não identificado.'},
+                {id: 'localizacao_equipamento', message: 'Localização do equipamento não identificada.'},
+                {id: 'status_equipamento', message: 'Status do equipamento não identificado.'},
+                {id: 'criticidade_inspecao', message: 'Criticidade da inspeção não identificada.'},                
+                {id: 'responsavel', message: 'Responsável pela inspeção não identificado.'},
+                {id: 'fotos', message: 'Pelo menos uma foto é obrigatória.'}
+            ];
+
+            // Valida os campos obrigatórios do formulário
+            for (const field of requiredFields) {
+                const input = document.getElementById(field.id);
+                if (!input || (input.type === 'file' ? input.files.length === 0 : !input.value.trim())) {
+                    const feedback = input.nextElementSibling?.querySelector('.invalid-feedback') ||
+                                    input.parentElement.nextElementSibling;
+                    if (feedback) {
+                        feedback.textContent = field.message;
+                    }
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                }
+            }
+
+            // Valida que ao menos um item do checklist foi marcado
+            const checkedItems = document.querySelectorAll('.inspection-item.checked');
+            if (checkedItems.length === 0) {
+                await showAlert('Atenção', 'Por favor, marque pelo menos um item do checklist.', 'warning');
+                return false;
+            }
+
+            // Valida os itens obrigatórios do checklist com confirmação se não estiverem marcados
+            const tipoEquipamentoId = document.getElementById('tipo_equipamento_id').value;
+            if (tipoEquipamentoId) {
+                try {
+                    const response = await fetch(`/api/checklist_tipo/${tipoEquipamentoId}`);
+                    const itensChecklist = await response.json();
+                    
+                    // Filtra os itens obrigatórios
+                    const itensObrigatorios = itensChecklist.filter(item => item.obrigatorio);
+                    
+                    // Verifica se cada item obrigatório foi marcado
+                    for (const item of itensObrigatorios) {
+                        const itemElement = document.querySelector(`.inspection-item[data-item="${item.nome_item}"]`);
+                        if (!itemElement || !itemElement.classList.contains('checked')) {
+                            // Exibe confirmação para o usuário
+                            const confirmacao = window.confirm(`O item "${item.nome_item}" é obrigatório e não foi marcado. Deseja continuar mesmo assim?`);
+                            if (!confirmacao) {
+                                // Se o usuário não confirmar, foca e anima o item pendente
+                                if (itemElement) {
+                                    itemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    itemElement.style.animation = 'pulse 1s 3';
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao validar checklist:', error);
+                    // Caso haja erro ao buscar os itens do checklist, interrompe a validação
+                    await showAlert('Erro', 'Não foi possível validar os itens do checklist.', 'error');
+                    return false;
+                }
+            }
+
+            // Se todas as validações forem aprovadas, permite o lançamento da inspeção
+            return true;
+        }
+
+        function normalizeItemName(name) {
+            return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                .toLowerCase()
+                .replace(/\s+/g, '_')
+                .trim();
+        }
+
+        // Função para preparar os dados do formulário - VERSÃO CORRIGIDA
+        async function prepareFormData() {
+            const form = document.getElementById('inspecaoForm');
+            const formData = new FormData(form);
+            
+            // Verifica e atualiza o status do checklist antes de enviar
+            await verificarStatusChecklist();
+            
+            // Restante do código permanece o mesmo...
+            let numeroInspecao = formData.get('numero_inspecao');
+            
+            if (!numeroInspecao) {
+                numeroInspecao = await gerarNumeroInspecao();
+                formData.set('numero_inspecao', numeroInspecao);
+            }
+            
+            formData.set('numero_inspecao', numeroInspecao);
+            
+            // Adiciona status_inspecao e motivo ao FormData
+            formData.set('status_inspecao', document.getElementById('status_inspecao').value);
+            formData.set('motivo', document.getElementById('motivo').value);
+            
+            // Adiciona checklist ao FormData
+            const checklistItems = document.querySelectorAll('.inspection-item');
+            checklistItems.forEach(item => {
+                const itemName = item.getAttribute('data-item');
+                const normalizedName = normalizeItemName(itemName);
+                const isChecked = item.classList.contains('checked');
+                formData.set(`inspecao_${normalizedName}`, isChecked ? '1' : '0');
+            });
+            
+            return formData;
+        }
+
+        // Modifique a função getLocation para armazenar os dados
+        async function getLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    console.warn('Geolocalização não suportada');
+                    reject('Geolocalização não é suportada pelo seu navegador');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('Localização obtida com sucesso:', position);
+                        lastLocationData = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            timestamp: position.timestamp
+                        };
+                        
+                        // Atualiza o status de localização
+                        const locationStatus = document.getElementById('location-status');
+                        locationStatus.classList.remove('d-none');
+                        document.getElementById('location-text').textContent = 
+                            `Localização registrada (precisão: ${Math.round(position.coords.accuracy)}m)`;
+                        
+                        resolve(lastLocationData);
+                    },
+                    (error) => {
+                        console.error('Erro ao obter localização:', error);
+                        let errorMessage;
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "Usuário negou a solicitação de geolocalização.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "Informações de localização não estão disponíveis.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "A solicitação de localização expirou.";
+                                break;
+                            default:
+                                errorMessage = "Ocorreu um erro desconhecido ao obter a localização.";
+                        }
+                        
+                        // Atualiza o status de localização
+                        const locationStatus = document.getElementById('location-status');
+                        locationStatus.classList.remove('d-none', 'alert-info');
+                        locationStatus.classList.add('alert-warning');
+                        document.getElementById('location-text').textContent = errorMessage;
+                        
+                        reject(errorMessage);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
+        document.getElementById('inspecaoForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Verifica o status do checklist antes de enviar
+            await verificarStatusChecklist();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const form = this;
+            const locationCheckbox = document.getElementById('compartilharLocalizacao');
+            const compartilharLocalizacao = locationCheckbox ? locationCheckbox.checked : true;
+
+            if (submitBtn.getAttribute('data-submitting') === 'true') return;
+            submitBtn.setAttribute('data-submitting', 'true');
+            submitBtn.disabled = true;
+
+            try {
+                let locationData = null;
+                let locationError = null;
+
+                 if (compartilharLocalizacao) {
+                    try {
+                        console.log('Obtendo localização...');
+                        locationData = await getLocation();
+                        console.log('Localização obtida:', locationData);
+
+                        // Adiciona metadados detalhados
+                        locationData.device_info = {
+                            userAgent: navigator.userAgent,
+                            platform: navigator.platform,
+                            resolution: `${window.screen.width}x${window.screen.height}`,
+                            deviceMemory: navigator.deviceMemory || 'unknown',
+                            connection: navigator.connection ? {
+                                type: navigator.connection.type,
+                                effectiveType: navigator.connection.effectiveType,
+                                downlink: navigator.connection.downlink
+                            } : 'unknown'
+                        };
+
+                        const locationInput = document.createElement('input');
+                        locationInput.type = 'hidden';
+                        locationInput.name = 'localizacao';
+                        locationInput.value = JSON.stringify(locationData);
+                        form.appendChild(locationInput);
+                    } catch (error) {
+                        console.warn('Falha ao obter localização:', error);
+                        locationError = error;
+                        
+                        const confirm = await Swal.fire({
+                            title: 'Localização Não Disponível',
+                            html: `<div class="d-flex align-items-start">
+                                    <i class="fas fa-map-marker-alt-slash me-2 mt-1"></i>
+                                    <div>
+                                        <p>${error.message}</p>
+                                        <small class="text-muted">Deseja continuar sem registrar a localização?</small>
+                                    </div>
+                                </div>`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Continuar Sem Localização',
+                            cancelButtonText: 'Tentar Novamente',
+                            background: 'var(--darker-bg)',
+                            color: 'var(--text-light)',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                                cancelButton: 'btn btn-secondary'
+                            }
+                        });
+
+                        if (!confirm.isConfirmed) {
+                            submitBtn.disabled = false;
+                            submitBtn.removeAttribute('data-submitting');
+                            return;
+                        }
+                    }
+                } else {
+                    // Usuário optou por não compartilhar localização
+                    const confirm = await Swal.fire({
+                        title: 'Localização Desativada',
+                        html: `<div class="d-flex align-items-start">
+                                <i class="fas fa-map-marker-slash me-2 mt-1"></i>
+                                <div>
+                                    <p>Você optou por não compartilhar sua localização.</p>
+                                    <small class="text-muted">Isso afetará o rastreamento geográfico desta inspeção.</small>
+                                </div>
+                            </div>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Continuar Assim',
+                        cancelButtonText: 'Ativar Localização',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)'
+                    });
+
+                    if (!confirm.isConfirmed) {
+                        locationCheckbox.checked = true;
+                        submitBtn.disabled = false;
+                        submitBtn.removeAttribute('data-submitting');
+                        return;
+                    }
+                }
+
+                if (!await validateInspectionForm()) {
+                    submitBtn.disabled = false;
+                    submitBtn.removeAttribute('data-submitting');
+                    return;
+                }
+
+                const formData = await prepareFormData();
+
+                const response = await fetch('/inspecoes/nova_inspecao', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.registros_existente) {
+                    // Adiciona dados de localização ao modal se existirem
+                    if (locationData) {
+                        data.registros_existente.forEach(registro => {
+                            registro.localizacao_data = locationData;
+                        });
+                    }
+                    
+                    abrirModalRegistrosExistentes(data.registros_existente);
+                } else if (data.success) {
+                    let message = data.message;
+                    
+                    if (locationData) {
+                        message += `<div class="mt-3 d-flex align-items-center">
+                            <i class="fas fa-map-marker-alt text-success me-2"></i>
+                            <span>Localização registrada (precisão: ${Math.round(locationData.accuracy)}m)</span>
+                        </div>`;
+                    }
+                    
+                    await Swal.fire({
+                        title: 'Sucesso!',
+                        html: message,
+                        icon: 'success',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        confirmButtonColor: 'var(--primary-color)'
+                    });
+                    
+                    limparFormulario();
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                console.error('Erro no envio do formulário:', error);
+                 
+                
+                let errorMessage = error.message;
+                if (error instanceof TypeError) {
+                    errorMessage = 'Erro de conexão. Verifique sua rede e tente novamente.';
+                }
+                
+                await Swal.fire({
+                    title: 'Erro',
+                    text: errorMessage,
+                    icon: 'error',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)',
+                    confirmButtonColor: 'var(--primary-color)'
+                });
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.removeAttribute('data-submitting');
+                
+                // Remove inputs de localização temporários
+                document.querySelectorAll('input[name="localizacao"]').forEach(input => input.remove());
+            }
+        });
+
+        // Atualize a função escolherOpcao
+        async function escolherOpcao(opcao) {
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('inspecaoForm');
+            const locationCheckbox = document.getElementById('compartilharLocalizacao');
+            const compartilharLocalizacao = locationCheckbox ? locationCheckbox.checked : true;
+            
+            try {
+                registrosModal.hide();
+
+                if (!await validateInspectionForm()) {
+                    submitBtn.disabled = false;
+                    submitBtn.removeAttribute('data-submitting');
+                    return;
+                }
+
+                // Verifica se a localização está ativada
+                 if (compartilharLocalizacao) {
+                    // Se já temos dados de localização, usa-os
+                    if (lastLocationData) {
+                        const locationInput = document.createElement('input');
+                        locationInput.type = 'hidden';
+                        locationInput.name = 'localizacao';
+                        locationInput.value = JSON.stringify({
+                            ...lastLocationData,
+                            device_info: {
+                                userAgent: navigator.userAgent,
+                                platform: navigator.platform,
+                                resolution: `${window.screen.width}x${window.screen.height}`
+                            }
+                        });
+                        form.appendChild(locationInput);
+                    } else {
+                        // Se não tem dados, tenta obter novamente
+                        try {
+                            const locationData = await getLocation();
+                            const locationInput = document.createElement('input');
+                            locationInput.type = 'hidden';
+                            locationInput.name = 'localizacao';
+                            locationInput.value = JSON.stringify({
+                                ...locationData,
+                                device_info: {
+                                    userAgent: navigator.userAgent,
+                                    platform: navigator.platform,
+                                    resolution: `${window.screen.width}x${window.screen.height}`
+                                }
+                            });
+                            form.appendChild(locationInput);
+                        } catch (error) {
+                            console.warn('Falha ao obter localização:', error);
+                            const confirm = await Swal.fire({
+                                title: 'Localização Não Obtida',
+                                html: `<div class="d-flex align-items-start">
+                                        <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
+                                        <div>
+                                            <p>${error}</p>
+                                            <small class="text-muted">Deseja continuar sem a localização?</small>
+                                        </div>
+                                    </div>`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Continuar Sem Localização',
+                                cancelButtonText: 'Cancelar',
+                                background: 'var(--darker-bg)',
+                                color: 'var(--text-light)'
+                            });
+
+                            if (!confirm.isConfirmed) {
+                                submitBtn.disabled = false;
+                                submitBtn.removeAttribute('data-submitting');
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                const formData = new FormData(form);
+                formData.append('acao', opcao);
+
+                const checklistItems = document.querySelectorAll('.inspection-item');
+                checklistItems.forEach(item => {
+                    const itemName = item.getAttribute('data-item');
+                    const isChecked = item.classList.contains('checked');
+                    formData.append(`inspecao[${itemName}]`, isChecked ? '1' : '0');
+                });
+
+                const response = await fetch('/inspecoes/acao', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                 
+
+                if (data.success) {
+                    let message = data.message;
+                    if (data.localizacao_salva) {
+                        message += '<div class="mt-3 d-flex align-items-center"><i class="fas fa-map-marker-alt text-success me-2"></i><span>Localização registrada</span></div>';
+                    } else {
+                        message += '<div class="mt-3 d-flex align-items-center"><i class="fas fa-map-marker-slash text-warning me-2"></i><span>Localização não registrada</span></div>';
+                    }
+                    
+                    await Swal.fire({
+                        title: 'Sucesso!',
+                        html: message,
+                        icon: 'success',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        confirmButtonColor: 'var(--primary-color)'
+                    });
+                    
+                    if (opcao === 'sobrescrever' || opcao === 'ignorar') {
+                        setTimeout(() => { window.location.reload(); }, 1500);
+                    }
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido ao processar a ação');
+                }
+            } catch (error) {
+                console.error('Erro em escolherOpcao:', error);
+                 
+                
+                await Swal.fire({
+                    title: 'Erro',
+                    text: error.message || 'Ocorreu um erro ao processar sua solicitação.',
+                    icon: 'error',
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)',
+                    confirmButtonColor: 'var(--primary-color)'
+                });
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.removeAttribute('data-submitting');
+                }
+            }            
+        }
+
+        // Função de limpeza do formulário melhorada
+        function limparFormulario() {
+            // Mantém os campos do equipamento e responsável
+            const equipamentoCodigo = document.getElementById('equipamento_codigo_barras').value;
+            const responsavel = document.getElementById('responsavel').value;
+            
+            // Reseta o formulário
+            document.getElementById('inspecaoForm').reset();
+            
+            // Restaura valores importantes
+            document.getElementById('equipamento_codigo_barras').value = equipamentoCodigo;
+            document.getElementById('responsavel').value = responsavel;
+            
+            // Limpa o checklist
+            document.querySelectorAll('.inspection-item').forEach(item => {
+                item.classList.remove('checked');
+            });
+                        
+            // Limpa preview de fotos
+            document.getElementById('file-preview').innerHTML = '';
+            
+            // Remove inputs de checklist ocultos
+            document.querySelectorAll('input[name^="inspecao["]').forEach(input => {
+                input.remove();
+            });
+            
+            // Remove classe de validação
+            document.getElementById('inspecaoForm').classList.remove('was-validated');
+            
+            // Reseta o status do checklist
+            const statusBadge = document.getElementById('checklist-status-badge');
+            statusBadge.textContent = "";
+            statusBadge.className = "badge bg-secondary";
+        }
+
+        // Função para abrir o modal
+        function toggleModal() {
+            userModal.toggle();
+        }
+
+        // Funções de manipulação de modal
+        function abrirModal(modalId) {
+            switch(modalId) {
+                case 'modalEquipamento':
+                    equipamentoModal.show();
+                    if (!equipamentosCarregados) {
+                        carregarEquipamentos();
+                        equipamentosCarregados = true;
+                    }
+                    break;
+                case 'modalResponsavel':
+                    responsavelModal.show();
+                    if (!responsaveisCarregados) {
+                        carregarResponsaveis();
+                        responsaveisCarregados = true;
+                    }
+                    break;
+            }
+        }
+
+        function fecharModal(modalId) {
+            switch(modalId) {
+                case 'modalEquipamento':
+                    equipamentoModal.hide();
+                    break;
+                case 'modalResponsavel':
+                    responsavelModal.hide();
+                    break;
+            }
+        }
+
+        function abrirModalResponsavel() {
+            abrirModal('modalResponsavel');
+        }
+
+        function abrirModalEquipamento() {
+            abrirModal('modalEquipamento');
+        }
+
+        async function abrirModalRegistrosExistentes(registros) {
+            const tbody = document.querySelector('#tabelaRegistrosExistentes tbody');
+            tbody.innerHTML = '';
+
+            registros.forEach(registro => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${registro.numero_inspecao}</td>               
+                    <td>${registro.tipo}</td>
+                    <td>${registro.classe}</td>
+                    <td>${registro.localizacao}</td>
+                    <td>${registro.data_inspecao || 'N/A'}</td>
+                    <td>${registro.data_validade_inspecao || 'N/A'}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            registrosModal.show();
+        }
+
+        // Função para fechar o modal
+        function fecharModalRegistrosExistentes() {
+            registrosModal.hide();
+        }
+
+        // Função para filtrar registros na tabela
+        function filtrarRegistros() {
+            const filtro = document.getElementById('filtroRegistros').value.toLowerCase();
+            const linhas = document.querySelectorAll('#tabelaRegistrosExistentes tbody tr');
+
+            linhas.forEach(linha => {
+                const textoLinha = linha.textContent.toLowerCase();
+                if (textoLinha.includes(filtro)) {
+                    linha.style.display = '';
+                } else {
+                    linha.style.display = 'none';
+                }
+            });
+        }
+
+        // Funções para carregar dados
+        async function carregarResponsaveis() {
+            try {
+                const response = await fetch('/api/usuarios');
+                const result = await response.json();
+                // Acessa a propriedade 'data' que contém o array de usuários
+                preencherTabelaResponsaveis(result.data || []);
+            } catch (error) {
+                console.error('Erro ao carregar usuarios:', error);
+            }
+        }
+
+        async function carregarEquipamentos() {
+            try {
+                const response = await fetch('/api/selecao_equipamentos');
+                const equipamentos = await response.json();
+                preencherTabelaEquipamentos(equipamentos);
+            } catch (error) {
+                console.error('Erro ao carregar equipamentos:', error);
+            }
+        }
+
+        // Funções para preencher tabelas
+        function preencherTabelaResponsaveis(usuarios) {
+            const tbody = document.getElementById('modalResponsavelTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            usuarios.forEach(usuario => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = usuario.nome;
+                row.insertCell(1).textContent = usuario.matricula;
+                row.insertCell(2).textContent = usuario.setor;
+                row.insertCell(3).textContent = usuario.nivel_acesso;
+                const selectCell = row.insertCell(4);
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Selecionar';
+                selectButton.className = 'btn btn-sm btn-primary';
+                selectButton.onclick = function() {
+                    document.getElementById('responsavel').value = usuario.nome;
+                    responsavelModal.hide();
+                };
+                selectCell.appendChild(selectButton);
+            });
+        }
+
+        function preencherTabelaEquipamentos(equipamentos) {
+            const tbody = document.getElementById('modalEquipamentoTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            equipamentos.forEach(equipamento => {
+                const row = tbody.insertRow();
+                
+                // Células com os dados do equipamento
+                row.insertCell(0).textContent = equipamento.tag_equipamento || 'N/A';
+                row.insertCell(1).textContent = equipamento.tipo || 'N/A';
+                row.insertCell(2).textContent = equipamento.classe || 'N/A';
+                row.insertCell(3).textContent = equipamento.localizacao || 'N/A';
+                
+                // Célula com botão de ação
+                const selectCell = row.insertCell(4);
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Selecionar';
+                selectButton.className = 'btn btn-sm btn-primary';
+
+                // Evento de clique com validação
+                selectButton.onclick = async function () {
+                    try {
+                        if (!equipamento.codigo_barras || !equipamento.tipo) {
+                            Swal.fire({
+                                title: 'Dados incompletos',
+                                text: 'Este equipamento não possui um tipo cadastrado. Verifique o cadastro.',
+                                icon: 'warning',
+                                background: 'var(--darker-bg)',
+                                color: 'var(--text-light)',
+                                confirmButtonColor: 'var(--primary-color)'
+                            });
+                            return;
+                        }
+
+                        selectButton.disabled = true;
+                        selectButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...';
+
+                        const response = await fetch(`/api/equipamento/${equipamento.codigo_barras}`);
+                        
+                        if (!response.ok) {
+                            if (response.status === 404) {
+                                Swal.fire({
+                                    title: 'Checklist não encontrado',
+                                    text: 'Este tipo de equipamento ainda não possui checklist cadastrado.',
+                                    icon: 'warning',
+                                    background: 'var(--darker-bg)',
+                                    color: 'var(--text-light)',
+                                    confirmButtonColor: 'var(--primary-color)'
+                                });
+                            } else {
+                                throw new Error('Erro ao buscar detalhes do equipamento');
+                            }
+                            return;
+                        }
+
+                        const equipamentoCompleto = await response.json();
+
+                        document.getElementById('equipamento_codigo_barras').value = equipamentoCompleto.codigo_barras || '';
+                         
+                        await updateFormFields(equipamentoCompleto);
+                        equipamentoModal.hide();
+
+                    } catch (error) {
+                        console.error('Erro ao selecionar equipamento:', error);
+                        Swal.fire({
+                            title: 'Erro',
+                            text: 'Ocorreu um erro ao carregar o equipamento. Tente novamente.',
+                            icon: 'error',
+                            background: 'var(--darker-bg)',
+                            color: 'var(--text-light)',
+                            confirmButtonColor: 'var(--primary-color)'
+                        });
+                    } finally {
+                        selectButton.disabled = false;
+                        selectButton.textContent = 'Selecionar';
+                    }
+                };
+
+                selectCell.appendChild(selectButton);
+            });
+        }
+
+        // Funções de filtro
+        function filtrarResponsaveis() {
+            const searchValue = document.getElementById('modalResponsavelSearch').value.toLowerCase();
+            const rows = document.getElementById('modalResponsavelTable').getElementsByTagName('tbody')[0].rows;
+            for (let row of rows) {
+                const nome = row.cells[0].textContent.toLowerCase();
+                const matricula = row.cells[1].textContent.toLowerCase();
+                if (nome.includes(searchValue) || matricula.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        function filtrarEquipamentos() {
+            const searchValue = document.getElementById('modalEquipamentoSearch').value.toLowerCase();
+            const rows = document.getElementById('modalEquipamentoTable').getElementsByTagName('tbody')[0].rows;
+            for (let row of rows) {
+                const tag = row.cells[0].textContent.toLowerCase();
+                const localizacao = row.cells[3].textContent.toLowerCase();
+                if (tag.includes(searchValue) || localizacao.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        // Função auxiliar para mostrar mensagens bonitas
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showResultModal(result) {
+            if (result.success) {
+                await showAlert('Sucesso!', result.message, 'success');
+            } else {
+                await showAlert('Erro', result.error || 'Ocorreu um erro', 'error');
+            }
+        }
+
+        // Função para confirmar ações
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Função para abrir o leitor de QR Code e código de barras
+        async function abrirLeitorQRCode() {
+            const video = document.getElementById('scanner-video');
+            const message = document.getElementById('scanner-message');
+            
+            scannerModal.show();
+            message.textContent = 'Posicione o código QR ou de barras dentro da área de leitura';
+            
+            try {
+                // Inicializa o leitor apenas se não existir
+                if (!codeReader) {
+                    codeReader = new ZXing.BrowserMultiFormatReader();
+                }
+                
+                // Limpa qualquer leitura anterior
+                if (scannerActive) {
+                    await codeReader.reset();
+                    scannerActive = false;
+                }
+                
+                // Inicia a leitura sem tentar selecionar câmera específica
+                scannerActive = true;
+                await codeReader.decodeFromVideoDevice(null, video, (result, err) => {
+                    if (result && scannerActive) {
+                        handleScannedCode(result.text);
+                        
+                        // Para a leitura após sucesso
+                        scannerActive = false;
+                        codeReader.reset();
+                        scannerModal.hide();
+                    }
+                    
+                    if (err) {
+                        // Ignora erros de "não encontrado" (esperados durante a leitura)
+                        if (!(err instanceof ZXing.NotFoundException)) {
+                            console.error('Erro na leitura:', err);
+                            message.textContent = 'Erro na leitura. Tente novamente.';
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Erro ao inicializar o scanner:', error);
+                
+                if (error.name === 'NotAllowedError') {
+                    message.textContent = 'Permissão de câmera negada. Por favor, permita o acesso à câmera.';
+                } else {
+                    message.textContent = 'Erro ao acessar a câmera. Verifique as permissões.';
+                }
+                
+                scannerActive = false;
+            }
+        }
+
+        // Função para fechar o leitor de QR Code
+        function fecharLeitorQRCode() {
+            if (codeReader && scannerActive) {
+                codeReader.reset();
+                scannerActive = false;
+            }
+            scannerModal.hide();
+        }
+
+        // Função para tratar o código escaneado
+        async function handleScannedCode(code) {
+            try {
+                if (!code || code.trim() === '') {
+                    throw new Error('Código vazio ou inválido');
+                }
+
+                // Busca os detalhes básicos do equipamento
+                const response = await fetch(`/api/equipamento/${encodeURIComponent(code)}`);
+                if (!response.ok) throw new Error('Equipamento não encontrado');
+
+                const equipamento = await response.json();
+
+                // Preenche os campos do formulário
+                document.getElementById('equipamento_codigo_barras').value = equipamento.codigo_barras || code;
+                document.getElementById('equipamento_id').value = equipamento.id;
+                document.getElementById('tipo_equipamento').value = equipamento.tipo;
+                document.getElementById('classe_equipamento').value = equipamento.classe || '';
+                document.getElementById('localizacao_equipamento').value = equipamento.localizacao;
+                document.getElementById('status_equipamento').value = equipamento.status;
+
+                document.getElementById('tipo_equipamento').dispatchEvent(new Event('change'));
+
+                // Agora já tenta carregar os detalhes completos e o checklist automaticamente
+                const responseChecklist = await fetch(`/api/equipamento/${equipamento.codigo_barras}`);
+                if (!responseChecklist.ok) {
+                    if (responseChecklist.status === 404) {
+                        Swal.fire({
+                            title: 'Checklist não encontrado',
+                            text: 'Este tipo de equipamento ainda não possui checklist cadastrado.',
+                            icon: 'warning',
+                            background: 'var(--darker-bg)',
+                            color: 'var(--text-light)',
+                            confirmButtonColor: 'var(--primary-color)'
+                        });
+                    } else {
+                        throw new Error('Erro ao buscar detalhes do equipamento');
+                    }
+                    return;
+                }
+
+                const equipamentoCompleto = await responseChecklist.json();
+                await updateFormFields(equipamentoCompleto); // <-- Essa função carrega o checklist
+                equipamentoModal.hide();
+
+                 
+                await showAlert('Sucesso!', 'Equipamento identificado com sucesso!', 'success');
+
+            } catch (error) {
+                console.error('Erro ao processar código escaneado:', error);
+                 
+
+                // Tenta buscar o equipamento pelo código como ID
+                try {
+                    const response = await fetch(`/api/equipamento/${encodeURIComponent(code)}`);
+                    if (response.ok) {
+                        const equipamento = await response.json();
+                        document.getElementById('equipamento_codigo_barras').value = equipamento.codigo_barras || code;
+                        document.getElementById('equipamento_id').value = equipamento.id;
+                        document.getElementById('tipo_equipamento').value = equipamento.tipo;
+                        document.getElementById('classe_equipamento').value = equipamento.classe || '';
+                        document.getElementById('localizacao_equipamento').value = equipamento.localizacao;
+                        document.getElementById('status_equipamento').value = equipamento.status;
+
+                        document.getElementById('tipo_equipamento').dispatchEvent(new Event('change'));
+
+                        // Tenta também carregar o checklist
+                        const checklistResponse = await fetch(`/api/equipamento/${equipamento.codigo_barras}`);
+                        if (checklistResponse.ok) {
+                            const equipamentoCompleto = await checklistResponse.json();
+                            await updateFormFields(equipamentoCompleto);
+                            equipamentoModal.hide();
+                        }
+
+                        await showAlert('Sucesso!', 'Equipamento identificado pelo Código!', 'success');
+                    } else {
+                        throw new Error('Equipamento não encontrado');
+                    }
+                } catch (fallbackError) {
+                    console.error('Erro no fallback de busca:', fallbackError);
+                    document.getElementById('equipamento_codigo_barras').value = code;
+
+                    await showAlert(
+                        'Equipamento não encontrado', 
+                        `O código "${code}" não corresponde a nenhum equipamento cadastrado. Por favor, selecione manualmente.`,
+                        'error'
+                    );
+
+                    abrirModalEquipamento();
+                }
+            }
+        }
+
+        // Função para verificar se a extensão é permitida
+        function isFileAllowed(file) {
+            const fileName = file.name.toLowerCase();
+            return allowedExtensions.some(ext => fileName.endsWith(ext));
+        }
+
+        // Modifique o event listener do input de arquivos
+        document.getElementById('fotos').addEventListener('change', function(e) {
+            const preview = document.getElementById('file-preview');
+            const files = e.target.files;
+            
+            if (!this.hasAttribute('data-keep-files')) {
+                preview.innerHTML = '';
+            }
+            
+            if (files.length === 0) return;
+            
+            const currentFiles = Array.from(this.files);
+            
+            for (const file of files) {
+                // Verifica se o arquivo é permitido
+                if (!isFileAllowed(file)) {
+                    alert(`Tipo de arquivo não permitido: ${file.name}`);
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'file-preview-item position-relative';
+                    previewItem.style.width = '100px';
+                    previewItem.style.height = '100px';
+                    
+                    // Verifica se é uma imagem para mostrar preview
+                    if (file.type.match('image.*')) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.className = 'w-100 h-100 object-fit-cover rounded';
+                        previewItem.appendChild(img);
+                    } else {
+                        // Para arquivos não-imagem, mostra um ícone
+                        const icon = document.createElement('div');
+                        icon.className = 'd-flex flex-column align-items-center justify-content-center w-100 h-100';
+                        icon.innerHTML = `
+                            <i class="fas fa-file-alt fa-3x mb-2"></i>
+                            <small class="text-truncate" style="max-width: 90px">${file.name}</small>
+                        `;
+                        previewItem.appendChild(icon);
+                    }
+                    
+                    // Botão para remover
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 m-1 p-1 rounded-circle';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.title = 'Remover arquivo';
+                    removeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const fileIndex = currentFiles.findIndex(f => f.name === file.name);
+                        if (fileIndex !== -1) {
+                            currentFiles.splice(fileIndex, 1);
+                            const dataTransfer = new DataTransfer();
+                            currentFiles.forEach(f => dataTransfer.items.add(f));
+                            document.getElementById('fotos').files = dataTransfer.files;
+                            previewItem.remove();
+                            document.getElementById('inspecaoForm').classList.remove('was-validated');
+                        }
+                    });
+                    
+                    previewItem.appendChild(removeBtn);
+                    preview.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Modifique também a função handleDrop para usar a nova verificação
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            const input = document.getElementById('fotos');
+            const dataTransfer = new DataTransfer();
+            
+            for (let i = 0; i < input.files.length; i++) {
+                dataTransfer.items.add(input.files[i]);
+            }
+            
+            for (let i = 0; i < files.length; i++) {
+                if (isFileAllowed(files[i])) {
+                    dataTransfer.items.add(files[i]);
+                } else {
+                    alert(`Tipo de arquivo não permitido: ${files[i].name}`);
+                }
+            }
+            
+            input.files = dataTransfer.files;
+            const event = new Event('change');
+            input.dispatchEvent(event);
+        }
+
+        // Atualize a função openCamera para aceitar outros tipos de arquivos
+        function openCamera() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            // Aceita todos os tipos permitidos
+            input.accept = allowedExtensions.join(',');
+            input.capture = 'environment';
+            
+            input.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const mainInput = document.getElementById('fotos');
+                    const dataTransfer = new DataTransfer();
+                    
+                    for (let i = 0; i < mainInput.files.length; i++) {
+                        dataTransfer.items.add(mainInput.files[i]);
+                    }
+                    
+                    // Verifica se o arquivo é permitido
+                    if (isFileAllowed(e.target.files[0])) {
+                        dataTransfer.items.add(e.target.files[0]);
+                        mainInput.files = dataTransfer.files;
+                        const event = new Event('change');
+                        mainInput.dispatchEvent(event);
+                    } else {
+                        alert(`Tipo de arquivo não permitido: ${e.target.files[0].name}`);
+                    }
+                }
+            });
+            
+            input.click();
+        }
+        // Adicione este evento para limpar o scanner quando o modal for fechado
+        document.getElementById('scanner-modal').addEventListener('hidden.bs.modal', function() {
+            fecharLeitorQRCode();
+        });
+
+        // Função para buscar detalhes do equipamento
+        async function fetchEquipamentoDetails(codigoBarras) {
+            try {
+                const response = await fetch(`/api/equipamento/${codigoBarras}`);
+                if (!response.ok) {
+                    throw new Error('Equipamento não encontrado');
+                }
+                
+                const data = await response.json();
+                updateFormFields(data);
+            } catch (error) {
+                await showAlert('Erro', error.message, 'error');
+                clearEquipamentoFields();
+            }
+        }
+
+        // Função para limpar os campos do equipamento
+        function clearEquipamentoFields() {
+            document.getElementById('equipamento_id').value = '';
+            document.getElementById('tipo_equipamento').value = '';
+            document.getElementById('classe_equipamento').value = '';
+            document.getElementById('localizacao_equipamento').value = '';
+            document.getElementById('status_equipamento').value = '';
+            document.getElementById('criticidade_inspecao').value = '';            
+            document.getElementById('checklist-container').innerHTML = '';
+        }
+
+        // Event Listeners
+        document.getElementById('equipamento_codigo_barras').addEventListener('change', function(e) {
+            if (e.target.value) fetchEquipamentoDetails(e.target.value);
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+        
+        document.getElementById('changeProfilePicBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        // Funções auxiliares
+        function handleScanSuccess(code) {
+            document.getElementById('equipamento_codigo_barras').value = code;
+            fetchEquipamentoDetails(code);
+        }
+
+        function navigateTo(page) {
+            window.location.href = (`/${page}`);
+        }
+
+        // Atualiza o status da localização quando o checkbox é alterado
+        document.getElementById('compartilharLocalizacao').addEventListener('change', function() {
+            const locationStatus = document.getElementById('location-status');
+            if (this.checked) {
+                locationStatus.classList.remove('d-none', 'alert-warning');
+                locationStatus.classList.add('alert-info');
+                document.getElementById('location-text').textContent = 'Localização será registrada com sua inspeção';
+            } else {
+                locationStatus.classList.remove('d-none', 'alert-info');
+                locationStatus.classList.add('alert-warning');
+                document.getElementById('location-text').textContent = 'Localização não será registrada';
+            }
+        });
+
+        // Inicializa o tooltip para itens obrigatórios
+        document.querySelectorAll('.obrigatorio-icon').forEach(icon => {
+            new bootstrap.Tooltip(icon);
+        });
+    </script>
+</body>
+</html>

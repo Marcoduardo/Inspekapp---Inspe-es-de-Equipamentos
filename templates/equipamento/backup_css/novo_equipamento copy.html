@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icons/favicon.ico') }}">
+    <title>InspekApp - Novo Equipamento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode/dist/JsBarcode.all.min.js"></script>
+
+    <!-- Corte de imagens -->   
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --primary-dark: #564FD9;
+            --secondary-color: #FF6584;
+            --dark-bg: #1A1A2E;
+            --darker-bg: #16213E;
+            --card-bg: #242445;
+            --text-light: #F1F1F1;
+            --text-muted: #B8B8B8;
+            --success-color: #4BB543;
+            --warning-color: #FFA500;
+            --danger-color: #FF5252;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sweet Alert Style Modals */
+        .swal-modal {
+            background-color: var(--darker-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .swal-title {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .swal-text {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .swal-icon {
+            margin: 1.5rem auto;
+        }
+
+        .swal-icon--success::before, 
+        .swal-icon--success::after {
+            background: var(--darker-bg);
+        }
+
+        .swal-icon--success__hide-corners {
+            background-color: transparent;
+        }
+
+        .swal-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .swal-button:not([disabled]):hover {
+            background-color: var(--primary-dark);
+        }
+
+        .swal-button--confirm {
+            background-color: var(--primary-color);
+        }
+
+        .swal-button--cancel {
+            background-color: var(--danger-color);
+        }
+
+        .swal-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+        #crop-container {
+            max-width: 100%;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        #crop-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+            
+        .ignore-button {
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+        }
+
+        .ignore-button:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .ignore-button i {
+            font-size: 2rem;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-search {
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .modal-search:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-table th {
+            background: rgba(108, 99, 255, 0.1);
+            padding: 0.75rem;
+            text-align: left;
+            color: var(--primary-color);
+        }
+
+        .modal-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Top Navigation Bar */
+        .top-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            flex-direction: row-reverse;
+        }
+
+        .top-bar .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-button i {
+            font-size: 1.1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .form-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .form-label span {
+            color: var(--secondary-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            background: #242445;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        .input-with-button {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .input-with-button .form-control {
+            flex: 1;
+        }
+        
+        .select-type-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .select-type-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Estilos para a tabela na modal */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .modal-table th, .modal-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-table th {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+        
+        .modal-search {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+        }
+        
+        /* Status badge */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: rgba(75, 181, 67, 0.2);
+            color: var(--success-color);
+        }
+        
+        .status-inactive {
+            background-color: rgba(255, 82, 82, 0.2);
+            color: var(--danger-color);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        .form-control[readonly] {
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B8B8B8'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+        }
+
+        .input-group .form-control {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group-append {
+            display: flex;
+        }
+
+        .input-group-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 1.25rem;
+            border-top-right-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .input-group-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Form Buttons */
+        .form-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* Modals */
+        /* Modal Moderno */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1200;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: var(--darker-bg);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            margin: 5vh auto;
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease-out;
+        }
+        .profile-pic-container {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        #modal-profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        #modal-profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(108, 99, 255, 0.3);
+        }
+
+        #change-profile-pic {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        #change-profile-pic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-details {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .user-details p {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .user-details strong {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+
+        .user-details span {
+            text-align: right;
+            color: var(--text-light);
+        }
+        .badge-primary {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .close {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 1.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: rgba(255, 101, 132, 0.1);
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }        
+        .select-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .modal-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--secondary-color);
+            transform: rotate(90deg);
+        }
+
+        /* Code Generation Options */
+        .generate-options {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .qrcode-button, .barcode-button {
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+        }
+
+        .qrcode-button:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .barcode-button:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .qrcode-button i, .barcode-button i {
+            font-size: 2rem;
+        }
+
+        /* Code Display */
+        .code-display {
+            text-align: center;
+        }
+
+        #code-container {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: white;
+            border-radius: var(--border-radius);
+        }
+
+        .download-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+            transition: var(--transition);
+        }
+
+        .download-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* User Info Modal */
+        .profile-pic-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-pic-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-color);
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .user-info-item {
+            margin-bottom: 1rem;
+        }
+
+        .user-info-item strong {
+            color: var(--primary-color);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 5rem 1rem 1rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.8rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .generate-options {
+                flex-direction: column;
+            }
+
+            .user-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+
+            .nav-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+            .modal-table thead {
+                display: none;
+            }
+            
+            .modal-table tr {
+                display: block;
+                margin-bottom: 1rem;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .modal-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .modal-table td::before {
+                content: attr(data-label);
+                font-weight: 500;
+                color: var(--text-muted);
+                margin-right: 1rem;
+            }
+            
+            .modal-table td:last-child {
+                justify-content: flex-end;
+            } 
+            /* Ajustes para as tabelas dentro do modal */
+            .modal-content table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modal-content .checklist-table {
+                min-width: 100%;
+                table-layout: fixed;
+            }
+            
+            .modal-content .checklist-table th,
+            .modal-content .checklist-table td {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 150px;
+            }
+            
+            /* Ajuste para o modal em telas pequenas */
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+                max-height: 90vh;
+                overflow-y: auto;
+            }                      
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-bar">
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <button class="nav-button" id="logoutButton">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+        
+        <div class="user-profile" onclick="toggleModal()">
+            <img class="user-avatar" id="user-profile-pic" 
+                 src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" 
+                 alt="Foto de Perfil">
+            <span class="user-name" id="userName">{{ current_user.primeiro_nome }} {{ current_user.sobrenome }}</span>
+        </div>
+    </header>
+ 
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="form-card">
+            <div class="form-header">
+                <h1 class="form-title">Cadastrar Novo Equipamento</h1>
+                <p class="form-subtitle">Preencha os dados do equipamento para registro no sistema</p>
+            </div>
+
+            <form id="equipamento-form" onsubmit="return cadastrarEquipamento(event)" enctype="multipart/form-data">
+                <div class="form-grid">
+
+                    <!-- Fabricante -->
+                    <div class="form-group">
+                        <label for="fabricante">Fabricante</label>
+                        <input type="text" id="fabricante" name="fabricante" class="form-control" placeholder="Digite o fabricante">
+                    </div>
+
+                    <!-- Modelo -->
+                    <div class="form-group">
+                        <label for="modelo">Modelo</label>
+                        <input type="text" id="modelo" name="modelo" class="form-control" placeholder="Digite o modelo">
+                    </div>
+
+                    <!-- Número de Série -->
+                    <div class="form-group">
+                        <label for="numero_serie">Número de Série</label>
+                        <input type="text" id="numero_serie" name="numero_serie" class="form-control" placeholder="Digite o número de série">
+                    </div>
+
+                    <!-- Patrimônio -->
+                    <div class="form-group">
+                        <label for="patrimonio">Patrimônio</label>
+                        <input type="text" id="patrimonio" name="patrimonio" class="form-control" placeholder="Digite o número do patrimônio">
+                    </div>
+
+                    <!-- Equipment Tag -->
+                    <div class="form-group">
+                        <label for="tag_equipamento">Tag do Equipamento <span>*</span></label>
+                        <input type="text" id="tag_equipamento" name="tag_equipamento" class="form-control" 
+                               placeholder="Digite a Tag do Equipamento" required>
+                        <span class="error-message" id="tag_equipamento-error"></span>
+                    </div>
+ 
+                    <div class="form-group">
+                        <label for="localizacao">Setor/Localização <span>*</span></label>
+                        <input type="text" id="localizacao" name="localizacao" class="form-control" 
+                               placeholder="Clique para selecionar o Setor/Localização" required readonly
+                               onclick="abrirModalSetor()">
+                        <input type="hidden" id="setor_id" name="setor_id">
+                        <span class="error-message" id="localizacao-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo <span>*</span></label>
+                        <input type="text" id="tipo" name="tipo" class="form-control" 
+                               placeholder="Selecione o tipo de equipamento" readonly required onchange="toggleExtintorCampos()"
+                               onclick="abrirModalTipoEquipamento()">
+                               <input type="hidden" id="tipo_id" name="tipo_id">
+                        <span class="error-message" id="tipo-error"></span>
+                    </div> 
+
+                    <!-- Class (visible only for Extintor) -->
+                    <div class="form-group" id="classe-group" style="display: none;">
+                        <label for="classe">Classe</label>
+                        <select id="classe" name="classe" class="form-control">
+                            <option value="">Selecione a Classe do Extintor</option>
+                            <option value="Classe A - Aparas de papel e madeira">Classe A - Aparas de papel e madeira</option>
+                            <option value="Classe B - Líquidos inflamáveis">Classe B - Líquidos inflamáveis</option>
+                            <option value="Classe C - Equipamentos elétricos">Classe C - Equipamentos elétricos</option>
+                            <option value="Classe D - Metais combustíveis">Classe D - Metais combustíveis</option>
+                            <option value="Classe K - Óleos e gorduras">Classe K - Óleos e gorduras</option>
+                            <option value="Classe ABC - Múltiplos tipos de fogo">Classe ABC - Múltiplos tipos de fogo</option>
+                            <option value="Classe AB - Sólidos e líquidos inflamáveis">Classe AB - Sólidos e líquidos inflamáveis</option>
+                            <option value="Classe BC - Líquidos inflamáveis e equipamentos elétricos">Classe BC - Líquidos inflamáveis e equipamentos elétricos</option>
+                        </select>                
+                        <span class="error-message" id="classe-error"></span>
+                    </div>
+
+                    <!-- Manufacturing Date -->
+                    <div class="form-group">
+                        <label for="data_fabricacao">Data de Fabricação <span>*</span></label>
+                        <input type="date" id="data_fabricacao" name="data_fabricacao" class="form-control" required>
+                        <span class="error-message" id="data_fabricacao-error"></span>
+                    </div>
+
+                    <!-- Expiration Date -->
+                    <div class="form-group">
+                        <label for="data_validade">Data de Validade <span>*</span></label>
+                        <input type="date" id="data_validade" name="data_validade" class="form-control" required>
+                        <span class="error-message" id="data_validade-error"></span>
+                    </div>
+
+                    <!-- Weight (visible only for Extintor) -->
+                    <div class="form-group" id="peso-group" style="display: none;">
+                        <label for="peso">Peso</label>
+                        <input type="text" id="peso" name="peso" class="form-control" 
+                               placeholder="Digite o Peso">
+                        <span class="error-message" id="peso-error"></span>
+                    </div>
+
+                    <!-- Hydrostatic Test N2 (visible only for Extintor) -->
+                    <div class="form-group" id="teste_hidrostatico_n2-group" style="display: none;">
+                        <label for="teste_hidrostatico_n2">Teste Hidrostático N2</label>
+                        <input type="text" id="teste_hidrostatico_n2" name="teste_hidrostatico_n2" class="form-control" 
+                               placeholder="MM/AAAA">
+                        <span class="error-message" id="teste_hidrostatico_n2-error"></span>
+                    </div>
+
+                    <!-- Hydrostatic Test N3 (visible only for Extintor) -->
+                    <div class="form-group" id="teste_hidrostatico_n3-group" style="display: none;">
+                        <label for="teste_hidrostatico_n3">Teste Hidrostático N3</label>
+                        <input type="text" id="teste_hidrostatico_n3" name="teste_hidrostatico_n3" class="form-control" 
+                               placeholder="MM/AAAA">
+                        <span class="error-message" id="teste_hidrostatico_n3-error"></span>
+                    </div>
+
+                    <!-- Barcode -->
+                    <div class="form-group">
+                        <label for="codigo_barras">Código de Barras <span>*</span></label>
+                        <div class="input-group">
+                            <input type="text" id="codigo_barras" name="codigo_barras" class="form-control" 
+                                   placeholder="Digite ou Gere o Código de Barras">
+                            <div class="input-group-append">
+                                <button type="button" class="input-group-btn" onclick="gerarCodigoBarras()">
+                                    <i class="fas fa-barcode"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <span class="error-message" id="codigo_barras-error"></span>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label for="status">Status <span>*</span></label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option value="">Selecione o Status</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Em Manutenção">Em Manutenção</option>
+                            <option value="Descartado">Descartado</option>
+                            <option value="Reserva">Reserva</option>               
+                        </select>
+                        <span class="error-message" id="status-error"></span>
+                    </div>
+
+                    <!-- Foto -->
+                    <div class="form-group">
+                        <label for="foto">Foto do Equipamento</label>
+                        <input type="file" id="foto" name="foto" class="form-control" accept="image/*">
+                    </div>
+
+                    <!-- Caminho da foto (preenchido automaticamente após upload) -->
+                    <input type="hidden" id="foto_path" name="foto_path">
+
+                    <!-- Observações -->
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" name="observacoes" class="form-control" rows="3" placeholder="Observações gerais"></textarea>
+                    </div>                    
+                </div>
+
+                <!-- Form Buttons -->
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-circle"></i> Cadastrar
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/index'">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-content">
+            <button class="close" onclick="toggleModal()" aria-label="Fechar modal">&times;</button>
+            <h2 id="modal-title">Perfil do Usuário</h2>
+            <div class="profile-pic-container">
+                <img id="modal-profile-pic" src="{{ url_for('static', filename=current_user.foto_perfil) if current_user.foto_perfil else 'https://cdn-icons-png.flaticon.com/128/1077/1077012.png' }}" alt="Foto de Perfil do usuário {{ current_user.nome }}">
+                <button id="change-profile-pic" class="btn-secondary wave-effect" aria-label="Alterar foto de perfil">
+                    <i class="fas fa-camera" style="margin-right: 0.5rem;"></i> Alterar Foto
+                </button>
+            </div>
+            <div class="user-details">
+                <p><strong><i class="fas fa-user" style="margin-right: 0.5rem;"></i> Nome:</strong> <span id="modal-user-name">{{ current_user.nome }}</span></p>
+                <p><strong><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i> Email:</strong> <span id="modal-user-email">{{ current_user.email }}</span></p>
+                <p><strong><i class="fas fa-id-card" style="margin-right: 0.5rem;"></i> Matrícula:</strong> <span id="modal-user-matricula">{{ current_user.matricula }}</span></p>
+                <p><strong><i class="fas fa-building" style="margin-right: 0.5rem;"></i> Setor:</strong> <span id="modal-user-setor">{{ current_user.setor }}</span></p>  
+                <p><strong><i class="fas fa-user-tag" style="margin-right: 0.5rem;"></i> Usuário:</strong> <span id="modal-user-username">{{ current_user.usuario }}</span></p>              
+                <p><strong><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nível de Acesso:</strong> <span id="modal-user-access" class="badge badge-primary">{{ current_user.nivel_acesso }}</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="crop-modal" style="display: none;">
+        <div id="crop-container">
+            <img id="crop-image" />
+        </div>
+    </div>
+
+    <!-- Tipo de Equipamento Selection Modal -->
+    <div id="modalTipoEquipamento" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Selecionar Tipo de Equipamento</h3>
+                <button class="modal-close" onclick="fecharModal('modalTipoEquipamento')">&times;</button>
+            </div>
+            <input type="text" id="modalTipoEquipamentoSearch" class="modal-search" 
+                placeholder="Pesquisar por nome ou descrição..." oninput="filtrarTiposEquipamentos()">
+            <table id="modalTipoEquipamentoTable" class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Tipo</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Equipment type data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sector Selection Modal -->
+    <div id="modalSetor" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Selecionar Setor</h3>
+                <button class="modal-close" onclick="fecharModal('modalSetor')">&times;</button>
+            </div>
+            <input type="text" id="modalSetorSearch" class="modal-search" 
+                   placeholder="Pesquisar por nome ou centro de custo..." oninput="filtrarSetores()">
+            <table id="modalSetorTable" class="modal-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Setor</th>
+                        <th>Centro de Custo</th>                    
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sector data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Variável para controlar se os tipos já foram carregados
+        let tiposCarregados = false;
+        // Variável para controlar se os setores já foram carregados
+        let setoresCarregados = false;
+
+        document.getElementById('foto').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Verifica o tamanho do arquivo (opcional, pode fazer no backend também)
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    showAlert('Erro', 'O arquivo é muito grande. Tamanho máximo: 10MB', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('foto', file);
+
+                // Mostra loading
+                Swal.fire({
+                    title: 'Enviando foto...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading(),
+                    background: 'var(--darker-bg)',
+                    color: 'var(--text-light)'
+                });
+
+                fetch('/api/upload_foto_equipamento', {
+                    method: 'POST',
+                    body: formData,
+                    // Não definir Content-Type, o browser vai definir automaticamente com boundary
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        // Armazene o filepath para usar quando cadastrar o equipamento
+                        document.getElementById('foto_path').value = data.filepath;
+                        showAlert('Sucesso', data.message, 'success');
+                    } else {
+                        showAlert('Erro', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                    const message = error.message || 'Falha ao enviar foto';
+                    showAlert('Erro', message, 'error');
+                });
+            }
+        }); 
+
+        // Função para abrir o modal de tipos de equipamento
+        function abrirModalTipoEquipamento() {
+            abrirModal('modalTipoEquipamento');
+            if (!tiposCarregados) {
+                carregarTiposEquipamento();
+                tiposCarregados = true;
+            }
+        }
+        
+        // Função para carregar os tipos de equipamento da API
+        async function carregarTiposEquipamento() {
+            try {
+                const response = await fetch('/api/tipos_equipamentos_ativos');
+                const tipos = await response.json();
+                preencherTabelaTiposEquipamento(tipos);
+            } catch (error) {
+                console.error('Erro ao carregar tipos de equipamento:', error);
+                showAlert('Erro', 'Não foi possível carregar a lista de tipos de equipamento', 'error');
+            }
+        }
+        
+        // Função para preencher a tabela de tipos no modal
+        function preencherTabelaTiposEquipamento(tipos) {
+            const tbody = document.getElementById('modalTipoEquipamentoTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            tipos.forEach(tipo => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = tipo.nome;
+                row.insertCell(1).textContent = tipo.descricao || 'N/A';
+                
+                // Célula de status
+                const statusCell = row.insertCell(2);
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `status-badge status-${tipo.status ? 'active' : 'inactive'}`;
+                statusBadge.textContent = tipo.status ? 'Ativo' : 'Inativo';
+                statusCell.appendChild(statusBadge);
+                
+                // Célula de ação
+                const selectCell = row.insertCell(3);
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Selecionar';
+                selectButton.className = 'select-btn';
+                selectButton.onclick = function() {
+                    document.getElementById('tipo').value = tipo.nome;
+                    document.getElementById('tipo_id').value = tipo.id;
+                    fecharModal('modalTipoEquipamento');
+                    toggleExtintorCampos(); // Atualiza campos específicos baseados no tipo selecionado
+                };
+                selectCell.appendChild(selectButton);
+
+                // Adiciona data-label para dispositivos móveis
+                row.cells[0].setAttribute('data-label', 'Nome do Tipo');
+                row.cells[1].setAttribute('data-label', 'Descrição');
+                row.cells[2].setAttribute('data-label', 'Status');
+                row.cells[3].setAttribute('data-label', 'Ação');
+            });
+        }
+        
+        // Função para filtrar tipos de equipamento na tabela
+        function filtrarTiposEquipamentos() {
+            const searchValue = document.getElementById('modalTipoEquipamentoSearch').value.toLowerCase();
+            const rows = document.getElementById('modalTipoEquipamentoTable').getElementsByTagName('tbody')[0].rows;
+            
+            for (let row of rows) {
+                const nomeTipo = row.cells[0].textContent.toLowerCase();
+                const descricao = row.cells[1].textContent.toLowerCase();
+                
+                if (nomeTipo.includes(searchValue) || descricao.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }       
+
+        // Função para o modal de setor
+        function abrirModalSetor() {
+            abrirModal('modalSetor');
+            if (!setoresCarregados) {
+                carregarSetores();
+                setoresCarregados = true;
+            }
+        }
+
+        // Função para carregar os setores da API
+        async function carregarSetores() {
+            try {
+                const response = await fetch('/api/setores');
+                const setores = await response.json();
+                preencherTabelaSetores(setores);
+            } catch (error) {
+                console.error('Erro ao carregar setores:', error);
+                showAlert('Erro', 'Não foi possível carregar a lista de setores', 'error');
+            }
+        }
+
+        // Função para preencher a tabela de setores no modal
+        function preencherTabelaSetores(setores) {
+            const tbody = document.getElementById('modalSetorTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            setores.forEach(setor => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = setor.nome_setor;
+                row.insertCell(1).textContent = setor.centro_custo;
+                
+                const selectCell = row.insertCell(2);
+                const selectButton = document.createElement('button');
+                selectButton.textContent = 'Selecionar';
+                selectButton.className = 'select-btn';
+                selectButton.onclick = function() {
+                    document.getElementById('localizacao').value = setor.nome_setor;
+                    document.getElementById('setor_id').value = setor.id;
+                    fecharModal('modalSetor');
+                };
+                selectCell.appendChild(selectButton);
+
+                // Adiciona data-label para dispositivos móveis
+                row.cells[0].setAttribute('data-label', 'Nome do Setor');
+                row.cells[1].setAttribute('data-label', 'Centro de Custo');
+                row.cells[2].setAttribute('data-label', 'Ação');
+            });
+        }
+
+        // Função para filtrar setores na tabela
+        function filtrarSetores() {
+            const searchValue = document.getElementById('modalSetorSearch').value.toLowerCase();
+            const rows = document.getElementById('modalSetorTable').getElementsByTagName('tbody')[0].rows;
+            
+            for (let row of rows) {
+                const nomeSetor = row.cells[0].textContent.toLowerCase();
+                const centroCusto = row.cells[1].textContent.toLowerCase();
+                
+                if (nomeSetor.includes(searchValue) || centroCusto.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        // Função genérica para abrir modais
+        function abrirModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.hidden = false;
+            modal.style.display = 'flex';
+        }
+
+        // Função genérica para fechar modais
+        function fecharModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.hidden = true;
+            modal.style.display = 'none';
+        }
+                        
+        // Função para exibir ou ocultar campos específicos do Extintor
+        function toggleExtintorCampos() {
+            const tipo = document.getElementById('tipo').value;
+            const classeGroup = document.getElementById('classe-group');
+            const pesoGroup = document.getElementById('peso-group');            
+            const testeN2Group = document.getElementById('teste_hidrostatico_n2-group');
+            const testeN3Group = document.getElementById('teste_hidrostatico_n3-group');
+    
+            if (tipo === 'Extintor') {
+                classeGroup.style.display = 'block';
+                testeN2Group.style.display = 'block';
+                testeN3Group.style.display = 'block';
+                pesoGroup.style.display = 'block';               
+                document.getElementById('classe').required = true;
+                document.getElementById('peso').required = true; 
+                document.getElementById('peso').value = '';                                  
+            } else {
+                classeGroup.style.display = 'none';
+                testeN2Group.style.display = 'none';
+                testeN3Group.style.display = 'none';
+                pesoGroup.style.display = 'none';                
+                document.getElementById('classe').required = false;
+                document.getElementById('peso').required = false;               
+                document.getElementById('classe').value = 'N/A';
+                document.getElementById('peso').value = 'N/A';               
+                document.getElementById('teste_hidrostatico_n2').value = '';
+                document.getElementById('teste_hidrostatico_n3').value = '';
+            }
+        }
+    
+        // Função para validar o formato de data (MM/AAAA) - usado apenas para teste hidrostático
+        function validarDataMMAAAA(data) {
+            const regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
+            return regex.test(data);
+        }
+
+        // Funções auxiliares para mostrar mensagens (adicionar no início do script)
+        function showAlert(title, text, icon, confirmButtonText = 'OK') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                confirmButtonText: confirmButtonText,
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)',
+                confirmButtonColor: 'var(--primary-color)'
+            });
+        }
+
+        async function showConfirm(title, text, icon = 'question') {
+            return Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-color)',
+                cancelButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar',
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
+
+        // Função para fechar o modal
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+    
+        // Função para abrir o modal
+        function toggleModal() {
+            const modal = document.getElementById('user-modal');
+            if (modal.hidden) {
+                abrirModal('user-modal');
+            } else {
+                fecharModal('user-modal');
+            }
+        }
+
+        let cropper = null;
+
+        document.getElementById('change-profile-pic').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.style = 'max-width: 100%; max-height: 400px;';
+                    image.id = 'cropper-img';
+
+                    const cropContainer = document.createElement('div');
+                    cropContainer.appendChild(image);
+
+                    Swal.fire({
+                        title: 'Corte sua imagem',
+                        html: cropContainer,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        background: 'var(--darker-bg)',
+                        color: 'var(--text-light)',
+                        customClass: {
+                            popup: 'rounded-xl p-2',
+                            confirmButton: 'bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700',
+                            cancelButton: 'bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
+                        },
+                        didOpen: () => {
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                background: false,
+                                autoCropArea: 1,
+                                movable: true,
+                                zoomable: true,
+                                responsive: true
+                            });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                if (!cropper) {
+                                    reject('Cropper não inicializado.');
+                                    return;
+                                }
+
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+
+                                if (!canvas) {
+                                    reject('Erro ao gerar canvas.');
+                                    return;
+                                }
+
+                                canvas.toBlob(async (blob) => {
+                                    if (!blob) {
+                                        reject('Erro ao gerar imagem.');
+                                        return;
+                                    }
+
+                                    Swal.close(); // Fecha o modal de corte
+                                    await new Promise(r => setTimeout(r, 300)); // Aguarda transição
+
+                                    Swal.fire({
+                                        title: 'Processando...',
+                                        html: 'Atualizando sua foto de perfil',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading(),
+                                        background: 'var(--darker-bg)',
+                                        color: 'var(--text-light)'
+                                    });
+
+                                    const formData = new FormData();
+                                    formData.append('foto_perfil', blob, 'perfil.jpg');
+
+                                    try {
+                                        const response = await fetch('/api/alterar_foto_perfil', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        const data = await response.json();
+                                        Swal.close();
+
+                                        if (data.success) {
+                                            const imgURL = data.foto_perfil_url + `?v=${Date.now()}`;
+                                            document.querySelectorAll('.user-avatar, #modal-profile-pic').forEach(img => {
+                                                img.src = imgURL;
+                                            });
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 1000);
+                                            await showAlert('Sucesso!', 'Foto de perfil atualizada com sucesso!', 'success');
+                                        } else {
+                                            await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                        }
+                                    } catch (err) {
+                                        Swal.close();
+                                        console.error(err);
+                                        await showAlert('Erro', data.error || 'Erro ao atualizar a foto de perfil.', 'error');
+                                    }
+
+                                    resolve();
+                                }, 'image/jpeg');
+                            });
+                        },
+                        willClose: () => {
+                            if (cropper) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        }
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            input.click();
+        });
+
+        let equipamentoCadastrado = null;
+
+        async function cadastrarEquipamento(event) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'Processando...',
+                html: 'Estamos cadastrando seu equipamento',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                background: 'var(--darker-bg)',
+                color: 'var(--text-light)'
+            });
+
+            const form = document.getElementById('equipamento-form');
+            const formData = new FormData(form);
+
+            const fotoInput = document.getElementById('foto');
+            if (fotoInput?.files?.length > 0) {
+                formData.append('foto', fotoInput.files[0]);
+            }
+
+            try {
+                const response = await fetch('/api/equipamentos', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                Swal.close();
+
+                if (response.ok) {
+                    await showAlert('Sucesso!', data.message, 'success');
+                    form.reset();
+                    equipamentoCadastrado = data;
+                } else {
+                    await showAlert('Erro', data.message || 'Erro ao cadastrar equipamento.', 'error');
+                }
+            } catch (error) {
+                Swal.close();
+                await showAlert('Erro', 'Erro ao cadastrar equipamento. Tente novamente.', 'error');
+                console.error('Erro:', error);
+            }
+        }
+
+        function gerarCodigoBarras() {
+            const ano = new Date().getFullYear().toString().slice(-2);
+            const numerosAleatorios = Array.from({ length: 3 }, () => Math.floor(Math.random() * 900) + 100).join('');
+            const codigoBarras = `${ano}${numerosAleatorios}`;
+            document.getElementById('codigo_barras').value = codigoBarras;
+        }
+
+
+        function getEquipamentoValue(chave) {
+            return equipamentoCadastrado?.[chave] || document.getElementById(chave)?.value || '';
+        }
+        // Função para fazer logout
+        document.getElementById('logoutButton').addEventListener('click', async function(event) {
+            const confirmed = await showConfirm('Confirmação', 'Você tem certeza que deseja fazer logoff?');
+            
+            if (confirmed) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        await showAlert('Erro', 'Falha no logoff. Tente novamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro de rede:', error);
+                    await showAlert('Erro', 'Erro de rede. Tente novamente.', 'error');
+                }
+            }
+        });
+
+        function fecharModalExibicaoCodigo() {
+            document.getElementById('code-display-modal').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        });
+
+    </script>
+</body>
+</html>
