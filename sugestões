@@ -1,0 +1,258 @@
+1. Configurações de Autenticação e Segurança
+ 
+'AUTHENTICATION': {
+    'value': {
+        'PASSWORD_MIN_LENGTH': 8,
+        'PASSWORD_REQUIRE_UPPERCASE': True,
+        'PASSWORD_REQUIRE_LOWER_CASE': True,
+        'PASSWORD_REQUIRE_SYMBOL': True,
+        'PASSWORD_REQUIRE_NUMBER': True,
+        'MAX_LOGIN_ATTEMPTS': 5,
+        'LOCKOUT_DURATION_MINUTES': 30,
+        'SESSION_TIMEOUT_MINUTES': 30,
+        'REQUIRE_2FA': False,
+        'TOKEN_EXPIRATION_HOURS': 24,
+        'REQUIRE_SECURITY_QUESTION': True,
+        'PASSWORD_HISTORY': 3,
+        'PASSWORD_RESET_EXPIRY_HOURS': 24,
+        'HSTS_ENABLED': True,
+        'XSS_PROTECTION': True,
+        'CSRF_TIMEOUT': 3600,
+        'CORS_ORIGINS': [],
+        'CSP_POLICY': "default-src 'self'"
+    },
+    'type': dict,
+    'description': 'Configurações de segurança e autenticação'
+}
+
+2. Configurações de Usuários e Permissões
+ 
+'USER_SETTINGS': {
+    'value': {
+        'DEFAULT_PROFILE_IMAGE': 'static/images/perfil_padrao.png',
+        'DEFAULT_DEPARTMENT': 'Administrativo',
+        'DEFAULT_ACCESS_LEVEL': 'operator',
+        'AUTO_APPROVE_REGISTRATIONS': False,
+        'LDAP_INTEGRATION_ENABLED': False,
+        'OAUTH_PROVIDERS': {
+            'google': {'enabled': False},
+            'azure': {'enabled': False}
+        }
+    },
+    'type': dict,
+    'description': 'Configurações de usuários e permissões'
+}
+
+3. Configurações de Equipamentos
+ 
+'EQUIPMENT': {
+    'value': {
+        'TAG_PREFIX': 'EQP-',
+        'AUTO_GENERATE_BARCODES': True,
+        'BARCODE_TYPE': 'CODE128',
+        'DEFAULT_STATUS': 'Ativo',
+        'REQUIRE_PHOTOS_ON_REGISTER': True,
+        'MIN_PHOTOS_REQUIRED': 1,
+        'DEFAULT_LOCATION': 'Almoxarifado',
+        'WARRANTY_ALERT_DAYS': 60
+    },
+    'type': dict,
+    'description': 'Configurações de equipamentos'
+}
+
+4. Configurações de Inspeções
+ 
+'INSPECTION': {
+    'value': {
+        'PREFIX': 'INS-',
+        'DEFAULT_VALIDITY_DAYS': 365,
+        'MIN_PHOTOS_REQUIRED': 3,
+        'PHOTO_TYPES': ['antes', 'durante', 'depois'],
+        'ALLOW_CANCEL_COMPLETED': False,
+        'EDIT_GRACE_PERIOD_DAYS': 7,
+        'STATUS_OPTIONS': ['Pendente', 'Finalizada', 'Cancelada', 'Reprovada'],
+        'REQUIRE_LOCATION': True,
+        'GEOLOCATION_ACCURACY': 50  # metros
+    },
+    'type': dict,
+    'description': 'Configurações de inspeções'
+}
+
+5. Configurações de Notificações
+ 
+'NOTIFICATIONS': {
+    'value': {
+        'DAYS_BEFORE_EXPIRATION': 30,
+        'METHODS': ['email', 'in_app'],
+        'ADMIN_EMAILS': ['admin@example.com'],
+        'SLACK_WEBHOOK_URL': '',
+        'TEAMS_WEBHOOK_URL': '',
+        'WHATSAPP_ENABLED': False,
+        'SCHEDULE_TIME': '09:00',
+        'FREQUENCY': 'daily'  # daily/weekly/monthly
+    },
+    'type': dict,
+    'description': 'Configurações de notificações'
+}
+
+6. Configurações de Relatórios
+ 
+'REPORTING': {
+    'value': {
+        'DEFAULT_FORMAT': 'pdf',  # pdf/excel/word/html
+        'RETENTION_DAYS': 90,
+        'COMPANY_LOGO': 'static/images/logo_relatorios.png',
+        'FOOTER_TEXT': 'Sistema de Inspeções - © 2023',
+        'CSV_DELIMITER': ';',
+        'CSV_ENCODING': 'utf-8',
+        'EXCEL_MAX_ROWS': 10000,
+        'AUTO_GENERATE': False,
+        'SCHEDULE': '0 0 1 * *'  # cron expression
+    },
+    'type': dict,
+    'description': 'Configurações de relatórios'
+}
+
+7. Configurações de Backup
+ 
+'BACKUP': {
+    'value': {
+        'ENABLED': True,
+        'FREQUENCY': 'weekly',  # daily/weekly/monthly
+        'TIME': '02:00',
+        'RETENTION_DAYS': 30,
+        'FOLDER': '/backups/sistema',
+        'COMPRESS': True,
+        'INCLUDE_MEDIA': False,
+        'MAX_BACKUPS': 5
+    },
+    'type': dict,
+    'description': 'Configurações de backup'
+}
+
+8. Configurações de Auditoria e Logs
+ 
+'AUDIT': {
+    'value': {
+        'RETENTION_DAYS': 365,
+        'LOG_LEVEL': 'INFO',  # DEBUG/INFO/WARNING/ERROR/CRITICAL
+        'LOG_USER_ACTIONS': True,
+        'LOG_SENSITIVE_DATA': False,
+        'MAX_LOG_SIZE_MB': 10,
+        'LEVEL': 'detailed'  # basic/detailed/full
+    },
+    'type': dict,
+    'description': 'Configurações de auditoria e logs'
+}
+
+9. Configurações de UI/UX
+ 
+'UI': {
+    'value': {
+        'THEME': 'light',  # light/dark/blue
+        'LANGUAGE': 'pt-BR',
+        'DATE_FORMAT': 'dd/MM/yyyy',
+        'TIME_FORMAT': 'HH:mm',
+        'TIMEZONE': 'America/Sao_Paulo',
+        'PAGE_SIZE': 15,
+        'MAX_PAGE_SIZE': 100,
+        'SHOW_TUTORIALS': True,
+        'COLOR_SCHEME': {
+            'primary': '#3498db',
+            'secondary': '#2ecc71',
+            'danger': '#e74c3c'
+        }
+    },
+    'type': dict,
+    'description': 'Configurações de interface'
+}
+
+10. Configurações de Integração
+ 
+'INTEGRATION': {
+    'value': {
+        'API_ENABLED': True,
+        'API_RATE_LIMIT': '100/hour',
+        'EXTERNAL_API_TIMEOUT': 10,
+        'SAP_INTEGRATION': False,
+        'SYNC_INTERVAL_MINUTES': 60,
+        'MAPS_PROVIDER': 'google',  # google/openstreetmap
+        'MAPS_API_KEY': '',
+        'QRCODE_SIZE': 200,
+        'QRCODE_ERROR_CORRECTION': 'M'  # L/M/Q/H
+    },
+    'type': dict,
+    'description': 'Configurações de integração'
+}
+
+11. Configurações de Manutenção
+ 
+'MAINTENANCE': {
+    'value': {
+        'MODE': False,
+        'MESSAGE': 'Sistema em manutenção. Volte em breve.',
+        'SCHEDULE': '00:00-04:00',
+        'NOTICE_DAYS': 3,
+        'AUTO_UPDATES': False,
+        'CLEANUP_DAYS': 30
+    },
+    'type': dict,
+    'description': 'Configurações de manutenção'
+}
+
+12. Configurações de Performance
+ 
+'PERFORMANCE': {
+    'value': {
+        'CACHE_ENABLED': True,
+        'CACHE_TTL_SECONDS': 300,
+        'DB_POOL_SIZE': 5,
+        'DB_MAX_OVERFLOW': 10,
+        'QUERY_TIMEOUT': 30,
+        'MAX_RECORDS': 1000,
+        'OPTIMIZE_QUERIES': True
+    },
+    'type': dict,
+    'description': 'Configurações de performance'
+}
+
+13. Configurações de Personalização
+ 
+'CUSTOMIZATION': {
+    'value': {
+        'SYSTEM_NAME': 'SIGI - Sistema de Inspeções',
+        'LOGIN_MESSAGE': 'Bem-vindo ao sistema de inspeções',
+        'LOGO_URL': 'static/images/logo_sistema.png',
+        'FAVICON': 'static/images/favicon.ico',
+        'CUSTOM_CSS': '',
+        'WELCOME_MESSAGE': ''
+    },
+    'type': dict,
+    'description': 'Configurações de personalização'
+}
+
+14. Configurações de Documentação
+ 
+'DOCUMENTATION': {
+    'value': {
+        'URL': 'https://docs.example.com',
+        'SHOW_BUTTON': True,
+        'CONTACT_EMAIL': 'suporte@example.com',
+        'HELP_PAGE': '/ajuda'
+    },
+    'type': dict,
+    'description': 'Configurações de documentação'
+}
+
+15. Configurações de Monitoramento
+ 
+'MONITORING': {
+    'value': {
+        'HEALTHCHECKS_ENABLED': True,
+        'METRICS_ENABLED': False,
+        'UPTIME_MONITORING': False,
+        'ALERT_EMAILS': ['alerts@example.com']
+    },
+    'type': dict,
+    'description': 'Configurações de monitoramento'
+}
